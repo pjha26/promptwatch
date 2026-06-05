@@ -44,7 +44,11 @@ const derivationRules: RuleProcessor[] = [
       grouped.set(e.thread_url, group);
     }
 
-    return Array.from(grouped.values()).map((group) => {
+    const topReddit = [...grouped.values()]
+      .sort((a, b) => (b[0].upvotes + b[0].comment_count) - (a[0].upvotes + a[0].comment_count))
+      .slice(0, 6); // reddit cap
+
+    return topReddit.map((group) => {
       const sortedEvents = [...group].sort((a, b) => new Date(b.created_at).getTime() - new Date(a.created_at).getTime());
       const latestEvent = sortedEvents[0];
       const sourceIds = sortedEvents.map((e) => e.id);
@@ -81,7 +85,11 @@ const derivationRules: RuleProcessor[] = [
       grouped.set(e.article_url, group);
     }
 
-    return Array.from(grouped.values()).map((group) => {
+    const topArticles = [...grouped.values()]
+      .sort((a, b) => b[0].estimated_monthly_traffic - a[0].estimated_monthly_traffic)
+      .slice(0, 6); // articles cap
+
+    return topArticles.map((group) => {
       const sortedEvents = [...group].sort((a, b) => new Date(b.created_at).getTime() - new Date(a.created_at).getTime());
       const latestEvent = sortedEvents[0];
       const sourceIds = sortedEvents.map((e) => e.id);
@@ -157,7 +165,11 @@ const derivationRules: RuleProcessor[] = [
       grouped.set(e.source_url, group);
     }
 
-    return Array.from(grouped.values()).map((group) => {
+    const topCompetitor = [...grouped.values()]
+      .sort((a, b) => a[0].position - b[0].position)
+      .slice(0, 8);
+
+    return topCompetitor.map((group) => {
       const sortedEvents = [...group].sort((a, b) => new Date(b.created_at).getTime() - new Date(a.created_at).getTime());
       const latestEvent = sortedEvents[0];
       const sourceIds = sortedEvents.map((e) => e.id);
