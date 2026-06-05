@@ -167,7 +167,7 @@ const derivationRules: RuleProcessor[] = [
 
     const topCompetitor = [...grouped.values()]
       .sort((a, b) => a[0].position - b[0].position)
-      .slice(0, 8);
+      .slice(0, 6); // competitor cap
 
     return topCompetitor.map((group) => {
       const sortedEvents = [...group].sort((a, b) => new Date(b.created_at).getTime() - new Date(a.created_at).getTime());
