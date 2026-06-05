@@ -30,7 +30,7 @@ A triage queue derived from ~200 raw monitoring events via `deriveActions()` in 
 
 ## AI tool usage
 
-I used Claude (claude.ai) to plan the approach and reason through the aggregation strategy for Feature 1, and to write the derivation rules logic for Feature 2. I used Antigravity for code generation. I reviewed all generated code line by line — specifically the aggregation function, the deriveActions rules table, and the localStorage merge logic. The performance approach (build matrix once, toggle = show/hide) was designed before any code was written. I rewrote the tooltip ordering and skeleton structure after reviewing the generated output.
+I used Claude (claude.ai) to plan the approach and reason through the aggregation strategy for Feature 1, and to write the derivation rules logic for Feature 2. I reviewed all generated code line by line — specifically the aggregation function, the deriveActions rules table, and the localStorage merge logic. The performance approach (build matrix once, toggle = show/hide) was designed before any code was written. I rewrote the tooltip ordering and skeleton structure after reviewing the generated output.
 
 ## What I'd do in week 2
 

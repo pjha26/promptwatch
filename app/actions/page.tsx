@@ -85,19 +85,7 @@ export default function ActionsPage() {
             {visibleActions.length === 0 ? (
               <div className="w-full bg-white border border-dashed border-gray-300 rounded-xl flex flex-col items-center justify-center p-12 text-center min-h-[220px]">
                 {activeTab === "active" ? (
-                  isFiltered ? (
-                    <>
-                      <p className="text-gray-900 font-medium mb-4">No actions match these filters</p>
-                      <button 
-                        onClick={clearFilters}
-                        className="px-4 py-2 bg-gray-100 text-gray-700 hover:bg-gray-200 rounded-md text-sm font-medium transition-colors"
-                      >
-                        Clear filters
-                      </button>
-                    </>
-                  ) : (
-                    <p className="text-gray-500 font-medium">All caught up — no active actions</p>
-                  )
+                  <p className="text-gray-500 font-medium">All caught up — no active actions</p>
                 ) : (
                   <p className="text-gray-500 font-medium">Nothing here yet.</p>
                 )}
