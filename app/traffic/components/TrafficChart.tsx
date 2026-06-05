@@ -22,8 +22,6 @@ interface TrafficChartProps {
 
 const CustomTooltip = ({ active, payload, label }: any) => {
   if (active && payload && payload.length) {
-    // payload is ordered according to the stack. We might want to sort it.
-    // The prompt says: "tooltip shows date + one line per bot + Total: N"
     let total = 0;
     const items = payload
       .filter((p: any) => p.value > 0)
@@ -34,7 +32,8 @@ const CustomTooltip = ({ active, payload, label }: any) => {
           value: p.value,
           color: p.fill,
         };
-      });
+      })
+      .sort((a: any, b: any) => b.value - a.value);
 
     // Format label to Wed, 5 Mar 2026
     const dateObj = new Date(label);
@@ -43,8 +42,7 @@ const CustomTooltip = ({ active, payload, label }: any) => {
     return (
       <div className="bg-white p-3 border border-gray-200 shadow-md rounded-md text-sm min-w-[150px]">
         <p className="font-medium text-gray-900 mb-2">{dateStr}</p>
-        {/* Reversing items so largest at bottom is displayed at bottom of tooltip, or keep as is? Recharts reverses by default sometimes. */}
-        {items.reverse().map((item: any) => (
+        {items.map((item: any) => (
           <div key={item.name} className="flex justify-between items-center py-0.5">
             <div className="flex items-center gap-2">
               <div className="w-2.5 h-2.5 rounded-full" style={{ backgroundColor: item.color }} />
@@ -53,7 +51,7 @@ const CustomTooltip = ({ active, payload, label }: any) => {
             <span className="font-medium text-gray-900 ml-4">{item.value.toLocaleString()}</span>
           </div>
         ))}
-        <div className="mt-2 pt-2 border-t border-gray-100 flex justify-between items-center font-bold text-gray-900">
+        <div className="mt-2 pt-2 border-t border-gray-100 flex justify-between items-center font-semibold text-gray-900">
           <span>Total:</span>
           <span>{total.toLocaleString()}</span>
         </div>

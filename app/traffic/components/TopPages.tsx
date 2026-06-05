@@ -31,11 +31,18 @@ export function TopPages({ pageTotals }: TopPagesProps) {
         {topPages.map(([path, count]) => {
           const percentage = (count / maxCount) * 100;
           return (
-            <div key={path} className="relative flex items-center justify-between text-sm py-1 group">
-              {/* Background fill */}
+            <div key={path} className="relative flex items-center justify-between text-sm py-1 group text-gray-900">
               <div
-                className="absolute inset-y-0 left-0 rounded-sm -z-10 transition-all duration-300"
-                style={{ width: `${percentage}%`, backgroundColor: '#000000', opacity: 0.08 }}
+                style={{
+                  position: "absolute",
+                  left: 0,
+                  top: 0,
+                  bottom: 0,
+                  width: `${percentage}%`,
+                  backgroundColor: "currentColor",
+                  opacity: 0.07,
+                  pointerEvents: "none",
+                }}
               />
               <span className="font-mono text-gray-700 truncate pr-4 z-10 pl-1">{path}</span>
               <span className="text-gray-900 font-medium z-10 pr-1">{count.toLocaleString()}</span>

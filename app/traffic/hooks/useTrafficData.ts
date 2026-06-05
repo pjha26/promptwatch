@@ -11,8 +11,13 @@ export function useTrafficData() {
   const [data, setData] = useState<AiVisit[] | null>(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(false);
+  const [attempt, setAttempt] = useState(0);
+
+  const retry = () => setAttempt((a) => a + 1);
 
   useEffect(() => {
+    setLoading(true);
+    setError(false);
     fetch("/visits.json")
       .then((res) => {
         if (!res.ok) throw new Error("Failed to load");
@@ -27,7 +32,7 @@ export function useTrafficData() {
         setError(true);
         setLoading(false);
       });
-  }, []);
+  }, [attempt]);
 
   const { chartData, botTotals, pageTotals, totalVisits } = useMemo(() => {
     if (!data) {

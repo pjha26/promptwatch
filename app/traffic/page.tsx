@@ -9,7 +9,7 @@ import { TopCrawlers } from "./components/TopCrawlers";
 import { BotName } from "@/lib/types";
 
 export default function TrafficPage() {
-  const { data, loading, error, chartData, botTotals, pageTotals, totalVisits } = useTrafficData();
+  const { data, loading, error, chartData, botTotals, pageTotals, totalVisits, retry } = useTrafficData();
   const [hiddenBots, setHiddenBots] = useState<Set<BotName>>(new Set());
 
   const toggleBot = useCallback((bot: BotName) => {
@@ -24,6 +24,8 @@ export default function TrafficPage() {
     });
   }, []);
 
+  const skeletonWidths = ['w-[70%]', 'w-[55%]', 'w-[65%]', 'w-[50%]', 'w-[75%]', 'w-[60%]', 'w-[80%]', 'w-[45%]'];
+
   if (error) {
     return (
       <main className="mx-auto max-w-5xl px-6 py-16">
@@ -36,7 +38,7 @@ export default function TrafficPage() {
           <p className="text-gray-900 font-medium mb-1">Couldn't load traffic data.</p>
           <p className="text-gray-500 text-sm mb-4">Try refreshing the page.</p>
           <button 
-            onClick={() => window.location.reload()}
+            onClick={retry}
             className="px-3 py-1.5 bg-gray-100 text-gray-700 hover:bg-gray-200 rounded-md text-sm font-medium transition-colors"
           >
             Retry
@@ -75,7 +77,7 @@ export default function TrafficPage() {
             <div className="flex flex-col gap-4 mt-2 animate-pulse">
               {[...Array(8)].map((_, i) => (
                 <div key={i} className="flex justify-between items-center py-0.5">
-                  <div className={`h-3 bg-gray-200 rounded ${i % 2 === 0 ? 'w-2/3' : 'w-1/2'}`}></div>
+                  <div className={`h-3 bg-gray-200 rounded ${skeletonWidths[i]}`}></div>
                   <div className="h-3 bg-gray-200 rounded w-8"></div>
                 </div>
               ))}
@@ -86,11 +88,11 @@ export default function TrafficPage() {
             <div className="flex flex-col gap-4 mt-2 animate-pulse">
               {[...Array(8)].map((_, i) => (
                 <div key={i} className="flex justify-between items-center py-0.5">
-                  <div className="flex items-center gap-2">
+                  <div className="flex items-center gap-2 w-full">
                     <div className="w-5 h-5 bg-gray-200 rounded-full shrink-0"></div>
-                    <div className={`h-3 bg-gray-200 rounded ${i % 2 === 0 ? 'w-32' : 'w-24'}`}></div>
+                    <div className={`h-3 bg-gray-200 rounded ${skeletonWidths[i]}`}></div>
                   </div>
-                  <div className="h-3 bg-gray-200 rounded w-8"></div>
+                  <div className="h-3 bg-gray-200 rounded w-8 shrink-0"></div>
                 </div>
               ))}
             </div>
