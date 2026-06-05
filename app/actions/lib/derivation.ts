@@ -35,19 +35,35 @@ const derivationRules: RuleProcessor[] = [
   // Rule 1: Reddit Mentions
   (events) => {
     const redditEvents = events.filter((e): e is RedditCompetitorMentionEvent => e.event_type === "reddit_competitor_mention");
-    return redditEvents.map((event) => {
-      const engagement = event.upvotes + event.comment_count;
+    
+    // Group by thread_url
+    const grouped = new Map<string, RedditCompetitorMentionEvent[]>();
+    for (const e of redditEvents) {
+      const group = grouped.get(e.thread_url) ?? [];
+      group.push(e);
+      grouped.set(e.thread_url, group);
+    }
+
+    return Array.from(grouped.values()).map((group) => {
+      const sortedEvents = [...group].sort((a, b) => new Date(b.created_at).getTime() - new Date(a.created_at).getTime());
+      const latestEvent = sortedEvents[0];
+      const sourceIds = sortedEvents.map((e) => e.id);
+
+      const engagement = latestEvent.upvotes + latestEvent.comment_count;
       const severity: Severity = engagement >= 100 ? "high" : engagement >= 30 ? "medium" : "low";
 
+      const allCompetitors = new Set<string>();
+      group.forEach((e) => e.competitors_mentioned.forEach((c) => allCompetitors.add(c)));
+
       return {
-        id: generateActionId([event.id]),
+        id: generateActionId(sourceIds),
         type: "reddit",
         severity,
-        title: `Engage with thread in ${event.subreddit}`,
-        description: `Competitors ${event.competitors_mentioned.join(", ")} were mentioned in "${event.thread_title}". Add your perspective to the conversation.`,
-        created_at: event.created_at,
-        source_url: event.thread_url,
-        source_event_ids: [event.id],
+        title: `Engage with thread in ${latestEvent.subreddit}`,
+        description: `Competitors ${Array.from(allCompetitors).join(", ")} were mentioned in "${latestEvent.thread_title}". Add your perspective to the conversation.`,
+        created_at: latestEvent.created_at,
+        source_url: latestEvent.thread_url,
+        source_event_ids: sourceIds,
         status: "active",
       };
     });
@@ -56,19 +72,35 @@ const derivationRules: RuleProcessor[] = [
   // Rule 2: Article Published
   (events) => {
     const articleEvents = events.filter((e): e is ArticlePublishedWithCompetitorsEvent => e.event_type === "article_published_with_competitors");
-    return articleEvents.map((event) => {
-      const traffic = event.estimated_monthly_traffic;
+    
+    // Group by article_url
+    const grouped = new Map<string, ArticlePublishedWithCompetitorsEvent[]>();
+    for (const e of articleEvents) {
+      const group = grouped.get(e.article_url) ?? [];
+      group.push(e);
+      grouped.set(e.article_url, group);
+    }
+
+    return Array.from(grouped.values()).map((group) => {
+      const sortedEvents = [...group].sort((a, b) => new Date(b.created_at).getTime() - new Date(a.created_at).getTime());
+      const latestEvent = sortedEvents[0];
+      const sourceIds = sortedEvents.map((e) => e.id);
+
+      const traffic = latestEvent.estimated_monthly_traffic;
       const severity: Severity = traffic >= 20000 ? "high" : traffic >= 5000 ? "medium" : "low";
 
+      const allCompetitors = new Set<string>();
+      group.forEach((e) => e.competitors_cited.forEach((c) => allCompetitors.add(c)));
+
       return {
-        id: generateActionId([event.id]),
+        id: generateActionId(sourceIds),
         type: "outreach",
         severity,
-        title: `Pitch author of "${event.article_title}"`,
-        description: `${event.publication} mentioned ${event.competitors_cited.join(", ")}. Reach out to get Promptwatch included.`,
-        created_at: event.created_at,
-        source_url: event.article_url,
-        source_event_ids: [event.id],
+        title: `Pitch author of "${latestEvent.article_title}"`,
+        description: `${latestEvent.publication} mentioned ${Array.from(allCompetitors).join(", ")}. Reach out to get Promptwatch included.`,
+        created_at: latestEvent.created_at,
+        source_url: latestEvent.article_url,
+        source_event_ids: sourceIds,
         status: "active",
       };
     });
@@ -97,9 +129,11 @@ const derivationRules: RuleProcessor[] = [
       const sortedEvents = [...group].sort((a, b) => new Date(b.created_at).getTime() - new Date(a.created_at).getTime());
       const latestEvent = sortedEvents[0];
       const sourceIds = sortedEvents.map((e) => e.id);
+      
+      const actionId = `action_${[...sourceIds].sort().join("_")}`;
 
       return {
-        id: generateActionId(sourceIds),
+        id: actionId,
         type: "content",
         severity,
         title: `Publish content targeting "${latestEvent.prompt}"`,
@@ -114,19 +148,35 @@ const derivationRules: RuleProcessor[] = [
   // Rule 4: Competitor Cited Instead
   (events) => {
     const citedEvents = events.filter((e): e is CompetitorCitedInsteadEvent => e.event_type === "competitor_cited_instead");
-    return citedEvents.map((event) => {
-      const pos = event.position;
-      const severity: Severity = pos <= 2 ? "high" : pos <= 4 ? "medium" : "low";
+    
+    // Group by source_url
+    const grouped = new Map<string, CompetitorCitedInsteadEvent[]>();
+    for (const e of citedEvents) {
+      const group = grouped.get(e.source_url) ?? [];
+      group.push(e);
+      grouped.set(e.source_url, group);
+    }
+
+    return Array.from(grouped.values()).map((group) => {
+      const sortedEvents = [...group].sort((a, b) => new Date(b.created_at).getTime() - new Date(a.created_at).getTime());
+      const latestEvent = sortedEvents[0];
+      const sourceIds = sortedEvents.map((e) => e.id);
+
+      const bestPos = Math.min(...group.map((e) => e.position));
+      const severity: Severity = bestPos <= 2 ? "high" : bestPos <= 4 ? "medium" : "low";
+
+      const allCompetitors = new Set<string>();
+      group.forEach((e) => allCompetitors.add(e.competitor_brand));
 
       return {
-        id: generateActionId([event.id]),
-        type: "outreach", // Defaulting to outreach for visibility recovery
+        id: generateActionId(sourceIds),
+        type: "outreach", 
         severity,
-        title: `${event.competitor_brand} cited in ${event.source_type}`,
-        description: `Competitor was cited at position ${event.position} in "${event.source_title}". Investigate how to replace them.`,
-        created_at: event.created_at,
-        source_url: event.source_url,
-        source_event_ids: [event.id],
+        title: `${Array.from(allCompetitors).join(", ")} cited in ${latestEvent.source_type}`,
+        description: `Competitors were cited at position ${bestPos} in "${latestEvent.source_title}". Investigate how to replace them.`,
+        created_at: latestEvent.created_at,
+        source_url: latestEvent.source_url,
+        source_event_ids: sourceIds,
         status: "active",
       };
     });
