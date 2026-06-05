@@ -46,7 +46,7 @@ const derivationRules: RuleProcessor[] = [
 
     const topReddit = [...grouped.values()]
       .sort((a, b) => (b[0].upvotes + b[0].comment_count) - (a[0].upvotes + a[0].comment_count))
-      .slice(0, 6); // reddit cap
+      .slice(0, 5); // reddit cap
 
     return topReddit.map((group) => {
       const sortedEvents = [...group].sort((a, b) => new Date(b.created_at).getTime() - new Date(a.created_at).getTime());
@@ -87,7 +87,7 @@ const derivationRules: RuleProcessor[] = [
 
     const topArticles = [...grouped.values()]
       .sort((a, b) => b[0].estimated_monthly_traffic - a[0].estimated_monthly_traffic)
-      .slice(0, 6); // articles cap
+      .slice(0, 5); // articles cap
 
     return topArticles.map((group) => {
       const sortedEvents = [...group].sort((a, b) => new Date(b.created_at).getTime() - new Date(a.created_at).getTime());
@@ -167,7 +167,7 @@ const derivationRules: RuleProcessor[] = [
 
     const topCompetitor = [...grouped.values()]
       .sort((a, b) => a[0].position - b[0].position)
-      .slice(0, 6); // competitor cap
+      .slice(0, 5); // competitor cap
 
     return topCompetitor.map((group) => {
       const sortedEvents = [...group].sort((a, b) => new Date(b.created_at).getTime() - new Date(a.created_at).getTime());
