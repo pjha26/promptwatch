@@ -34,8 +34,8 @@ export function TopPages({ pageTotals }: TopPagesProps) {
             <div key={path} className="relative flex items-center justify-between text-sm py-1 group">
               {/* Background fill */}
               <div
-                className="absolute inset-y-0 left-0 bg-gray-100/80 rounded-sm -z-10 transition-all duration-300"
-                style={{ width: `${percentage}%` }}
+                className="absolute inset-y-0 left-0 rounded-sm -z-10 transition-all duration-300"
+                style={{ width: `${percentage}%`, backgroundColor: '#000000', opacity: 0.08 }}
               />
               <span className="font-mono text-gray-700 truncate pr-4 z-10 pl-1">{path}</span>
               <span className="text-gray-900 font-medium z-10 pr-1">{count.toLocaleString()}</span>

@@ -41,8 +41,8 @@ export function TopCrawlers({ botTotals }: TopCrawlersProps) {
             <div key={bot} className="relative flex items-center justify-between text-sm py-1">
               {/* Background fill */}
               <div
-                className="absolute inset-y-0 left-0 bg-gray-100/80 rounded-sm -z-10 transition-all duration-300"
-                style={{ width: `${percentage}%` }}
+                className="absolute inset-y-0 left-0 rounded-sm -z-10 transition-all duration-300"
+                style={{ width: `${percentage}%`, backgroundColor: color, opacity: 0.08 }}
               />
               <div className="flex items-center gap-2 z-10 pl-1">
                 <div
