@@ -9,10 +9,17 @@
 
 html,
 body {
-  background-color: theme('colors.editorial.white');
-  color: theme('colors.editorial.black');
   scroll-behavior: smooth;
   overflow-x: hidden;
+}
+
+@layer utilities {
+  .brutalist-hover {
+    @apply transition-all duration-75 hover:translate-x-[2px] hover:translate-y-[2px] hover:shadow-[2px_2px_0px_0px_#000000];
+  }
+  .material-symbols-outlined {
+    font-variation-settings: 'FILL' 0, 'wght' 400, 'GRAD' 0, 'opsz' 24;
+  }
 }
 
 /* Staggered animation utility classes */
@@ -20,17 +27,6 @@ body {
 .delay-200 { animation-delay: 200ms; }
 .delay-300 { animation-delay: 300ms; }
 .delay-400 { animation-delay: 400ms; }
-
-/* Editorial Button Hover Effect */
-.btn-editorial {
-  position: relative;
-  transition: all 0.1s ease;
-}
-
-.btn-editorial:hover {
-  transform: translate(2px, 2px);
-  box-shadow: -2px -2px 0 0 theme('colors.editorial.black');
-}
 
 .clip-hide {
   clip-path: polygon(0 0, 100% 0, 100% 100%, 0 100%);

@@ -76,5 +76,5 @@ export function useTrafficData() {
     return { chartData, botTotals, pageTotals, totalVisits };
   }, [data]);
 
-  return { data, loading, error, chartData, botTotals, pageTotals, totalVisits };
+  return { data, loading, error, chartData, botTotals, pageTotals, totalVisits, retry };
 }

@@ -1,22 +1,24 @@
 "use client";
 
 import { useEffect, useRef, useState } from "react";
-import { ArrowRight } from "lucide-react";
 
 export default function LandingPage() {
   const [scrolled, setScrolled] = useState(false);
   const observerRef = useRef<IntersectionObserver | null>(null);
-  
+
   // Stats counter state
   const [stats, setStats] = useState({
     visits: 0,
     engines: 0,
     actions: 0,
+    bandwidth: 0,
     latency: 0,
+    nodes: 0,
+    revenue: 0,
   });
 
-  const statsRef = useRef<HTMLDivElement>(null);
-  const hasAnimatedStats = useRef(false);
+  const hasAnimatedHeroStats = useRef(false);
+  const hasAnimatedAuditStats = useRef(false);
 
   useEffect(() => {
     const handleScroll = () => {
@@ -34,14 +36,21 @@ export default function LandingPage() {
           if (entry.isIntersecting) {
             entry.target.classList.add("animate-slide-up");
             entry.target.classList.remove("opacity-0");
-            
-            // Check if it's the stats section to trigger counter
-            if (entry.target.id === "stats-section" && !hasAnimatedStats.current) {
-              hasAnimatedStats.current = true;
+
+            // Check if it's the hero stats section to trigger counter
+            if (entry.target.id === "hero-stats" && !hasAnimatedHeroStats.current) {
+              hasAnimatedHeroStats.current = true;
               animateCounter('visits', 100, 2000);
-              animateCounter('engines', 4, 1000);
+              animateCounter('engines', 7, 1000);
               animateCounter('actions', 30, 1500);
-              animateCounter('latency', 500, 1500);
+            }
+            // Check if it's the audit stats section to trigger counter
+            if (entry.target.id === "audit-stats" && !hasAnimatedAuditStats.current) {
+              hasAnimatedAuditStats.current = true;
+              animateCounter('bandwidth', 84, 1500);
+              animateCounter('latency', 12, 1000);
+              animateCounter('nodes', 42, 1500); // 4.2k
+              animateCounter('revenue', 18, 1500);
             }
           }
         });
@@ -60,15 +69,15 @@ export default function LandingPage() {
     const step = (timestamp: number) => {
       if (!startTimestamp) startTimestamp = timestamp;
       const progress = Math.min((timestamp - startTimestamp) / duration, 1);
-      
+
       // Easing function: easeOutExpo
       const easeProgress = progress === 1 ? 1 : 1 - Math.pow(2, -10 * progress);
-      
+
       setStats(prev => ({
         ...prev,
         [key]: Math.floor(easeProgress * target)
       }));
-      
+
       if (progress < 1) {
         window.requestAnimationFrame(step);
       }
@@ -77,271 +86,279 @@ export default function LandingPage() {
   };
 
   return (
-    <div className="min-h-screen bg-editorial-white text-editorial-black font-sans selection:bg-editorial-black selection:text-editorial-white">
-      
-      {/* Navbar */}
+    <>
+      {/* TopNavBar */}
       <nav
-        className={`fixed top-0 w-full z-50 bg-editorial-white transition-colors duration-300 ${
-          scrolled ? "border-b-2 border-editorial-red" : "border-b-2 border-editorial-black"
-        }`}
+        className={`sticky top-0 z-50 transition-colors duration-300 ${
+          scrolled ? "bg-surface shadow-sm border-b border-primary" : "bg-surface border-b border-primary"
+        } flex justify-between items-center w-full px-margin-mobile md:px-margin-desktop h-20`}
       >
-        <div className="max-w-[1400px] mx-auto px-6 h-20 flex items-center justify-between">
-          <div className="flex items-center gap-3">
-            <div className="w-3 h-3 bg-editorial-red" />
-            <span className="text-2xl font-condensed font-bold tracking-tight text-editorial-black mt-1">PROMPTWATCH</span>
-          </div>
-          <div className="flex items-center gap-8">
-            <button type="button" className="text-sm font-bold font-condensed uppercase tracking-wider text-editorial-black hover:text-editorial-red transition-colors hidden sm:block">
-              Login
-            </button>
-            <button type="button" className="btn-editorial text-sm font-bold font-condensed uppercase tracking-wider bg-editorial-black text-editorial-white px-6 py-3 border border-editorial-black">
-              GET STARTED &rarr;
-            </button>
-          </div>
+        <div className="font-headline-lg text-headline-lg font-bold tracking-tighter text-primary uppercase">
+          ■ PROMPTWATCH
         </div>
+        <div className="hidden md:flex gap-8 items-center">
+          <a
+            className="font-label-caps text-label-caps text-on-surface-variant hover:border-b-2 hover:border-primary transition-all duration-75 pb-1"
+            href="#"
+          >
+            FEATURES
+          </a>
+          <a
+            className="font-label-caps text-label-caps text-on-surface-variant hover:border-b-2 hover:border-primary transition-all duration-75 pb-1"
+            href="#"
+          >
+            INTELLIGENCE
+          </a>
+          <a
+            className="font-label-caps text-label-caps text-on-surface-variant hover:border-b-2 hover:border-primary transition-all duration-75 pb-1"
+            href="#"
+          >
+            PRICING
+          </a>
+        </div>
+        <button className="hidden md:block font-label-caps text-label-caps text-on-primary bg-primary border border-primary px-6 py-3 brutalist-hover">
+          SIGN IN
+        </button>
       </nav>
 
-      <main className="pt-20">
-        
+      <main>
         {/* Hero Section */}
-        <section className="border-b-[4px] border-editorial-black flex flex-col md:flex-row min-h-[85vh]">
-          {/* Left Column (60%) */}
-          <div className="w-full md:w-[60%] px-6 py-20 md:py-32 md:pr-20 lg:pl-[max(1.5rem,calc((100vw-1400px)/2+1.5rem))]">
-            <div className="inline-block bg-editorial-red text-editorial-white font-condensed font-bold uppercase text-sm px-2 py-1 mb-10">
-              ISSUE 001 &mdash; AI VISIBILITY INTELLIGENCE
-            </div>
-            
-            <h1 className="font-condensed font-bold uppercase text-6xl md:text-[96px] leading-[0.9] text-editorial-black tracking-tight mb-8">
+        <section className="flex flex-col md:flex-row min-h-[870px] border-b border-primary">
+          {/* Left 60% */}
+          <div className="w-full md:w-[60%] p-margin-mobile md:p-margin-desktop flex flex-col justify-center gap-8 border-b md:border-b-0 border-primary">
+            <h1 className="font-display-xl text-[64px] md:text-[100px] leading-[0.9] uppercase tracking-tight max-w-[90%]">
               <span className="block overflow-hidden"><span className="block animate-slide-up opacity-0" style={{ animationDelay: '100ms' }}>YOUR BRAND</span></span>
               <span className="block overflow-hidden"><span className="block animate-slide-up opacity-0" style={{ animationDelay: '200ms' }}>IS INVISIBLE TO AI.</span></span>
-              <span className="block overflow-hidden"><span className="block animate-slide-up opacity-0 text-editorial-red" style={{ animationDelay: '300ms' }}>FIX THAT.</span></span>
+              <span className="block overflow-hidden"><span className="block animate-slide-up opacity-0 text-secondary" style={{ animationDelay: '300ms' }}>FIX THAT.</span></span>
             </h1>
-            
-            <p className="text-xl md:text-2xl font-sans text-editorial-grey max-w-2xl mb-12 animate-slide-up opacity-0" style={{ animationDelay: '400ms' }}>
+            <p className="font-body-md text-body-md text-on-surface-variant max-w-xl border-l-2 border-primary pl-4 animate-slide-up opacity-0" style={{ animationDelay: '400ms' }}>
               Promptwatch tracks every AI crawler visit to your site, surfaces where competitors are cited instead of you, and gives you a prioritized action plan.
             </p>
-            
-            <div className="flex flex-col sm:flex-row items-center gap-6 mb-8 animate-slide-up opacity-0" style={{ animationDelay: '500ms' }}>
-              <button type="button" className="btn-editorial w-full sm:w-auto font-condensed font-bold uppercase text-lg tracking-wider bg-editorial-black text-editorial-white px-8 py-4 border-2 border-editorial-black">
-                START FOR FREE
-              </button>
-              <button type="button" className="w-full sm:w-auto font-condensed font-bold uppercase text-lg tracking-wider text-editorial-black border-b-2 border-editorial-black pb-1 hover:text-editorial-red hover:border-editorial-red transition-colors">
-                SEE THE DATA &rarr;
-              </button>
-            </div>
-            
-            <div className="font-mono text-sm text-editorial-grey animate-slide-up opacity-0" style={{ animationDelay: '600ms' }}>
-              No credit card required &middot; 2 min setup
-            </div>
-          </div>
-          
-          {/* Right Column (40%) */}
-          <div className="w-full md:w-[40%] border-t-[4px] md:border-t-0 md:border-l-[4px] border-editorial-black bg-[#FAFAFA] flex flex-col justify-center p-12 lg:pr-[max(1.5rem,calc((100vw-1400px)/2+1.5rem))]">
-            <div className="mb-16">
-              <div className="font-mono font-bold text-6xl md:text-8xl tracking-tighter text-editorial-black mb-4">100,000+</div>
-              <div className="font-condensed font-bold uppercase text-xl text-editorial-red tracking-wider">AI CRAWLER VISITS TRACKED DAILY</div>
-            </div>
-            
-            <div>
-              <div className="border-b border-editorial-black pb-4 mb-4">
-                <div className="font-mono font-bold text-4xl text-editorial-black">7 ENGINES</div>
-              </div>
-              <div className="border-b border-editorial-black pb-4">
-                <div className="font-mono font-bold text-4xl text-editorial-black">30 ACTIONS</div>
-              </div>
-            </div>
-          </div>
-        </section>
-
-        {/* Problem Section */}
-        <section className="py-24 max-w-[1400px] mx-auto px-6 border-b border-editorial-light">
-          <div className="mb-20 animate-on-scroll opacity-0 clip-hide">
-            <div className="font-condensed font-bold text-editorial-red text-lg uppercase tracking-widest mb-4">
-              01 &mdash; THE PROBLEM
-            </div>
-            <h2 className="font-condensed font-bold text-5xl md:text-7xl text-editorial-black uppercase tracking-tight max-w-4xl">
-              Google Analytics doesn't show you this.
-            </h2>
-          </div>
-          
-          <div className="grid md:grid-cols-3 gap-12 md:gap-8">
-            {[
-              { num: "01", title: "INVISIBLE TRAFFIC", desc: "AI bots are filtered out by GA. You can't improve what you can't see." },
-              { num: "02", title: "LOST MINDSHARE", desc: "Your competitors are getting cited in AI answers while your content is ignored." },
-              { num: "03", title: "NO ACTION PLAN", desc: "Knowing you missed a citation isn't enough. You need steps to fix it." }
-            ].map((col, i) => (
-              <div key={i} className="animate-on-scroll opacity-0" style={{ animationDelay: `${i * 100}ms` }}>
-                <div className="font-mono text-6xl font-bold text-editorial-red mb-6">{col.num}</div>
-                <h3 className="font-condensed font-bold text-2xl uppercase mb-4 text-editorial-black">{col.title}</h3>
-                <p className="font-sans text-editorial-grey text-lg leading-relaxed">{col.desc}</p>
-              </div>
-            ))}
-          </div>
-        </section>
-
-        {/* Features Section */}
-        <section className="pt-24 pb-0 max-w-[1400px] mx-auto px-6">
-          <div className="font-condensed font-bold text-editorial-red text-lg uppercase tracking-widest mb-16 animate-on-scroll opacity-0">
-            02 &mdash; WHAT YOU GET
-          </div>
-          
-          {/* Feature 1 */}
-          <div className="border-t-[4px] border-editorial-black py-20 flex flex-col lg:flex-row gap-16 items-center">
-            <div className="w-full lg:w-1/2 pr-0 lg:pr-12 animate-on-scroll opacity-0">
-              <h2 className="font-condensed font-bold text-5xl md:text-6xl uppercase tracking-tight text-editorial-black mb-6">
-                AI TRAFFIC DASHBOARD
-              </h2>
-              <p className="text-xl text-editorial-grey mb-8 font-sans leading-relaxed">
-                See exactly which bots are crawling your site, when they visit, and what content they index. Differentiate between Claude, ChatGPT, and Perplexity.
-              </p>
-              <ul className="space-y-4 font-sans text-editorial-black font-medium text-lg">
-                <li className="flex items-start gap-3"><div className="mt-2 w-2 h-2 bg-editorial-red rounded-none shrink-0" /> Granular bot filtering</li>
-                <li className="flex items-start gap-3"><div className="mt-2 w-2 h-2 bg-editorial-red rounded-none shrink-0" /> Historical trends mapping</li>
-                <li className="flex items-start gap-3"><div className="mt-2 w-2 h-2 bg-editorial-red rounded-none shrink-0" /> Top crawled pages analysis</li>
-              </ul>
-            </div>
-            
-            <div className="w-full lg:w-1/2 animate-on-scroll opacity-0" style={{ animationDelay: '200ms' }}>
-              <div className="border-2 border-editorial-black p-6 bg-editorial-white shadow-[12px_12px_0px_0px_rgba(10,10,10,1)]">
-                <div className="border-b-2 border-editorial-black pb-4 mb-8 flex justify-between items-end">
-                  <div className="font-condensed font-bold text-2xl uppercase">Traffic Volume</div>
-                  <div className="font-mono text-sm">Last 90 Days</div>
-                </div>
-                <div className="flex items-end h-64 gap-3">
-                  {[4, 7, 3, 8, 5, 9, 6, 4, 8, 5, 7].map((h, i) => (
-                    <div key={i} className="flex-1 bg-editorial-black" style={{ height: `${h * 10}%` }} />
-                  ))}
-                </div>
-              </div>
-            </div>
-          </div>
-          
-          {/* Feature 2 */}
-          <div className="border-t-[4px] border-editorial-black py-20 flex flex-col-reverse lg:flex-row gap-16 items-center">
-            <div className="w-full lg:w-1/2 animate-on-scroll opacity-0">
-              <div className="grid grid-cols-1 sm:grid-cols-2 gap-6 relative">
-                {/* Mock Card 1 */}
-                <div className="border-2 border-editorial-black p-6 bg-editorial-white hover:-translate-y-2 hover:shadow-[8px_8px_0px_0px_rgba(230,57,70,1)] transition-all duration-200">
-                  <div className="flex items-center gap-2 mb-4">
-                    <div className="w-3 h-3 bg-editorial-red rounded-full" />
-                    <div className="font-mono text-xs font-bold uppercase">HIGH PRIORITY</div>
-                  </div>
-                  <div className="font-condensed font-bold text-xl uppercase mb-2">Update Missing Citation</div>
-                  <div className="h-2 w-full bg-editorial-light mb-2" />
-                  <div className="h-2 w-2/3 bg-editorial-light mb-6" />
-                  <div className="flex gap-2">
-                    <div className="h-8 w-20 bg-editorial-black" />
-                    <div className="h-8 w-20 border border-editorial-black" />
-                  </div>
-                </div>
-                {/* Mock Card 2 */}
-                <div className="border-2 border-editorial-black p-6 bg-[#FAFAFA] sm:translate-y-8">
-                  <div className="flex items-center gap-2 mb-4">
-                    <div className="w-3 h-3 bg-editorial-black rounded-full" />
-                    <div className="font-mono text-xs font-bold uppercase">MEDIUM PRIORITY</div>
-                  </div>
-                  <div className="font-condensed font-bold text-xl uppercase mb-2">Competitor Overlap</div>
-                  <div className="h-2 w-full bg-editorial-light mb-2" />
-                  <div className="h-2 w-3/4 bg-editorial-light mb-6" />
-                  <div className="flex gap-2">
-                    <div className="h-8 w-20 bg-editorial-black" />
-                    <div className="h-8 w-20 border border-editorial-black" />
-                  </div>
-                </div>
-              </div>
-            </div>
-            
-            <div className="w-full lg:w-1/2 pl-0 lg:pl-12 animate-on-scroll opacity-0" style={{ animationDelay: '200ms' }}>
-              <h2 className="font-condensed font-bold text-5xl md:text-6xl uppercase tracking-tight text-editorial-black mb-6">
-                ACTION CENTRE
-              </h2>
-              <p className="text-xl text-editorial-grey mb-8 font-sans leading-relaxed">
-                Don't just look at data. Get a prioritized triage queue of derived recommendations to improve AI visibility, performance, and coverage.
-              </p>
-              <ul className="space-y-4 font-sans text-editorial-black font-medium text-lg">
-                <li className="flex items-start gap-3"><div className="mt-2 w-2 h-2 bg-editorial-red rounded-none shrink-0" /> Severity-based prioritization</li>
-                <li className="flex items-start gap-3"><div className="mt-2 w-2 h-2 bg-editorial-red rounded-none shrink-0" /> Accept or dismiss workflows</li>
-                <li className="flex items-start gap-3"><div className="mt-2 w-2 h-2 bg-editorial-red rounded-none shrink-0" /> Persistent state tracking</li>
-              </ul>
-            </div>
-          </div>
-        </section>
-
-        {/* Proof Section */}
-        <section id="stats-section" className="border-t border-b border-editorial-light bg-[#FAFAFA] py-24 animate-on-scroll opacity-0">
-          <div className="max-w-[1400px] mx-auto px-6">
-            <div className="font-condensed font-bold text-editorial-red text-lg uppercase tracking-widest mb-16">
-              03 &mdash; BY THE NUMBERS
-            </div>
-            
-            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 border-l border-editorial-black">
-              {[
-                { value: `${stats.visits}K+`, label: "AI VISITS TRACKED" },
-                { value: stats.engines, label: "ENGINE TYPES MONITORED" },
-                { value: stats.actions, label: "ACTIONS PER AUDIT" },
-                { value: `<${stats.latency}ms`, label: "AGGREGATION TIME" }
-              ].map((stat, i) => (
-                <div key={i} className="border-r border-editorial-black p-8 md:p-12">
-                  <div className="font-mono font-bold text-5xl xl:text-6xl text-editorial-black mb-4 tracking-tighter">
-                    {stat.value}
-                  </div>
-                  <div className="font-condensed font-bold text-lg text-editorial-grey uppercase tracking-wider">
-                    {stat.label}
-                  </div>
-                </div>
-              ))}
-            </div>
-          </div>
-        </section>
-
-        {/* Pricing Section */}
-        <section className="py-24 max-w-[1400px] mx-auto px-6">
-          <div className="font-condensed font-bold text-editorial-red text-lg uppercase tracking-widest mb-16 animate-on-scroll opacity-0">
-            04 &mdash; PRICING
-          </div>
-          
-          <div className="grid md:grid-cols-3 gap-8">
-            {/* Free */}
-            <div className="border-2 border-editorial-black p-10 flex flex-col animate-on-scroll opacity-0">
-              <h3 className="font-condensed font-bold text-3xl uppercase mb-2">Explore</h3>
-              <div className="font-mono font-bold text-5xl mb-8">Free</div>
-              <ul className="space-y-4 mb-10 flex-1 font-sans text-editorial-black">
-                <li className="flex gap-3"><ArrowRight className="w-5 h-5 shrink-0" /> 1 domain</li>
-                <li className="flex gap-3"><ArrowRight className="w-5 h-5 shrink-0" /> Up to 10k visits/mo</li>
-                <li className="flex gap-3"><ArrowRight className="w-5 h-5 shrink-0" /> Basic AI traffic dashboard</li>
-                <li className="flex gap-3"><ArrowRight className="w-5 h-5 shrink-0" /> 7-day data retention</li>
-              </ul>
-              <button type="button" className="btn-editorial w-full font-condensed font-bold uppercase text-lg tracking-wider bg-editorial-white text-editorial-black px-8 py-4 border-2 border-editorial-black">
+            <div className="flex flex-col sm:flex-row gap-4 mt-4 animate-slide-up opacity-0" style={{ animationDelay: '500ms' }}>
+              <button className="bg-primary text-on-primary border border-primary px-8 py-4 font-label-caps text-label-caps brutalist-hover w-fit">
                 GET STARTED
               </button>
-            </div>
-
-            {/* Growth */}
-            <div className="border-2 border-editorial-black bg-editorial-black text-editorial-white p-10 flex flex-col relative animate-on-scroll opacity-0" style={{ animationDelay: '100ms' }}>
-              <h3 className="font-condensed font-bold text-3xl uppercase mb-2 text-editorial-red">Growth</h3>
-              <div className="font-mono font-bold text-5xl mb-8">$49<span className="text-2xl text-editorial-grey">/mo</span></div>
-              <ul className="space-y-4 mb-10 flex-1 font-sans text-editorial-white">
-                <li className="flex gap-3"><ArrowRight className="w-5 h-5 shrink-0 text-editorial-red" /> 5 domains</li>
-                <li className="flex gap-3"><ArrowRight className="w-5 h-5 shrink-0 text-editorial-red" /> Unlimited visits</li>
-                <li className="flex gap-3"><ArrowRight className="w-5 h-5 shrink-0 text-editorial-red" /> Full Action Centre</li>
-                <li className="flex gap-3"><ArrowRight className="w-5 h-5 shrink-0 text-editorial-red" /> 90-day data retention</li>
-              </ul>
-              <button type="button" className="btn-editorial w-full font-condensed font-bold uppercase text-lg tracking-wider bg-editorial-red text-editorial-white px-8 py-4 border-2 border-editorial-red hover:bg-editorial-white hover:text-editorial-black hover:border-editorial-black transition-colors">
-                START 14-DAY TRIAL
+              <button className="bg-transparent text-primary border border-primary px-8 py-4 font-label-caps text-label-caps brutalist-hover w-fit">
+                READ WHITE PAPER
               </button>
             </div>
+          </div>
+          {/* Right 40% */}
+          <div
+            id="hero-stats"
+            className="w-full md:w-[40%] md:border-l-[4px] border-primary p-margin-mobile md:p-margin-desktop flex flex-col justify-center relative overflow-hidden animate-on-scroll opacity-0"
+            style={{ backgroundColor: "#F8F7F5" }}
+          >
+            {/* Grid background simulation */}
+            <div
+              className="absolute inset-0 opacity-100 pointer-events-none"
+              style={{
+                backgroundImage:
+                  "linear-gradient(#E8E6E2 1px, transparent 1px), linear-gradient(90deg, #E8E6E2 1px, transparent 1px)",
+                backgroundSize: "32px 32px",
+              }}
+            ></div>
+            <div className="relative z-10 flex flex-col gap-16">
+              <div>
+                <div className="font-label-caps text-label-caps text-secondary mb-2">
+                  01 — AI VISITS TRACKED
+                </div>
+                <div className="font-display-xl text-display-xl">{stats.visits},000+</div>
+                <div className="font-data-mono text-data-mono text-on-surface-variant">
+                  CRAWLER VISITS PER DAY
+                </div>
+              </div>
+              <div className="border-t border-primary pt-8">
+                <div className="font-label-caps text-label-caps text-secondary mb-2">
+                  02 — ENGINES MONITORED
+                </div>
+                <div className="font-display-xl text-display-xl">{stats.engines} ENGINES</div>
+                <div className="font-data-mono text-data-mono text-on-surface-variant">
+                  CHATGPT · CLAUDE · PERPLEXITY · GEMINI
+                </div>
+              </div>
+              <div className="border-t border-primary pt-8">
+                <div className="font-label-caps text-label-caps text-secondary mb-2">
+                  03 — ACTIONS GENERATED
+                </div>
+                <div className="font-display-xl text-display-xl">{stats.actions} ACTIONS</div>
+                <div className="font-data-mono text-data-mono text-on-surface-variant">
+                  PER MONITORING AUDIT
+                </div>
+              </div>
+            </div>
+          </div>
+        </section>
 
+        {/* Section 01 — THE AUDIT */}
+        <section className="border-b border-primary bg-surface-container-lowest">
+          <div className="px-margin-mobile md:px-margin-desktop py-8 border-b border-primary animate-on-scroll opacity-0">
+            <h2 className="font-section-header text-section-header">
+              <span className="text-secondary mr-2">01 —</span> THE AUDIT
+            </h2>
+          </div>
+          <div id="audit-stats" className="grid grid-cols-1 md:grid-cols-4 animate-on-scroll opacity-0">
+            <div className="p-8 border-b md:border-b-0 md:border-r border-primary flex flex-col gap-2">
+              <span className="font-display-xl text-[48px]">{stats.bandwidth}%</span>
+              <span className="font-data-mono text-data-mono text-on-surface-variant uppercase">
+                Bandwidth Recovery
+              </span>
+            </div>
+            <div className="p-8 border-b md:border-b-0 md:border-r border-primary flex flex-col gap-2">
+              <span className="font-display-xl text-[48px]">{stats.latency}ms</span>
+              <span className="font-data-mono text-data-mono text-on-surface-variant uppercase">
+                P99 Latency
+              </span>
+            </div>
+            <div className="p-8 border-b md:border-b-0 md:border-r border-primary flex flex-col gap-2">
+              <span className="font-display-xl text-[48px]">{stats.nodes / 10}k</span>
+              <span className="font-data-mono text-data-mono text-on-surface-variant uppercase">
+                Nodes Deployed
+              </span>
+            </div>
+            <div className="p-8 flex flex-col gap-2">
+              <span className="font-display-xl text-[48px]">{stats.revenue}%</span>
+              <span className="font-data-mono text-data-mono text-on-surface-variant uppercase">
+                Revenue Lift
+              </span>
+            </div>
+          </div>
+        </section>
+
+        {/* Section 02 — THE PRODUCT */}
+        <section className="border-b border-primary p-margin-mobile md:p-margin-desktop">
+          <h2 className="font-section-header text-section-header mb-12 animate-on-scroll opacity-0">
+            <span className="text-secondary mr-2">02 —</span> THE PRODUCT
+          </h2>
+          <div className="w-full border border-primary bg-surface-dim relative group cursor-pointer h-[500px] md:h-[700px] overflow-hidden animate-on-scroll opacity-0" style={{ animationDelay: '100ms' }}>
+            <img
+              alt="Brutalist UI Dashboard"
+              className="w-full h-full object-cover grayscale contrast-125 opacity-90 group-hover:opacity-100 transition-opacity duration-300"
+              src="https://lh3.googleusercontent.com/aida-public/AB6AXuCTwzG8K62EJ57uzT05FYhOkaM3xjBicbo1mJLI1PeBgIrhr6uEFsiTglFk_pXIkC_LN3Pma0YmEvm8gxFvr_IlOulCl6BNlHQLxgUL0onpMkVrHu3gZg-eQ9w3CjwsC4px6oGfkMNFttlfyRctJnLkNMXXZult3-XmLWfi-EZtx0FiBiO17v2ockhCjOIing8P16oGg4ftHew-w3Zd0CKXpXDxGzxoSssKsO8X97P4FRGCsp0FeyJ1CNF4XfIpA6sBBfQzVvZWq_yG"
+            />
+            <div className="absolute bottom-0 left-0 w-full bg-surface-container-lowest border-t border-primary p-4 flex justify-between items-center">
+              <span className="font-data-mono text-data-mono">FIG 1. CORE VISUALIZER</span>
+              <span className="material-symbols-outlined text-primary">
+                arrow_forward
+              </span>
+            </div>
+          </div>
+        </section>
+
+        {/* Section 03 — SUBSCRIPTION */}
+        <section className="border-b border-primary p-margin-mobile md:p-margin-desktop bg-surface">
+          <h2 className="font-section-header text-section-header mb-12 animate-on-scroll opacity-0">
+            <span className="text-secondary mr-2">03 —</span> SUBSCRIPTION
+          </h2>
+          <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
+            {/* Basic -> EXPLORE */}
+            <div className="border border-primary p-8 bg-surface-container-lowest flex flex-col justify-between min-h-[400px] animate-on-scroll opacity-0">
+              <div>
+                <h3 className="font-headline-lg text-headline-lg uppercase mb-4">
+                  EXPLORE
+                </h3>
+                <div className="font-data-mono text-data-mono text-on-surface-variant mb-8">
+                  Free forever
+                </div>
+                <ul className="flex flex-col gap-3 font-body-md text-body-md border-t border-primary pt-4">
+                  <li className="flex items-center gap-2">
+                    <span className="material-symbols-outlined text-[16px]">
+                      check
+                    </span>{" "}
+                    Standard Ruleset
+                  </li>
+                  <li className="flex items-center gap-2">
+                    <span className="material-symbols-outlined text-[16px]">
+                      check
+                    </span>{" "}
+                    24h Data Retention
+                  </li>
+                  <li className="flex items-center gap-2">
+                    <span className="material-symbols-outlined text-[16px]">
+                      check
+                    </span>{" "}
+                    Community Support
+                  </li>
+                </ul>
+              </div>
+              <button className="w-full border border-primary py-4 font-label-caps text-label-caps brutalist-hover mt-8">
+                START FREE
+              </button>
+            </div>
+            {/* Professional -> GROWTH (Inverted) */}
+            <div className="border border-primary p-8 bg-primary text-on-primary flex flex-col justify-between min-h-[400px] relative transform md:-translate-y-4 shadow-[8px_8px_0px_0px_#e6e1df] animate-on-scroll opacity-0" style={{ animationDelay: '100ms' }}>
+              <div>
+                <div className="absolute top-0 right-0 bg-[#0A0A0A] text-white font-label-caps text-[10px] px-3 py-1 border-l border-b border-primary">
+                  MOST POPULAR
+                </div>
+                <h3 className="font-headline-lg text-headline-lg uppercase mb-4">
+                  GROWTH
+                </h3>
+                <div className="font-display-xl text-[48px] text-secondary mb-2">
+                  $49
+                  <span className="font-data-mono text-[14px] text-on-primary-container">
+                    /mo
+                  </span>
+                </div>
+                <div className="font-data-mono text-data-mono text-on-primary-container mb-8">
+                  $49/mo
+                </div>
+                <ul className="flex flex-col gap-3 font-body-md text-body-md border-t border-on-primary-container pt-4">
+                  <li className="flex items-center gap-2">
+                    <span className="material-symbols-outlined text-[16px]">
+                      check
+                    </span>{" "}
+                    Advanced Heuristics
+                  </li>
+                  <li className="flex items-center gap-2">
+                    <span className="material-symbols-outlined text-[16px]">
+                      check
+                    </span>{" "}
+                    30-Day Retention
+                  </li>
+                  <li className="flex items-center gap-2">
+                    <span className="material-symbols-outlined text-[16px]">
+                      check
+                    </span>{" "}
+                    Priority Email Support
+                  </li>
+                </ul>
+              </div>
+              <button className="w-full bg-surface-container-lowest text-primary border border-surface-container-lowest py-4 font-label-caps text-label-caps brutalist-hover mt-8 hover:shadow-[2px_2px_0px_0px_#fff]">
+                UPGRADE NOW
+              </button>
+            </div>
             {/* Enterprise */}
-            <div className="border-2 border-editorial-black p-10 flex flex-col animate-on-scroll opacity-0" style={{ animationDelay: '200ms' }}>
-              <h3 className="font-condensed font-bold text-3xl uppercase mb-2">Enterprise</h3>
-              <div className="font-mono font-bold text-5xl mb-8">Custom</div>
-              <ul className="space-y-4 mb-10 flex-1 font-sans text-editorial-black">
-                <li className="flex gap-3"><ArrowRight className="w-5 h-5 shrink-0" /> Unlimited domains</li>
-                <li className="flex gap-3"><ArrowRight className="w-5 h-5 shrink-0" /> Custom data retention</li>
-                <li className="flex gap-3"><ArrowRight className="w-5 h-5 shrink-0" /> Competitor Intelligence</li>
-                <li className="flex gap-3"><ArrowRight className="w-5 h-5 shrink-0" /> SLA & SSO</li>
-              </ul>
-              <button type="button" className="btn-editorial w-full font-condensed font-bold uppercase text-lg tracking-wider bg-editorial-white text-editorial-black px-8 py-4 border-2 border-editorial-black">
+            <div className="border border-primary p-8 bg-surface-container-lowest flex flex-col justify-between min-h-[400px] animate-on-scroll opacity-0" style={{ animationDelay: '200ms' }}>
+              <div>
+                <h3 className="font-headline-lg text-headline-lg uppercase mb-4">
+                  ENTERPRISE
+                </h3>
+                <div className="font-data-mono text-data-mono text-on-surface-variant mb-8">
+                  Custom pricing
+                </div>
+                <ul className="flex flex-col gap-3 font-body-md text-body-md border-t border-primary pt-4">
+                  <li className="flex items-center gap-2">
+                    <span className="material-symbols-outlined text-[16px]">
+                      check
+                    </span>{" "}
+                    Custom Integration
+                  </li>
+                  <li className="flex items-center gap-2">
+                    <span className="material-symbols-outlined text-[16px]">
+                      check
+                    </span>{" "}
+                    Unlimited Retention
+                  </li>
+                  <li className="flex items-center gap-2">
+                    <span className="material-symbols-outlined text-[16px]">
+                      check
+                    </span>{" "}
+                    Dedicated SLA
+                  </li>
+                </ul>
+              </div>
+              <button className="w-full border border-primary py-4 font-label-caps text-label-caps brutalist-hover mt-8">
                 CONTACT SALES
               </button>
             </div>
@@ -350,52 +367,42 @@ export default function LandingPage() {
       </main>
 
       {/* Footer */}
-      <footer className="border-t-[4px] border-editorial-black">
-        <div className="max-w-[1400px] mx-auto px-6 py-16 flex flex-col md:flex-row justify-between gap-12">
-          <div className="max-w-xs">
-            <div className="flex items-center gap-3 mb-6">
-              <div className="w-3 h-3 bg-editorial-black" />
-              <span className="text-2xl font-condensed font-bold tracking-tight text-editorial-black mt-1">PROMPTWATCH</span>
-            </div>
-            <p className="font-sans text-editorial-grey font-medium leading-relaxed">
-              Intelligence for the AI-first web.
-            </p>
-          </div>
-          
-          <div className="flex gap-16 md:gap-24 font-sans">
-            <div>
-              <h4 className="font-condensed font-bold text-editorial-black uppercase tracking-wider mb-6">PRODUCT</h4>
-              <ul className="space-y-4 text-editorial-grey font-medium">
-                <li><button type="button" className="hover:text-editorial-black transition-colors">Features</button></li>
-                <li><button type="button" className="hover:text-editorial-black transition-colors">Pricing</button></li>
-                <li><button type="button" className="hover:text-editorial-black transition-colors">Documentation</button></li>
-              </ul>
-            </div>
-            <div>
-              <h4 className="font-condensed font-bold text-editorial-black uppercase tracking-wider mb-6">COMPANY</h4>
-              <ul className="space-y-4 text-editorial-grey font-medium">
-                <li><button type="button" className="hover:text-editorial-black transition-colors">About</button></li>
-                <li><button type="button" className="hover:text-editorial-black transition-colors">Blog</button></li>
-                <li><button type="button" className="hover:text-editorial-black transition-colors">Contact</button></li>
-              </ul>
-            </div>
-            <div>
-              <h4 className="font-condensed font-bold text-editorial-black uppercase tracking-wider mb-6">LEGAL</h4>
-              <ul className="space-y-4 text-editorial-grey font-medium">
-                <li><button type="button" className="hover:text-editorial-black transition-colors">Privacy Policy</button></li>
-                <li><button type="button" className="hover:text-editorial-black transition-colors">Terms of Service</button></li>
-              </ul>
-            </div>
-          </div>
+      <footer className="bg-surface border-t border-primary w-full px-margin-mobile md:px-margin-desktop py-16 flex flex-col md:flex-row justify-between items-start gap-8">
+        <div className="font-headline-lg text-headline-lg font-bold text-primary uppercase">
+          ■ PROMPTWATCH
         </div>
-        
-        <div className="bg-editorial-black py-6 px-6">
-          <div className="max-w-[1400px] mx-auto flex flex-col md:flex-row items-center justify-between gap-4 font-mono text-xs text-editorial-light/70 uppercase tracking-widest">
-            <div>&copy; 2026 PROMPTWATCH</div>
-            <div>BUILT FOR CONTENT TEAMS WHO TAKE AI SERIOUSLY</div>
-          </div>
+        <div className="flex flex-col md:flex-row gap-8 lg:gap-16">
+          <a
+            className="font-label-caps text-label-caps text-on-surface-variant hover:text-primary transition-colors"
+            href="#"
+          >
+            PRIVACY POLICY
+          </a>
+          <a
+            className="font-label-caps text-label-caps text-on-surface-variant hover:text-primary transition-colors"
+            href="#"
+          >
+            TERMS OF SERVICE
+          </a>
+          <a
+            className="font-label-caps text-label-caps text-on-surface-variant hover:text-primary transition-colors"
+            href="#"
+          >
+            CONTACT
+          </a>
+          <a
+            className="font-label-caps text-label-caps text-on-surface-variant hover:text-primary transition-colors"
+            href="#"
+          >
+            DOCUMENTATION
+          </a>
+        </div>
+        <div className="font-body-md text-body-md text-on-surface-variant w-full md:w-auto text-left md:text-right uppercase">
+          © 2026 PROMPTWATCH. BUILT FOR CONTENT TEAMS WHO TAKE AI SERIOUSLY.
         </div>
       </footer>
-    </div>
+      {/* Final 40px Black Strip */}
+      <div className="h-[40px] w-full bg-primary border-t border-primary"></div>
+    </>
   );
 }

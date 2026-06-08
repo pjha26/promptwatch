@@ -31,8 +31,11 @@ export default function RootLayout({
   children: React.ReactNode;
 }>) {
   return (
-    <html lang="en">
-      <body className={`${dmSans.variable} ${barlowCondensed.variable} ${dmMono.variable} font-sans antialiased`}>
+    <html lang="en" className="light">
+      <head>
+        <link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&display=swap" rel="stylesheet" />
+      </head>
+      <body className={`${dmSans.variable} ${barlowCondensed.variable} ${dmMono.variable} bg-surface-container-lowest text-primary min-h-screen antialiased selection:bg-primary selection:text-on-primary`}>
         {children}
       </body>
     </html>
