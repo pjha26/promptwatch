@@ -3,14 +3,14 @@
 @tailwind utilities;
 
 :root {
-  --background: 0 0% 100%;
-  --foreground: 240 10% 3.9%;
+  --background: 222 47% 7%; /* navy-900 equivalent approx */
+  --foreground: 210 40% 98%;
 }
 
 html,
 body {
-  background: hsl(var(--background));
-  color: hsl(var(--foreground));
+  background-color: theme('colors.navy.900');
+  color: theme('colors.slate.200');
   font-family:
     ui-sans-serif,
     system-ui,
@@ -21,4 +21,18 @@ body {
     Arial,
     sans-serif;
   font-feature-settings: "cv02", "cv03", "cv04", "cv11";
+  scroll-behavior: smooth;
 }
+
+/* Base grid pattern for subtle background */
+.bg-grid-pattern {
+  background-size: 40px 40px;
+  background-image: linear-gradient(to right, rgba(255, 255, 255, 0.03) 1px, transparent 1px),
+    linear-gradient(to bottom, rgba(255, 255, 255, 0.03) 1px, transparent 1px);
+}
+
+/* Staggered animation utility classes */
+.delay-100 { animation-delay: 100ms; }
+.delay-200 { animation-delay: 200ms; }
+.delay-300 { animation-delay: 300ms; }
+.delay-400 { animation-delay: 400ms; }
