@@ -1,9 +1,28 @@
 import type { Metadata } from "next";
+import { Barlow_Condensed, DM_Sans, DM_Mono } from "next/font/google";
 import "./globals.css";
 
+const barlowCondensed = Barlow_Condensed({
+  subsets: ["latin"],
+  weight: ["400", "500", "600", "700"],
+  variable: "--font-barlow-condensed",
+});
+
+const dmSans = DM_Sans({
+  subsets: ["latin"],
+  weight: ["400", "500", "700"],
+  variable: "--font-dm-sans",
+});
+
+const dmMono = DM_Mono({
+  subsets: ["latin"],
+  weight: ["400", "500"],
+  variable: "--font-dm-mono",
+});
+
 export const metadata: Metadata = {
-  title: "Verseodin Trial",
-  description: "Senior frontend take-home: AI Traffic + Action Centre",
+  title: "Promptwatch | AI Visibility Intelligence",
+  description: "Track AI crawler traffic and brand visibility across ChatGPT, Claude, and Perplexity.",
 };
 
 export default function RootLayout({
@@ -13,7 +32,9 @@ export default function RootLayout({
 }>) {
   return (
     <html lang="en">
-      <body className="antialiased">{children}</body>
+      <body className={`${dmSans.variable} ${barlowCondensed.variable} ${dmMono.variable} font-sans antialiased`}>
+        {children}
+      </body>
     </html>
   );
 }

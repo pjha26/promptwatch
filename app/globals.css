@@ -3,32 +3,16 @@
 @tailwind utilities;
 
 :root {
-  --background: 222 47% 7%; /* navy-900 equivalent approx */
-  --foreground: 210 40% 98%;
+  --background: 0 0% 100%;
+  --foreground: 0 0% 4%;
 }
 
 html,
 body {
-  background-color: theme('colors.navy.900');
-  color: theme('colors.slate.200');
-  font-family:
-    ui-sans-serif,
-    system-ui,
-    -apple-system,
-    "Segoe UI",
-    Roboto,
-    "Helvetica Neue",
-    Arial,
-    sans-serif;
-  font-feature-settings: "cv02", "cv03", "cv04", "cv11";
+  background-color: theme('colors.editorial.white');
+  color: theme('colors.editorial.black');
   scroll-behavior: smooth;
-}
-
-/* Base grid pattern for subtle background */
-.bg-grid-pattern {
-  background-size: 40px 40px;
-  background-image: linear-gradient(to right, rgba(255, 255, 255, 0.03) 1px, transparent 1px),
-    linear-gradient(to bottom, rgba(255, 255, 255, 0.03) 1px, transparent 1px);
+  overflow-x: hidden;
 }
 
 /* Staggered animation utility classes */
@@ -36,3 +20,18 @@ body {
 .delay-200 { animation-delay: 200ms; }
 .delay-300 { animation-delay: 300ms; }
 .delay-400 { animation-delay: 400ms; }
+
+/* Editorial Button Hover Effect */
+.btn-editorial {
+  position: relative;
+  transition: all 0.1s ease;
+}
+
+.btn-editorial:hover {
+  transform: translate(2px, 2px);
+  box-shadow: -2px -2px 0 0 theme('colors.editorial.black');
+}
+
+.clip-hide {
+  clip-path: polygon(0 0, 100% 0, 100% 100%, 0 100%);
+}

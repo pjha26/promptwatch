@@ -1,11 +1,22 @@
 "use client";
 
 import { useEffect, useRef, useState } from "react";
-import { Check, CheckCircle2, ShieldAlert, Sparkles, LineChart, Target, EyeOff } from "lucide-react";
+import { ArrowRight } from "lucide-react";
 
 export default function LandingPage() {
   const [scrolled, setScrolled] = useState(false);
   const observerRef = useRef<IntersectionObserver | null>(null);
+  
+  // Stats counter state
+  const [stats, setStats] = useState({
+    visits: 0,
+    engines: 0,
+    actions: 0,
+    latency: 0,
+  });
+
+  const statsRef = useRef<HTMLDivElement>(null);
+  const hasAnimatedStats = useRef(false);
 
   useEffect(() => {
     const handleScroll = () => {
@@ -16,12 +27,22 @@ export default function LandingPage() {
   }, []);
 
   useEffect(() => {
+    // Intersection Observer for slide up/in elements
     observerRef.current = new IntersectionObserver(
       (entries) => {
         entries.forEach((entry) => {
           if (entry.isIntersecting) {
-            entry.target.classList.add("opacity-100", "translate-y-0");
-            entry.target.classList.remove("opacity-0", "translate-y-8");
+            entry.target.classList.add("animate-slide-up");
+            entry.target.classList.remove("opacity-0");
+            
+            // Check if it's the stats section to trigger counter
+            if (entry.target.id === "stats-section" && !hasAnimatedStats.current) {
+              hasAnimatedStats.current = true;
+              animateCounter('visits', 100, 2000);
+              animateCounter('engines', 4, 1000);
+              animateCounter('actions', 30, 1500);
+              animateCounter('latency', 500, 1500);
+            }
           }
         });
       },
@@ -34,318 +55,294 @@ export default function LandingPage() {
     return () => observerRef.current?.disconnect();
   }, []);
 
-  return (
-    <div className="min-h-screen bg-navy-900 text-slate-200 selection:bg-indigo-500/30 font-sans bg-grid-pattern relative overflow-hidden">
-      {/* Glow Effects */}
-      <div className="absolute top-0 left-1/2 -translate-x-1/2 w-[800px] h-[400px] bg-indigo-500/20 blur-[120px] rounded-full pointer-events-none -z-10" />
+  const animateCounter = (key: keyof typeof stats, target: number, duration: number) => {
+    let startTimestamp: number | null = null;
+    const step = (timestamp: number) => {
+      if (!startTimestamp) startTimestamp = timestamp;
+      const progress = Math.min((timestamp - startTimestamp) / duration, 1);
+      
+      // Easing function: easeOutExpo
+      const easeProgress = progress === 1 ? 1 : 1 - Math.pow(2, -10 * progress);
+      
+      setStats(prev => ({
+        ...prev,
+        [key]: Math.floor(easeProgress * target)
+      }));
+      
+      if (progress < 1) {
+        window.requestAnimationFrame(step);
+      }
+    };
+    window.requestAnimationFrame(step);
+  };
 
+  return (
+    <div className="min-h-screen bg-editorial-white text-editorial-black font-sans selection:bg-editorial-black selection:text-editorial-white">
+      
       {/* Navbar */}
       <nav
-        className={`fixed top-0 w-full z-50 transition-all duration-300 ${
-          scrolled ? "bg-navy-900/80 backdrop-blur-md border-b border-navy-700" : "bg-transparent border-b border-transparent"
+        className={`fixed top-0 w-full z-50 bg-editorial-white transition-colors duration-300 ${
+          scrolled ? "border-b-2 border-editorial-red" : "border-b-2 border-editorial-black"
         }`}
       >
-        <div className="max-w-6xl mx-auto px-6 h-16 flex items-center justify-between">
-          <div className="flex items-center gap-2">
-            <div className="w-2 h-2 rounded-full bg-indigo-500 animate-pulse-slow" />
-            <span className="text-xl font-semibold text-white tracking-tight">Promptwatch</span>
+        <div className="max-w-[1400px] mx-auto px-6 h-20 flex items-center justify-between">
+          <div className="flex items-center gap-3">
+            <div className="w-3 h-3 bg-editorial-red" />
+            <span className="text-2xl font-condensed font-bold tracking-tight text-editorial-black mt-1">PROMPTWATCH</span>
           </div>
-          <div className="hidden md:flex items-center gap-6 text-sm font-medium">
-            <button type="button" className="text-slate-300 hover:text-white transition-colors">
-              Product
-            </button>
-            <button type="button" className="text-slate-300 hover:text-white transition-colors">
-              Pricing
-            </button>
-            <button type="button" className="text-slate-300 hover:text-white transition-colors">
-              Docs
-            </button>
-          </div>
-          <div className="flex items-center gap-4">
-            <button type="button" className="text-sm font-medium text-slate-300 hover:text-white transition-colors hidden sm:block">
+          <div className="flex items-center gap-8">
+            <button type="button" className="text-sm font-bold font-condensed uppercase tracking-wider text-editorial-black hover:text-editorial-red transition-colors hidden sm:block">
               Login
             </button>
-            <button type="button" className="text-sm font-medium bg-indigo-600 hover:bg-indigo-500 text-white px-4 py-2 rounded-md transition-colors">
-              Get Started
+            <button type="button" className="btn-editorial text-sm font-bold font-condensed uppercase tracking-wider bg-editorial-black text-editorial-white px-6 py-3 border border-editorial-black">
+              GET STARTED &rarr;
             </button>
           </div>
         </div>
       </nav>
 
-      <main>
+      <main className="pt-20">
+        
         {/* Hero Section */}
-        <section className="pt-40 pb-20 px-6 max-w-5xl mx-auto text-center flex flex-col items-center">
-          <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-indigo-500/10 border border-indigo-500/20 text-indigo-400 text-sm font-medium mb-8 animate-fade-in-up">
-            <Sparkles className="w-4 h-4" />
-            <span>New: Perplexity tracking now live</span>
-          </div>
-          
-          <h1 className="text-5xl md:text-7xl font-bold text-white tracking-tight mb-6 opacity-0 translate-y-4 animate-fade-in-up delay-100">
-            Know exactly when AI <br className="hidden md:block" /> reads your website
-          </h1>
-          
-          <p className="text-lg md:text-xl text-slate-400 max-w-2xl mx-auto mb-10 opacity-0 translate-y-4 animate-fade-in-up delay-200">
-            Promptwatch tracks every AI crawler visit, surfaces missed citations, and tells you exactly what to do next.
-          </p>
-          
-          <div className="flex flex-col sm:flex-row items-center gap-4 mb-6 opacity-0 translate-y-4 animate-fade-in-up delay-300">
-            <button type="button" className="relative group w-full sm:w-auto">
-              <div className="absolute -inset-0.5 bg-indigo-500 rounded-lg blur opacity-40 group-hover:opacity-70 transition duration-200"></div>
-              <div className="relative bg-indigo-600 hover:bg-indigo-500 text-white font-medium px-6 py-3 rounded-lg w-full flex items-center justify-center gap-2 transition-colors">
-                Start for free
-              </div>
-            </button>
-            <button type="button" className="w-full sm:w-auto px-6 py-3 rounded-lg border border-navy-700 bg-navy-800/50 hover:bg-navy-800 text-white font-medium transition-colors">
-              See how it works
-            </button>
-          </div>
-          
-          <div className="flex items-center justify-center gap-2 sm:gap-4 text-xs text-slate-500 opacity-0 translate-y-4 animate-fade-in-up delay-400">
-            <span className="flex items-center gap-1"><Check className="w-3 h-3 text-indigo-500" /> No credit card required</span>
-            <span className="w-1 h-1 rounded-full bg-slate-700" />
-            <span className="flex items-center gap-1"><Check className="w-3 h-3 text-indigo-500" /> Setup in 2 minutes</span>
-            <span className="w-1 h-1 rounded-full bg-slate-700" />
-            <span className="flex items-center gap-1"><Check className="w-3 h-3 text-indigo-500" /> Cancel anytime</span>
-          </div>
-
-          {/* Mockup Window */}
-          <div className="mt-20 w-full max-w-4xl mx-auto rounded-xl border border-navy-700 bg-navy-900/80 backdrop-blur-xl shadow-2xl overflow-hidden opacity-0 translate-y-4 animate-fade-in-up delay-[500ms]">
-            <div className="h-10 border-b border-navy-700 bg-navy-800/50 flex items-center px-4 gap-2">
-              <div className="flex gap-1.5">
-                <div className="w-3 h-3 rounded-full bg-slate-700" />
-                <div className="w-3 h-3 rounded-full bg-slate-700" />
-                <div className="w-3 h-3 rounded-full bg-slate-700" />
-              </div>
-              <div className="ml-4 flex-1 h-6 bg-navy-900 rounded-md border border-navy-700 flex items-center justify-center text-[10px] text-slate-500 font-mono">
-                app.promptwatch.com/traffic
-              </div>
-              <div className="w-12" />
+        <section className="border-b-[4px] border-editorial-black flex flex-col md:flex-row min-h-[85vh]">
+          {/* Left Column (60%) */}
+          <div className="w-full md:w-[60%] px-6 py-20 md:py-32 md:pr-20 lg:pl-[max(1.5rem,calc((100vw-1400px)/2+1.5rem))]">
+            <div className="inline-block bg-editorial-red text-editorial-white font-condensed font-bold uppercase text-sm px-2 py-1 mb-10">
+              ISSUE 001 &mdash; AI VISIBILITY INTELLIGENCE
             </div>
-            <div className="p-6 md:p-8 relative h-[300px] md:h-[400px]">
-              <div className="absolute inset-0 flex flex-col justify-end p-8 gap-4 animate-float">
-                {/* Mock Chart Bars */}
-                <div className="flex items-end h-48 gap-2 border-b border-navy-700 pb-2">
-                  {[40, 60, 30, 80, 50, 90, 70, 45, 85, 35, 65, 55].map((h, i) => (
-                    <div key={i} className="flex-1 flex flex-col justify-end gap-1 group">
-                      <div className="w-full bg-indigo-500/20 rounded-t-sm transition-all duration-300 group-hover:bg-indigo-500/40" style={{ height: `${h * 0.4}%` }} />
-                      <div className="w-full bg-indigo-600 rounded-t-sm transition-all duration-300 group-hover:bg-indigo-500" style={{ height: `${h * 0.6}%` }} />
-                    </div>
-                  ))}
-                </div>
-                <div className="flex justify-between text-xs text-slate-500">
-                  <span>Mon</span>
-                  <span>Tue</span>
-                  <span>Wed</span>
-                  <span>Thu</span>
-                  <span>Fri</span>
-                  <span>Sat</span>
-                  <span>Sun</span>
-                </div>
+            
+            <h1 className="font-condensed font-bold uppercase text-6xl md:text-[96px] leading-[0.9] text-editorial-black tracking-tight mb-8">
+              <span className="block overflow-hidden"><span className="block animate-slide-up opacity-0" style={{ animationDelay: '100ms' }}>YOUR BRAND</span></span>
+              <span className="block overflow-hidden"><span className="block animate-slide-up opacity-0" style={{ animationDelay: '200ms' }}>IS INVISIBLE TO AI.</span></span>
+              <span className="block overflow-hidden"><span className="block animate-slide-up opacity-0 text-editorial-red" style={{ animationDelay: '300ms' }}>FIX THAT.</span></span>
+            </h1>
+            
+            <p className="text-xl md:text-2xl font-sans text-editorial-grey max-w-2xl mb-12 animate-slide-up opacity-0" style={{ animationDelay: '400ms' }}>
+              Promptwatch tracks every AI crawler visit to your site, surfaces where competitors are cited instead of you, and gives you a prioritized action plan.
+            </p>
+            
+            <div className="flex flex-col sm:flex-row items-center gap-6 mb-8 animate-slide-up opacity-0" style={{ animationDelay: '500ms' }}>
+              <button type="button" className="btn-editorial w-full sm:w-auto font-condensed font-bold uppercase text-lg tracking-wider bg-editorial-black text-editorial-white px-8 py-4 border-2 border-editorial-black">
+                START FOR FREE
+              </button>
+              <button type="button" className="w-full sm:w-auto font-condensed font-bold uppercase text-lg tracking-wider text-editorial-black border-b-2 border-editorial-black pb-1 hover:text-editorial-red hover:border-editorial-red transition-colors">
+                SEE THE DATA &rarr;
+              </button>
+            </div>
+            
+            <div className="font-mono text-sm text-editorial-grey animate-slide-up opacity-0" style={{ animationDelay: '600ms' }}>
+              No credit card required &middot; 2 min setup
+            </div>
+          </div>
+          
+          {/* Right Column (40%) */}
+          <div className="w-full md:w-[40%] border-t-[4px] md:border-t-0 md:border-l-[4px] border-editorial-black bg-[#FAFAFA] flex flex-col justify-center p-12 lg:pr-[max(1.5rem,calc((100vw-1400px)/2+1.5rem))]">
+            <div className="mb-16">
+              <div className="font-mono font-bold text-6xl md:text-8xl tracking-tighter text-editorial-black mb-4">100,000+</div>
+              <div className="font-condensed font-bold uppercase text-xl text-editorial-red tracking-wider">AI CRAWLER VISITS TRACKED DAILY</div>
+            </div>
+            
+            <div>
+              <div className="border-b border-editorial-black pb-4 mb-4">
+                <div className="font-mono font-bold text-4xl text-editorial-black">7 ENGINES</div>
+              </div>
+              <div className="border-b border-editorial-black pb-4">
+                <div className="font-mono font-bold text-4xl text-editorial-black">30 ACTIONS</div>
               </div>
             </div>
           </div>
         </section>
 
         {/* Problem Section */}
-        <section className="py-24 px-6 max-w-6xl mx-auto border-t border-navy-800/50">
-          <div className="text-center mb-16">
-            <span className="text-indigo-400 font-semibold tracking-wider text-xs uppercase animate-on-scroll opacity-0 translate-y-8 transition-all duration-700">Why Promptwatch</span>
-            <h2 className="text-3xl md:text-4xl font-bold text-white mt-4 animate-on-scroll opacity-0 translate-y-8 transition-all duration-700 delay-100">
-              The AI shift is happening blind
+        <section className="py-24 max-w-[1400px] mx-auto px-6 border-b border-editorial-light">
+          <div className="mb-20 animate-on-scroll opacity-0 clip-hide">
+            <div className="font-condensed font-bold text-editorial-red text-lg uppercase tracking-widest mb-4">
+              01 &mdash; THE PROBLEM
+            </div>
+            <h2 className="font-condensed font-bold text-5xl md:text-7xl text-editorial-black uppercase tracking-tight max-w-4xl">
+              Google Analytics doesn't show you this.
             </h2>
           </div>
           
-          <div className="grid md:grid-cols-3 gap-6">
+          <div className="grid md:grid-cols-3 gap-12 md:gap-8">
             {[
-              {
-                icon: EyeOff,
-                title: "Invisible in Analytics",
-                desc: "AI traffic is filtered out by Google Analytics by default. You can't improve what you can't see."
-              },
-              {
-                icon: Target,
-                title: "Losing Mindshare",
-                desc: "Your competitors are getting cited in ChatGPT and Claude while your content is ignored."
-              },
-              {
-                icon: ShieldAlert,
-                title: "No Action Plan",
-                desc: "Knowing you missed a citation isn't enough. You need prioritized steps to fix it."
-              }
-            ].map((feature, i) => (
-              <div key={i} className="p-6 rounded-xl border border-navy-700 bg-navy-800/20 hover:bg-navy-800/40 hover:-translate-y-1 hover:shadow-lg hover:shadow-indigo-500/5 transition-all duration-300 animate-on-scroll opacity-0 translate-y-8" style={{ transitionDelay: `${i * 100}ms` }}>
-                <div className="w-12 h-12 rounded-lg bg-navy-700 border border-navy-600 flex items-center justify-center mb-6 text-indigo-400">
-                  <feature.icon className="w-6 h-6" />
-                </div>
-                <h3 className="text-xl font-semibold text-white mb-3">{feature.title}</h3>
-                <p className="text-slate-400 leading-relaxed text-sm">
-                  {feature.desc}
-                </p>
+              { num: "01", title: "INVISIBLE TRAFFIC", desc: "AI bots are filtered out by GA. You can't improve what you can't see." },
+              { num: "02", title: "LOST MINDSHARE", desc: "Your competitors are getting cited in AI answers while your content is ignored." },
+              { num: "03", title: "NO ACTION PLAN", desc: "Knowing you missed a citation isn't enough. You need steps to fix it." }
+            ].map((col, i) => (
+              <div key={i} className="animate-on-scroll opacity-0" style={{ animationDelay: `${i * 100}ms` }}>
+                <div className="font-mono text-6xl font-bold text-editorial-red mb-6">{col.num}</div>
+                <h3 className="font-condensed font-bold text-2xl uppercase mb-4 text-editorial-black">{col.title}</h3>
+                <p className="font-sans text-editorial-grey text-lg leading-relaxed">{col.desc}</p>
               </div>
             ))}
           </div>
         </section>
 
         {/* Features Section */}
-        <section className="py-24 px-6 max-w-6xl mx-auto border-t border-navy-800/50">
-          <div className="space-y-32">
-            {/* Feature 1 */}
-            <div className="flex flex-col lg:flex-row items-center gap-12 animate-on-scroll opacity-0 translate-y-8 transition-all duration-700">
-              <div className="flex-1 lg:pr-12">
-                <div className="w-12 h-12 rounded-lg bg-indigo-500/10 border border-indigo-500/20 flex items-center justify-center mb-6 text-indigo-400">
-                  <LineChart className="w-6 h-6" />
+        <section className="pt-24 pb-0 max-w-[1400px] mx-auto px-6">
+          <div className="font-condensed font-bold text-editorial-red text-lg uppercase tracking-widest mb-16 animate-on-scroll opacity-0">
+            02 &mdash; WHAT YOU GET
+          </div>
+          
+          {/* Feature 1 */}
+          <div className="border-t-[4px] border-editorial-black py-20 flex flex-col lg:flex-row gap-16 items-center">
+            <div className="w-full lg:w-1/2 pr-0 lg:pr-12 animate-on-scroll opacity-0">
+              <h2 className="font-condensed font-bold text-5xl md:text-6xl uppercase tracking-tight text-editorial-black mb-6">
+                AI TRAFFIC DASHBOARD
+              </h2>
+              <p className="text-xl text-editorial-grey mb-8 font-sans leading-relaxed">
+                See exactly which bots are crawling your site, when they visit, and what content they index. Differentiate between Claude, ChatGPT, and Perplexity.
+              </p>
+              <ul className="space-y-4 font-sans text-editorial-black font-medium text-lg">
+                <li className="flex items-start gap-3"><div className="mt-2 w-2 h-2 bg-editorial-red rounded-none shrink-0" /> Granular bot filtering</li>
+                <li className="flex items-start gap-3"><div className="mt-2 w-2 h-2 bg-editorial-red rounded-none shrink-0" /> Historical trends mapping</li>
+                <li className="flex items-start gap-3"><div className="mt-2 w-2 h-2 bg-editorial-red rounded-none shrink-0" /> Top crawled pages analysis</li>
+              </ul>
+            </div>
+            
+            <div className="w-full lg:w-1/2 animate-on-scroll opacity-0" style={{ animationDelay: '200ms' }}>
+              <div className="border-2 border-editorial-black p-6 bg-editorial-white shadow-[12px_12px_0px_0px_rgba(10,10,10,1)]">
+                <div className="border-b-2 border-editorial-black pb-4 mb-8 flex justify-between items-end">
+                  <div className="font-condensed font-bold text-2xl uppercase">Traffic Volume</div>
+                  <div className="font-mono text-sm">Last 90 Days</div>
                 </div>
-                <h2 className="text-3xl font-bold text-white mb-4">AI Traffic Dashboard</h2>
-                <p className="text-slate-400 text-lg leading-relaxed mb-6">
-                  See exactly which bots are crawling your site, when they visit, and what content they're indexing. Differentiate between Claude, ChatGPT, and Perplexity in real-time.
-                </p>
-                <ul className="space-y-3 text-sm text-slate-300">
-                  <li className="flex items-center gap-2"><CheckCircle2 className="w-4 h-4 text-indigo-500" /> Granular bot filtering</li>
-                  <li className="flex items-center gap-2"><CheckCircle2 className="w-4 h-4 text-indigo-500" /> Historical trends</li>
-                  <li className="flex items-center gap-2"><CheckCircle2 className="w-4 h-4 text-indigo-500" /> Top crawled pages</li>
-                </ul>
-              </div>
-              <div className="flex-1 w-full">
-                <div className="rounded-xl border border-navy-700 bg-navy-800/50 p-6 shadow-2xl relative overflow-hidden group">
-                  <div className="absolute inset-0 bg-gradient-to-tr from-indigo-500/5 to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-500" />
-                  <div className="h-6 w-1/3 bg-navy-700 rounded-md mb-6" />
-                  <div className="flex items-end gap-2 h-32 mb-4">
-                    {[3, 5, 4, 7, 5, 8, 6, 9].map((h, i) => (
-                      <div key={i} className="flex-1 bg-indigo-600 rounded-t-sm" style={{ height: `${h * 10}%` }} />
-                    ))}
-                  </div>
-                  <div className="h-2 w-full bg-navy-700 rounded-full" />
+                <div className="flex items-end h-64 gap-3">
+                  {[4, 7, 3, 8, 5, 9, 6, 4, 8, 5, 7].map((h, i) => (
+                    <div key={i} className="flex-1 bg-editorial-black" style={{ height: `${h * 10}%` }} />
+                  ))}
                 </div>
               </div>
             </div>
-
-            {/* Feature 2 */}
-            <div className="flex flex-col-reverse lg:flex-row items-center gap-12 animate-on-scroll opacity-0 translate-y-8 transition-all duration-700">
-              <div className="flex-1 w-full">
-                <div className="rounded-xl border border-navy-700 bg-navy-800/50 p-6 shadow-2xl space-y-4 group relative overflow-hidden">
-                  <div className="absolute inset-0 bg-gradient-to-tl from-indigo-500/5 to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-500" />
-                  <div className="flex justify-between items-start">
-                    <div className="h-4 w-1/4 bg-red-500/20 rounded border border-red-500/30" />
-                    <div className="h-6 w-6 rounded bg-navy-700" />
+          </div>
+          
+          {/* Feature 2 */}
+          <div className="border-t-[4px] border-editorial-black py-20 flex flex-col-reverse lg:flex-row gap-16 items-center">
+            <div className="w-full lg:w-1/2 animate-on-scroll opacity-0">
+              <div className="grid grid-cols-1 sm:grid-cols-2 gap-6 relative">
+                {/* Mock Card 1 */}
+                <div className="border-2 border-editorial-black p-6 bg-editorial-white hover:-translate-y-2 hover:shadow-[8px_8px_0px_0px_rgba(230,57,70,1)] transition-all duration-200">
+                  <div className="flex items-center gap-2 mb-4">
+                    <div className="w-3 h-3 bg-editorial-red rounded-full" />
+                    <div className="font-mono text-xs font-bold uppercase">HIGH PRIORITY</div>
                   </div>
-                  <div className="h-5 w-3/4 bg-white/10 rounded" />
-                  <div className="h-4 w-full bg-navy-700 rounded" />
-                  <div className="h-4 w-5/6 bg-navy-700 rounded" />
-                  <div className="pt-4 flex gap-2">
-                    <div className="h-8 w-24 bg-indigo-600 rounded-md" />
-                    <div className="h-8 w-24 bg-navy-700 rounded-md" />
+                  <div className="font-condensed font-bold text-xl uppercase mb-2">Update Missing Citation</div>
+                  <div className="h-2 w-full bg-editorial-light mb-2" />
+                  <div className="h-2 w-2/3 bg-editorial-light mb-6" />
+                  <div className="flex gap-2">
+                    <div className="h-8 w-20 bg-editorial-black" />
+                    <div className="h-8 w-20 border border-editorial-black" />
                   </div>
                 </div>
-              </div>
-              <div className="flex-1 lg:pl-12">
-                <div className="w-12 h-12 rounded-lg bg-indigo-500/10 border border-indigo-500/20 flex items-center justify-center mb-6 text-indigo-400">
-                  <ShieldAlert className="w-6 h-6" />
+                {/* Mock Card 2 */}
+                <div className="border-2 border-editorial-black p-6 bg-[#FAFAFA] sm:translate-y-8">
+                  <div className="flex items-center gap-2 mb-4">
+                    <div className="w-3 h-3 bg-editorial-black rounded-full" />
+                    <div className="font-mono text-xs font-bold uppercase">MEDIUM PRIORITY</div>
+                  </div>
+                  <div className="font-condensed font-bold text-xl uppercase mb-2">Competitor Overlap</div>
+                  <div className="h-2 w-full bg-editorial-light mb-2" />
+                  <div className="h-2 w-3/4 bg-editorial-light mb-6" />
+                  <div className="flex gap-2">
+                    <div className="h-8 w-20 bg-editorial-black" />
+                    <div className="h-8 w-20 border border-editorial-black" />
+                  </div>
                 </div>
-                <h2 className="text-3xl font-bold text-white mb-4">Action Centre</h2>
-                <p className="text-slate-400 text-lg leading-relaxed mb-6">
-                  Don't just look at data. Get a prioritized triage queue of derived recommendations to improve AI visibility, performance, and coverage.
-                </p>
-                <ul className="space-y-3 text-sm text-slate-300">
-                  <li className="flex items-center gap-2"><CheckCircle2 className="w-4 h-4 text-indigo-500" /> Severity-based prioritization</li>
-                  <li className="flex items-center gap-2"><CheckCircle2 className="w-4 h-4 text-indigo-500" /> Accept or dismiss workflows</li>
-                  <li className="flex items-center gap-2"><CheckCircle2 className="w-4 h-4 text-indigo-500" /> Persistent state tracking</li>
-                </ul>
               </div>
             </div>
+            
+            <div className="w-full lg:w-1/2 pl-0 lg:pl-12 animate-on-scroll opacity-0" style={{ animationDelay: '200ms' }}>
+              <h2 className="font-condensed font-bold text-5xl md:text-6xl uppercase tracking-tight text-editorial-black mb-6">
+                ACTION CENTRE
+              </h2>
+              <p className="text-xl text-editorial-grey mb-8 font-sans leading-relaxed">
+                Don't just look at data. Get a prioritized triage queue of derived recommendations to improve AI visibility, performance, and coverage.
+              </p>
+              <ul className="space-y-4 font-sans text-editorial-black font-medium text-lg">
+                <li className="flex items-start gap-3"><div className="mt-2 w-2 h-2 bg-editorial-red rounded-none shrink-0" /> Severity-based prioritization</li>
+                <li className="flex items-start gap-3"><div className="mt-2 w-2 h-2 bg-editorial-red rounded-none shrink-0" /> Accept or dismiss workflows</li>
+                <li className="flex items-start gap-3"><div className="mt-2 w-2 h-2 bg-editorial-red rounded-none shrink-0" /> Persistent state tracking</li>
+              </ul>
+            </div>
+          </div>
+        </section>
 
-            {/* Feature 3 */}
-            <div className="flex flex-col lg:flex-row items-center gap-12 animate-on-scroll opacity-0 translate-y-8 transition-all duration-700">
-              <div className="flex-1 lg:pr-12">
-                <div className="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-slate-800 text-slate-300 border border-slate-700 mb-6">
-                  Coming soon
-                </div>
-                <h2 className="text-3xl font-bold text-white mb-4 text-slate-500">Competitor Intelligence</h2>
-                <p className="text-slate-500 text-lg leading-relaxed">
-                  Track when competitors are cited instead of you. Identify content gaps and understand exactly what the AI models prefer about their structure.
-                </p>
-              </div>
-              <div className="flex-1 w-full opacity-50 grayscale">
-                <div className="rounded-xl border border-navy-700 bg-navy-800/50 p-6 shadow-2xl">
-                  <div className="space-y-4">
-                    <div className="flex items-center justify-between">
-                      <div className="flex items-center gap-3">
-                        <div className="w-8 h-8 rounded-full bg-navy-700" />
-                        <div className="h-4 w-24 bg-navy-700 rounded" />
-                      </div>
-                      <div className="h-6 w-16 bg-green-500/20 rounded border border-green-500/30" />
-                    </div>
-                    <div className="flex items-center justify-between">
-                      <div className="flex items-center gap-3">
-                        <div className="w-8 h-8 rounded-full bg-navy-700" />
-                        <div className="h-4 w-32 bg-navy-700 rounded" />
-                      </div>
-                      <div className="h-6 w-16 bg-red-500/20 rounded border border-red-500/30" />
-                    </div>
+        {/* Proof Section */}
+        <section id="stats-section" className="border-t border-b border-editorial-light bg-[#FAFAFA] py-24 animate-on-scroll opacity-0">
+          <div className="max-w-[1400px] mx-auto px-6">
+            <div className="font-condensed font-bold text-editorial-red text-lg uppercase tracking-widest mb-16">
+              03 &mdash; BY THE NUMBERS
+            </div>
+            
+            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 border-l border-editorial-black">
+              {[
+                { value: `${stats.visits}K+`, label: "AI VISITS TRACKED" },
+                { value: stats.engines, label: "ENGINE TYPES MONITORED" },
+                { value: stats.actions, label: "ACTIONS PER AUDIT" },
+                { value: `<${stats.latency}ms`, label: "AGGREGATION TIME" }
+              ].map((stat, i) => (
+                <div key={i} className="border-r border-editorial-black p-8 md:p-12">
+                  <div className="font-mono font-bold text-5xl xl:text-6xl text-editorial-black mb-4 tracking-tighter">
+                    {stat.value}
+                  </div>
+                  <div className="font-condensed font-bold text-lg text-editorial-grey uppercase tracking-wider">
+                    {stat.label}
                   </div>
                 </div>
-              </div>
+              ))}
             </div>
           </div>
         </section>
 
         {/* Pricing Section */}
-        <section className="py-24 px-6 max-w-6xl mx-auto border-t border-navy-800/50">
-          <div className="text-center mb-16">
-            <h2 className="text-3xl md:text-4xl font-bold text-white animate-on-scroll opacity-0 translate-y-8 transition-all duration-700">
-              Simple, transparent pricing
-            </h2>
-            <p className="text-slate-400 mt-4 animate-on-scroll opacity-0 translate-y-8 transition-all duration-700 delay-100">
-              Start tracking your AI visibility today.
-            </p>
+        <section className="py-24 max-w-[1400px] mx-auto px-6">
+          <div className="font-condensed font-bold text-editorial-red text-lg uppercase tracking-widest mb-16 animate-on-scroll opacity-0">
+            04 &mdash; PRICING
           </div>
-
-          <div className="grid md:grid-cols-3 gap-8 max-w-5xl mx-auto">
-            {/* Free Tier */}
-            <div className="rounded-2xl border border-navy-700 bg-navy-800/30 p-8 flex flex-col hover:-translate-y-1 transition-transform duration-300 animate-on-scroll opacity-0 translate-y-8">
-              <h3 className="text-lg font-semibold text-white mb-2">Explore</h3>
-              <div className="text-3xl font-bold text-white mb-6">Free</div>
-              <ul className="space-y-4 mb-8 flex-1 text-sm text-slate-300">
-                <li className="flex items-start gap-3"><Check className="w-4 h-4 text-indigo-500 mt-0.5 shrink-0" /> 1 domain</li>
-                <li className="flex items-start gap-3"><Check className="w-4 h-4 text-indigo-500 mt-0.5 shrink-0" /> Up to 10k visits/mo</li>
-                <li className="flex items-start gap-3"><Check className="w-4 h-4 text-indigo-500 mt-0.5 shrink-0" /> Basic AI traffic dashboard</li>
-                <li className="flex items-start gap-3"><Check className="w-4 h-4 text-indigo-500 mt-0.5 shrink-0" /> 7-day data retention</li>
+          
+          <div className="grid md:grid-cols-3 gap-8">
+            {/* Free */}
+            <div className="border-2 border-editorial-black p-10 flex flex-col animate-on-scroll opacity-0">
+              <h3 className="font-condensed font-bold text-3xl uppercase mb-2">Explore</h3>
+              <div className="font-mono font-bold text-5xl mb-8">Free</div>
+              <ul className="space-y-4 mb-10 flex-1 font-sans text-editorial-black">
+                <li className="flex gap-3"><ArrowRight className="w-5 h-5 shrink-0" /> 1 domain</li>
+                <li className="flex gap-3"><ArrowRight className="w-5 h-5 shrink-0" /> Up to 10k visits/mo</li>
+                <li className="flex gap-3"><ArrowRight className="w-5 h-5 shrink-0" /> Basic AI traffic dashboard</li>
+                <li className="flex gap-3"><ArrowRight className="w-5 h-5 shrink-0" /> 7-day data retention</li>
               </ul>
-              <button type="button" className="w-full py-2.5 rounded-lg border border-navy-600 bg-navy-700 hover:bg-navy-600 text-white font-medium transition-colors">
-                Get Started
+              <button type="button" className="btn-editorial w-full font-condensed font-bold uppercase text-lg tracking-wider bg-editorial-white text-editorial-black px-8 py-4 border-2 border-editorial-black">
+                GET STARTED
               </button>
             </div>
 
-            {/* Pro Tier */}
-            <div className="rounded-2xl border-2 border-indigo-500 bg-navy-800/50 p-8 flex flex-col hover:-translate-y-1 transition-transform duration-300 relative shadow-2xl shadow-indigo-500/10 animate-on-scroll opacity-0 translate-y-8 delay-100">
-              <div className="absolute top-0 left-1/2 -translate-x-1/2 -translate-y-1/2 bg-indigo-500 text-white text-xs font-bold px-3 py-1 rounded-full uppercase tracking-wider">
-                Most Popular
-              </div>
-              <h3 className="text-lg font-semibold text-white mb-2">Growth</h3>
-              <div className="text-3xl font-bold text-white mb-6">$49<span className="text-lg text-slate-400 font-normal">/mo</span></div>
-              <ul className="space-y-4 mb-8 flex-1 text-sm text-slate-300">
-                <li className="flex items-start gap-3"><Check className="w-4 h-4 text-indigo-500 mt-0.5 shrink-0" /> 5 domains</li>
-                <li className="flex items-start gap-3"><Check className="w-4 h-4 text-indigo-500 mt-0.5 shrink-0" /> Unlimited visits</li>
-                <li className="flex items-start gap-3"><Check className="w-4 h-4 text-indigo-500 mt-0.5 shrink-0" /> Full Action Centre</li>
-                <li className="flex items-start gap-3"><Check className="w-4 h-4 text-indigo-500 mt-0.5 shrink-0" /> 90-day data retention</li>
-                <li className="flex items-start gap-3"><Check className="w-4 h-4 text-indigo-500 mt-0.5 shrink-0" /> Priority support</li>
+            {/* Growth */}
+            <div className="border-2 border-editorial-black bg-editorial-black text-editorial-white p-10 flex flex-col relative animate-on-scroll opacity-0" style={{ animationDelay: '100ms' }}>
+              <h3 className="font-condensed font-bold text-3xl uppercase mb-2 text-editorial-red">Growth</h3>
+              <div className="font-mono font-bold text-5xl mb-8">$49<span className="text-2xl text-editorial-grey">/mo</span></div>
+              <ul className="space-y-4 mb-10 flex-1 font-sans text-editorial-white">
+                <li className="flex gap-3"><ArrowRight className="w-5 h-5 shrink-0 text-editorial-red" /> 5 domains</li>
+                <li className="flex gap-3"><ArrowRight className="w-5 h-5 shrink-0 text-editorial-red" /> Unlimited visits</li>
+                <li className="flex gap-3"><ArrowRight className="w-5 h-5 shrink-0 text-editorial-red" /> Full Action Centre</li>
+                <li className="flex gap-3"><ArrowRight className="w-5 h-5 shrink-0 text-editorial-red" /> 90-day data retention</li>
               </ul>
-              <button type="button" className="w-full py-2.5 rounded-lg bg-indigo-600 hover:bg-indigo-500 text-white font-medium transition-colors">
-                Start 14-day trial
+              <button type="button" className="btn-editorial w-full font-condensed font-bold uppercase text-lg tracking-wider bg-editorial-red text-editorial-white px-8 py-4 border-2 border-editorial-red hover:bg-editorial-white hover:text-editorial-black hover:border-editorial-black transition-colors">
+                START 14-DAY TRIAL
               </button>
             </div>
 
-            {/* Enterprise Tier */}
-            <div className="rounded-2xl border border-navy-700 bg-navy-800/30 p-8 flex flex-col hover:-translate-y-1 transition-transform duration-300 animate-on-scroll opacity-0 translate-y-8 delay-200">
-              <h3 className="text-lg font-semibold text-white mb-2">Enterprise</h3>
-              <div className="text-3xl font-bold text-white mb-6">Custom</div>
-              <ul className="space-y-4 mb-8 flex-1 text-sm text-slate-300">
-                <li className="flex items-start gap-3"><Check className="w-4 h-4 text-indigo-500 mt-0.5 shrink-0" /> Unlimited domains</li>
-                <li className="flex items-start gap-3"><Check className="w-4 h-4 text-indigo-500 mt-0.5 shrink-0" /> Custom data retention</li>
-                <li className="flex items-start gap-3"><Check className="w-4 h-4 text-indigo-500 mt-0.5 shrink-0" /> Competitor Intelligence</li>
-                <li className="flex items-start gap-3"><Check className="w-4 h-4 text-indigo-500 mt-0.5 shrink-0" /> SLA & SSO</li>
+            {/* Enterprise */}
+            <div className="border-2 border-editorial-black p-10 flex flex-col animate-on-scroll opacity-0" style={{ animationDelay: '200ms' }}>
+              <h3 className="font-condensed font-bold text-3xl uppercase mb-2">Enterprise</h3>
+              <div className="font-mono font-bold text-5xl mb-8">Custom</div>
+              <ul className="space-y-4 mb-10 flex-1 font-sans text-editorial-black">
+                <li className="flex gap-3"><ArrowRight className="w-5 h-5 shrink-0" /> Unlimited domains</li>
+                <li className="flex gap-3"><ArrowRight className="w-5 h-5 shrink-0" /> Custom data retention</li>
+                <li className="flex gap-3"><ArrowRight className="w-5 h-5 shrink-0" /> Competitor Intelligence</li>
+                <li className="flex gap-3"><ArrowRight className="w-5 h-5 shrink-0" /> SLA & SSO</li>
               </ul>
-              <button type="button" className="w-full py-2.5 rounded-lg border border-navy-600 bg-navy-700 hover:bg-navy-600 text-white font-medium transition-colors">
-                Contact Sales
+              <button type="button" className="btn-editorial w-full font-condensed font-bold uppercase text-lg tracking-wider bg-editorial-white text-editorial-black px-8 py-4 border-2 border-editorial-black">
+                CONTACT SALES
               </button>
             </div>
           </div>
@@ -353,52 +350,49 @@ export default function LandingPage() {
       </main>
 
       {/* Footer */}
-      <footer className="border-t border-navy-800/80 bg-navy-900 pt-16 pb-8">
-        <div className="max-w-6xl mx-auto px-6">
-          <div className="flex flex-col md:flex-row justify-between gap-12 mb-16">
-            <div className="max-w-sm">
-              <div className="flex items-center gap-2 mb-4">
-                <div className="w-2 h-2 rounded-full bg-indigo-500" />
-                <span className="text-xl font-semibold text-white tracking-tight">Promptwatch</span>
-              </div>
-              <p className="text-slate-400 text-sm leading-relaxed">
-                Made for content teams who take AI seriously. We help you measure, analyze, and optimize your brand's presence across the AI landscape.
-              </p>
+      <footer className="border-t-[4px] border-editorial-black">
+        <div className="max-w-[1400px] mx-auto px-6 py-16 flex flex-col md:flex-row justify-between gap-12">
+          <div className="max-w-xs">
+            <div className="flex items-center gap-3 mb-6">
+              <div className="w-3 h-3 bg-editorial-black" />
+              <span className="text-2xl font-condensed font-bold tracking-tight text-editorial-black mt-1">PROMPTWATCH</span>
             </div>
-            
-            <div className="flex gap-16">
-              <div>
-                <h4 className="text-white font-semibold mb-4 text-sm">Product</h4>
-                <ul className="space-y-3 text-sm text-slate-400">
-                  <li><button type="button" className="hover:text-white transition-colors">Features</button></li>
-                  <li><button type="button" className="hover:text-white transition-colors">Pricing</button></li>
-                  <li><button type="button" className="hover:text-white transition-colors">Changelog</button></li>
-                  <li><button type="button" className="hover:text-white transition-colors">Documentation</button></li>
-                </ul>
-              </div>
-              <div>
-                <h4 className="text-white font-semibold mb-4 text-sm">Company</h4>
-                <ul className="space-y-3 text-sm text-slate-400">
-                  <li><button type="button" className="hover:text-white transition-colors">About</button></li>
-                  <li><button type="button" className="hover:text-white transition-colors">Blog</button></li>
-                  <li><button type="button" className="hover:text-white transition-colors">Careers</button></li>
-                  <li><button type="button" className="hover:text-white transition-colors">Contact</button></li>
-                </ul>
-              </div>
-              <div>
-                <h4 className="text-white font-semibold mb-4 text-sm">Legal</h4>
-                <ul className="space-y-3 text-sm text-slate-400">
-                  <li><button type="button" className="hover:text-white transition-colors">Privacy Policy</button></li>
-                  <li><button type="button" className="hover:text-white transition-colors">Terms of Service</button></li>
-                  <li><button type="button" className="hover:text-white transition-colors">Cookie Policy</button></li>
-                </ul>
-              </div>
-            </div>
+            <p className="font-sans text-editorial-grey font-medium leading-relaxed">
+              Intelligence for the AI-first web.
+            </p>
           </div>
           
-          <div className="border-t border-navy-800/80 pt-8 flex flex-col md:flex-row items-center justify-between gap-4 text-sm text-slate-500">
-            <p>© {new Date().getFullYear()} Promptwatch, Inc. All rights reserved.</p>
-            <p>Designed with precision.</p>
+          <div className="flex gap-16 md:gap-24 font-sans">
+            <div>
+              <h4 className="font-condensed font-bold text-editorial-black uppercase tracking-wider mb-6">PRODUCT</h4>
+              <ul className="space-y-4 text-editorial-grey font-medium">
+                <li><button type="button" className="hover:text-editorial-black transition-colors">Features</button></li>
+                <li><button type="button" className="hover:text-editorial-black transition-colors">Pricing</button></li>
+                <li><button type="button" className="hover:text-editorial-black transition-colors">Documentation</button></li>
+              </ul>
+            </div>
+            <div>
+              <h4 className="font-condensed font-bold text-editorial-black uppercase tracking-wider mb-6">COMPANY</h4>
+              <ul className="space-y-4 text-editorial-grey font-medium">
+                <li><button type="button" className="hover:text-editorial-black transition-colors">About</button></li>
+                <li><button type="button" className="hover:text-editorial-black transition-colors">Blog</button></li>
+                <li><button type="button" className="hover:text-editorial-black transition-colors">Contact</button></li>
+              </ul>
+            </div>
+            <div>
+              <h4 className="font-condensed font-bold text-editorial-black uppercase tracking-wider mb-6">LEGAL</h4>
+              <ul className="space-y-4 text-editorial-grey font-medium">
+                <li><button type="button" className="hover:text-editorial-black transition-colors">Privacy Policy</button></li>
+                <li><button type="button" className="hover:text-editorial-black transition-colors">Terms of Service</button></li>
+              </ul>
+            </div>
+          </div>
+        </div>
+        
+        <div className="bg-editorial-black py-6 px-6">
+          <div className="max-w-[1400px] mx-auto flex flex-col md:flex-row items-center justify-between gap-4 font-mono text-xs text-editorial-light/70 uppercase tracking-widest">
+            <div>&copy; 2026 PROMPTWATCH</div>
+            <div>BUILT FOR CONTENT TEAMS WHO TAKE AI SERIOUSLY</div>
           </div>
         </div>
       </footer>
