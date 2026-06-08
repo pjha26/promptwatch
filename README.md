@@ -1,4 +1,4 @@
-# Promptwatch — Verseodin Trial
+# Promptwatch — 
 
 ## Setup
 
