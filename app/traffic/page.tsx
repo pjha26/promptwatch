@@ -35,7 +35,7 @@ export default function TrafficPage() {
         </div>
         
         <div className="w-full bg-white border border-gray-200 rounded-xl mb-6 min-h-[380px] h-[45vh] max-h-[600px] flex flex-col items-center justify-center text-center p-6">
-          <p className="text-gray-900 font-medium mb-1">Couldn't load traffic data.</p>
+          <p className="text-gray-900 font-medium mb-1">Couldn&apos;t load traffic data.</p>
           <p className="text-gray-500 text-sm mb-4">Try refreshing the page.</p>
           <button 
             onClick={retry}
@@ -112,7 +112,7 @@ export default function TrafficPage() {
         <div className="w-full bg-gray-50 border border-gray-200 border-dashed rounded-xl mb-6 min-h-[380px] h-[45vh] max-h-[600px] flex items-center justify-center text-center p-6">
           <div>
             <p className="text-gray-900 font-medium mb-1">No AI traffic yet.</p>
-            <p className="text-gray-500 text-sm">Once AI crawlers visit your site, you'll see them here.</p>
+            <p className="text-gray-500 text-sm">Once AI crawlers visit your site, you&apos;ll see them here.</p>
           </div>
         </div>
         

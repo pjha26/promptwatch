@@ -55,7 +55,7 @@ export default function ActionsPage() {
 
         {storageError && (
           <div className="mb-8 p-4 bg-amber-50 border border-amber-200 text-amber-800 rounded-lg text-sm font-medium">
-            Couldn't save your changes — they won't persist if you reload.
+            Couldn&apos;t save your changes — they won&apos;t persist if you reload.
           </div>
         )}
 
