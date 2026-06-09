@@ -67,7 +67,7 @@ export function Sidebar() {
         </nav>
 
         {/* Bottom user profile area on sidebar */}
-        <div className="shrink-0 pb-6">
+        <div className="shrink-0 pb-[80px]">
           <Link 
             href="/login"
             className="flex items-center gap-3 px-6 py-3 font-dm-sans text-sm font-medium text-[#6B6560] hover:text-[#0A0A0A] hover:bg-[#EBE8E3] transition-colors"

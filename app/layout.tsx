@@ -21,7 +21,7 @@ const dmMono = DM_Mono({
 });
 
 export const metadata: Metadata = {
-  title: "Promptwatch | AI Visibility Intelligence",
+  title: "Promptwatch — AI Visibility Intelligence",
   description: "Track AI crawler traffic and brand visibility across ChatGPT, Claude, and Perplexity.",
 };
 
