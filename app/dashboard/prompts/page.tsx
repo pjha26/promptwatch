@@ -119,9 +119,9 @@ export default function PromptsPage() {
                 <tr key={p.id} className="border-b border-[#E0DDD8] hover:bg-[#FAF9F7] transition-colors">
                   <td className="py-4 px-4 text-sm font-medium truncate max-w-xs">{p.query}</td>
                   <td className="py-4 px-4">
-                    <div className="flex flex-wrap gap-1">
+                    <div className="flex flex-nowrap gap-1">
                       {p.engines.map(engine => (
-                        <span key={engine} className={`text-xs border border-[#E0DDD8] px-2 py-0.5 capitalize bg-white ${getEngineColor(engine)}`}>
+                        <span key={engine} className={`text-[11px] border border-[#E0DDD8] px-1.5 py-0.5 capitalize bg-white ${getEngineColor(engine)}`}>
                           {engine}
                         </span>
                       ))}

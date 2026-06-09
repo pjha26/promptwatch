@@ -4,7 +4,8 @@
   "private": true,
   "scripts": {
     "dev": "next dev --turbopack",
-    "build": "next build",
+    "dev:clean": "npx rimraf .next && next dev --turbopack",
+    "build": "npx rimraf .next && next build",
     "start": "next start",
     "lint": "next lint",
     "seed": "npm run seed:visits && npm run seed:monitoring",
