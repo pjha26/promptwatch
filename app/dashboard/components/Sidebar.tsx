@@ -69,7 +69,7 @@ export function Sidebar() {
         {/* Bottom user profile area on sidebar */}
         <div className="shrink-0 pb-6">
           <Link 
-            href="/"
+            href="/login"
             className="flex items-center gap-3 px-6 py-3 font-dm-sans text-sm font-medium text-[#6B6560] hover:text-[#0A0A0A] hover:bg-[#EBE8E3] transition-colors"
           >
             <LogOut className="w-4 h-4" />
