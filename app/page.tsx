@@ -1,6 +1,8 @@
 "use client";
 
 import { useEffect, useRef, useState } from "react";
+import Link from "next/link";
+import { Check, ArrowRight } from "lucide-react";
 
 export default function LandingPage() {
   const [scrolled, setScrolled] = useState(false);
@@ -116,9 +118,9 @@ export default function LandingPage() {
             PRICING
           </a>
         </div>
-        <button className="hidden md:block font-label-caps text-label-caps text-on-primary bg-primary border border-primary px-6 py-3 brutalist-hover">
+        <Link href="/overview" className="hidden md:block font-label-caps text-label-caps text-on-primary bg-primary border border-primary px-6 py-3 brutalist-hover text-center">
           SIGN IN
-        </button>
+        </Link>
       </nav>
 
       <main>
@@ -135,9 +137,9 @@ export default function LandingPage() {
               Promptwatch tracks every AI crawler visit to your site, surfaces where competitors are cited instead of you, and gives you a prioritized action plan.
             </p>
             <div className="flex flex-col sm:flex-row gap-4 mt-4 animate-slide-up opacity-0" style={{ animationDelay: '500ms' }}>
-              <button className="bg-primary text-on-primary border border-primary px-8 py-4 font-label-caps text-label-caps brutalist-hover w-fit">
+              <Link href="/overview" className="bg-primary text-on-primary border border-primary px-8 py-4 font-label-caps text-label-caps brutalist-hover w-fit inline-block text-center">
                 GET STARTED
-              </button>
+              </Link>
               <button className="bg-transparent text-primary border border-primary px-8 py-4 font-label-caps text-label-caps brutalist-hover w-fit">
                 READ WHITE PAPER
               </button>
@@ -238,9 +240,7 @@ export default function LandingPage() {
             />
             <div className="absolute bottom-0 left-0 w-full bg-surface-container-lowest border-t border-primary p-4 flex justify-between items-center">
               <span className="font-data-mono text-data-mono">FIG 1. CORE VISUALIZER</span>
-              <span className="material-symbols-outlined text-primary">
-                arrow_forward
-              </span>
+              <ArrowRight className="text-primary w-6 h-6" />
             </div>
           </div>
         </section>
@@ -262,21 +262,15 @@ export default function LandingPage() {
                 </div>
                 <ul className="flex flex-col gap-3 font-body-md text-body-md border-t border-primary pt-4">
                   <li className="flex items-center gap-2">
-                    <span className="material-symbols-outlined text-[16px]">
-                      check
-                    </span>{" "}
+                    <Check className="w-4 h-4 text-on-surface-variant" />{" "}
                     Standard Ruleset
                   </li>
                   <li className="flex items-center gap-2">
-                    <span className="material-symbols-outlined text-[16px]">
-                      check
-                    </span>{" "}
+                    <Check className="w-4 h-4 text-on-surface-variant" />{" "}
                     24h Data Retention
                   </li>
                   <li className="flex items-center gap-2">
-                    <span className="material-symbols-outlined text-[16px]">
-                      check
-                    </span>{" "}
+                    <Check className="w-4 h-4 text-on-surface-variant" />{" "}
                     Community Support
                   </li>
                 </ul>
@@ -305,21 +299,15 @@ export default function LandingPage() {
                 </div>
                 <ul className="flex flex-col gap-3 font-body-md text-body-md border-t border-on-primary-container pt-4">
                   <li className="flex items-center gap-2">
-                    <span className="material-symbols-outlined text-[16px]">
-                      check
-                    </span>{" "}
+                    <Check className="w-4 h-4 text-on-primary-container" />{" "}
                     Advanced Heuristics
                   </li>
                   <li className="flex items-center gap-2">
-                    <span className="material-symbols-outlined text-[16px]">
-                      check
-                    </span>{" "}
+                    <Check className="w-4 h-4 text-on-primary-container" />{" "}
                     30-Day Retention
                   </li>
                   <li className="flex items-center gap-2">
-                    <span className="material-symbols-outlined text-[16px]">
-                      check
-                    </span>{" "}
+                    <Check className="w-4 h-4 text-on-primary-container" />{" "}
                     Priority Email Support
                   </li>
                 </ul>
@@ -339,21 +327,15 @@ export default function LandingPage() {
                 </div>
                 <ul className="flex flex-col gap-3 font-body-md text-body-md border-t border-primary pt-4">
                   <li className="flex items-center gap-2">
-                    <span className="material-symbols-outlined text-[16px]">
-                      check
-                    </span>{" "}
+                    <Check className="w-4 h-4 text-on-surface-variant" />{" "}
                     Custom Integration
                   </li>
                   <li className="flex items-center gap-2">
-                    <span className="material-symbols-outlined text-[16px]">
-                      check
-                    </span>{" "}
+                    <Check className="w-4 h-4 text-on-surface-variant" />{" "}
                     Unlimited Retention
                   </li>
                   <li className="flex items-center gap-2">
-                    <span className="material-symbols-outlined text-[16px]">
-                      check
-                    </span>{" "}
+                    <Check className="w-4 h-4 text-on-surface-variant" />{" "}
                     Dedicated SLA
                   </li>
                 </ul>
