@@ -1,3 +1,5 @@
+import Link from "next/link";
+
 export default function OverviewPage() {
   return (
     <div className="p-6 md:p-8 max-w-7xl mx-auto w-full font-dm-sans">
@@ -13,34 +15,34 @@ export default function OverviewPage() {
 
       {/* Row 1 - Stats */}
       <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 mb-8">
-        <div className="bg-[#FFFFFF] border border-[#C8C4BE] rounded-none p-6 shadow-[0_1px_3px_rgba(0,0,0,0.08)] flex flex-col justify-between h-full">
+        <Link href="/dashboard/traffic" className="bg-[#FFFFFF] border border-[#C8C4BE] rounded-none p-6 shadow-[0_1px_3px_rgba(0,0,0,0.08)] flex flex-col justify-between h-full">
           <div className="text-[#E63946] text-xs font-semibold uppercase tracking-widest mb-4">TOTAL AI VISITS</div>
           <div>
             <div className="font-dm-mono text-5xl font-bold text-[#0A0A0A] mb-1">100,000</div>
             <div className="text-[#6B6560] text-sm">last 90 days</div>
           </div>
-        </div>
-        <div className="bg-[#FFFFFF] border border-[#C8C4BE] rounded-none p-6 shadow-[0_1px_3px_rgba(0,0,0,0.08)] flex flex-col justify-between h-full">
+        </Link>
+        <Link href="/dashboard/actions" className="bg-[#FFFFFF] border border-[#C8C4BE] rounded-none p-6 shadow-[0_1px_3px_rgba(0,0,0,0.08)] flex flex-col justify-between h-full">
           <div className="text-[#E63946] text-xs font-semibold uppercase tracking-widest mb-4">ACTIVE ACTIONS</div>
           <div>
             <div className="font-dm-mono text-5xl font-bold text-[#0A0A0A] mb-1">30</div>
             <div className="text-[#6B6560] text-sm">need your attention</div>
           </div>
-        </div>
-        <div className="bg-[#FFFFFF] border border-[#C8C4BE] rounded-none p-6 shadow-[0_1px_3px_rgba(0,0,0,0.08)] flex flex-col justify-between h-full">
+        </Link>
+        <Link href="/dashboard/prompts" className="bg-[#FFFFFF] border border-[#C8C4BE] rounded-none p-6 shadow-[0_1px_3px_rgba(0,0,0,0.08)] flex flex-col justify-between h-full">
           <div className="text-[#E63946] text-xs font-semibold uppercase tracking-widest mb-4">PROMPTS TRACKED</div>
           <div>
             <div className="font-dm-mono text-5xl font-bold text-[#0A0A0A] mb-1">10</div>
             <div className="text-[#6B6560] text-sm">across 4 engines</div>
           </div>
-        </div>
-        <div className="bg-[#FFFFFF] border border-[#C8C4BE] rounded-none p-6 shadow-[0_1px_3px_rgba(0,0,0,0.08)] flex flex-col justify-between h-full">
+        </Link>
+        <Link href="/dashboard/competitors" className="bg-[#FFFFFF] border border-[#C8C4BE] rounded-none p-6 shadow-[0_1px_3px_rgba(0,0,0,0.08)] flex flex-col justify-between h-full">
           <div className="text-[#E63946] text-xs font-semibold uppercase tracking-widest mb-4">COMPETITORS DETECTED</div>
           <div>
             <div className="font-dm-mono text-5xl font-bold text-[#0A0A0A] mb-1">6</div>
             <div className="text-[#6B6560] text-sm">cited instead of you</div>
           </div>
-        </div>
+        </Link>
       </div>
 
       {/* Row 2 - Two Columns */}
@@ -120,9 +122,9 @@ export default function OverviewPage() {
               </div>
             </div>
 
-            <a href="/actions" className="text-[#E63946] text-sm font-medium hover:underline mt-6 block">
+            <Link href="/dashboard/actions" className="text-[#E63946] text-sm font-medium hover:underline mt-6 block">
               View all 30 actions &rarr;
-            </a>
+            </Link>
           </div>
         </div>
       </div>

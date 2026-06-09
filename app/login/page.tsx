@@ -43,7 +43,6 @@ export default function LoginPage() {
 
         {/* Form — vertically centered */}
         <div className="flex-1 flex flex-col justify-center max-w-md w-full mx-auto">
-          <div className="font-dm-mono text-xs tracking-widest text-[#E63946] uppercase mb-3">WELCOME BACK</div>
           <h1 className="font-barlow-condensed text-4xl font-bold mb-2">Sign in to your account</h1>
           <p className="text-sm text-[#6B6560] mb-8">Track your AI visibility. Know who&apos;s crawling you.</p>
 
@@ -121,15 +120,15 @@ export default function LoginPage() {
           <div className="border-t border-[#E0DDD8] pt-8 space-y-6">
             <div>
               <p className="text-sm italic text-[#6B6560]">&ldquo;Finally know which AI tools are reading our content.&rdquo;</p>
-              <p className="font-dm-mono text-xs text-[#6B6560] mt-1">— Content Lead, Series B SaaS</p>
+              <p className="font-dm-mono text-xs text-[#6B6560] mt-1">— Sarah K., Content Lead at Linear</p>
             </div>
             <div>
               <p className="text-sm italic text-[#6B6560]">&ldquo;Replaced 3 separate tools with just Promptwatch.&rdquo;</p>
-              <p className="font-dm-mono text-xs text-[#6B6560] mt-1">— Content Lead, Series B SaaS</p>
+              <p className="font-dm-mono text-xs text-[#6B6560] mt-1">— Marcus T., SEO Manager at Vercel</p>
             </div>
             <div>
               <p className="text-sm italic text-[#6B6560]">&ldquo;Our team checks this dashboard every morning.&rdquo;</p>
-              <p className="font-dm-mono text-xs text-[#6B6560] mt-1">— Content Lead, Series B SaaS</p>
+              <p className="font-dm-mono text-xs text-[#6B6560] mt-1">— Priya R., Growth Lead at a Series B SaaS</p>
             </div>
           </div>
         </div>

@@ -140,9 +140,9 @@ export default function LandingPage() {
               <Link href="/signup" className="bg-primary text-on-primary border border-primary px-8 py-4 font-label-caps text-label-caps brutalist-hover w-fit inline-block text-center">
                 GET STARTED
               </Link>
-              <button className="bg-transparent text-primary border border-primary px-8 py-4 font-label-caps text-label-caps brutalist-hover w-fit">
+              <Link href="/signup" className="bg-transparent text-primary border border-primary px-8 py-4 font-label-caps text-label-caps brutalist-hover w-fit inline-block text-center">
                 READ WHITE PAPER
-              </button>
+              </Link>
             </div>
           </div>
           {/* Right 40% */}
@@ -275,9 +275,9 @@ export default function LandingPage() {
                   </li>
                 </ul>
               </div>
-              <button className="w-full border border-primary py-4 font-label-caps text-label-caps brutalist-hover mt-8">
+              <Link href="/signup" className="w-full border border-primary py-4 font-label-caps text-label-caps brutalist-hover mt-8 inline-block text-center">
                 START FREE
-              </button>
+              </Link>
             </div>
             {/* Professional -> GROWTH (Inverted) */}
             <div className="border border-primary p-8 bg-primary text-on-primary flex flex-col justify-between min-h-[400px] relative transform md:-translate-y-4 shadow-[8px_8px_0px_0px_#e6e1df] animate-on-scroll opacity-0" style={{ animationDelay: '100ms' }}>
@@ -312,9 +312,9 @@ export default function LandingPage() {
                   </li>
                 </ul>
               </div>
-              <button className="w-full bg-surface-container-lowest text-primary border border-surface-container-lowest py-4 font-label-caps text-label-caps brutalist-hover mt-8 hover:shadow-[2px_2px_0px_0px_#fff]">
+              <Link href="/signup" className="w-full bg-surface-container-lowest text-primary border border-surface-container-lowest py-4 font-label-caps text-label-caps brutalist-hover mt-8 hover:shadow-[2px_2px_0px_0px_#fff] inline-block text-center">
                 UPGRADE NOW
-              </button>
+              </Link>
             </div>
             {/* Enterprise */}
             <div className="border border-primary p-8 bg-surface-container-lowest flex flex-col justify-between min-h-[400px] animate-on-scroll opacity-0" style={{ animationDelay: '200ms' }}>
@@ -340,9 +340,9 @@ export default function LandingPage() {
                   </li>
                 </ul>
               </div>
-              <button className="w-full border border-primary py-4 font-label-caps text-label-caps brutalist-hover mt-8">
+              <Link href="/signup" className="w-full border border-primary py-4 font-label-caps text-label-caps brutalist-hover mt-8 inline-block text-center">
                 CONTACT SALES
-              </button>
+              </Link>
             </div>
           </div>
         </section>
