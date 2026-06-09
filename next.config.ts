@@ -1,7 +1,15 @@
 import type { NextConfig } from "next";
 
 const nextConfig: NextConfig = {
-  // No experimental flags. Plain Next.js 15 + App Router + Turbopack.
+  async redirects() {
+    return [
+      {
+        source: '/overview',
+        destination: '/dashboard',
+        permanent: true,
+      },
+    ]
+  },
 };
 
 export default nextConfig;

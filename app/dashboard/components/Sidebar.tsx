@@ -6,12 +6,12 @@ import { useState } from "react";
 import { LayoutDashboard, BarChart2, Zap, Search, Users, Settings, LogOut, Menu, X } from "lucide-react";
 
 const navLinks = [
-  { name: "Overview", href: "/overview", icon: LayoutDashboard },
-  { name: "AI Traffic", href: "/traffic", icon: BarChart2 },
-  { name: "Actions", href: "/actions", icon: Zap },
-  { name: "Prompts", href: "/prompts", icon: Search },
-  { name: "Competitors", href: "/competitors", icon: Users },
-  { name: "Settings", href: "/settings", icon: Settings },
+  { name: "Overview", href: "/dashboard", icon: LayoutDashboard },
+  { name: "AI Traffic", href: "/dashboard/traffic", icon: BarChart2 },
+  { name: "Actions", href: "/dashboard/actions", icon: Zap },
+  { name: "Prompts", href: "/dashboard/prompts", icon: Search },
+  { name: "Competitors", href: "/dashboard/competitors", icon: Users },
+  { name: "Settings", href: "/dashboard/settings", icon: Settings },
 ];
 
 export function Sidebar() {
@@ -22,7 +22,7 @@ export function Sidebar() {
     <>
       {/* Mobile Hamburger Header */}
       <div className="md:hidden flex items-center justify-between bg-[#F5F2EE] border-b border-[#E0DDD8] px-4 h-[56px] z-40 fixed w-full top-0">
-        <Link href="/overview" className="font-barlow-condensed font-bold text-lg text-[#0A0A0A]" onClick={() => setMobileMenuOpen(false)}>
+        <Link href="/dashboard" className="font-barlow-condensed font-bold text-lg text-[#0A0A0A]" onClick={() => setMobileMenuOpen(false)}>
           ■ PROMPTWATCH
         </Link>
         <button 
@@ -39,14 +39,14 @@ export function Sidebar() {
         md:translate-x-0 ${mobileMenuOpen ? "translate-x-0 pt-[56px]" : "-translate-x-full"} md:pt-0
       `}>
         <div className="hidden md:flex h-auto py-5 items-center px-6 border-b border-[#E0DDD8] shrink-0">
-          <Link href="/overview" className="font-barlow-condensed font-bold text-lg text-[#0A0A0A]">
+          <Link href="/dashboard" className="font-barlow-condensed font-bold text-lg text-[#0A0A0A]">
             ■ PROMPTWATCH
           </Link>
         </div>
 
         <nav className="flex-1 overflow-y-auto py-4 flex flex-col gap-1">
           {navLinks.map((link) => {
-            const isActive = pathname.startsWith(link.href);
+            const isActive = pathname === link.href || (link.href !== '/dashboard' && pathname.startsWith(link.href));
             const Icon = link.icon;
             return (
               <Link 

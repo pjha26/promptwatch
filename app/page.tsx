@@ -118,7 +118,7 @@ export default function LandingPage() {
             PRICING
           </a>
         </div>
-        <Link href="/overview" className="hidden md:block font-label-caps text-label-caps text-on-primary bg-primary border border-primary px-6 py-3 brutalist-hover text-center">
+        <Link href="/dashboard" className="hidden md:block font-label-caps text-label-caps text-on-primary bg-primary border border-primary px-6 py-3 brutalist-hover text-center">
           SIGN IN
         </Link>
       </nav>
@@ -137,7 +137,7 @@ export default function LandingPage() {
               Promptwatch tracks every AI crawler visit to your site, surfaces where competitors are cited instead of you, and gives you a prioritized action plan.
             </p>
             <div className="flex flex-col sm:flex-row gap-4 mt-4 animate-slide-up opacity-0" style={{ animationDelay: '500ms' }}>
-              <Link href="/overview" className="bg-primary text-on-primary border border-primary px-8 py-4 font-label-caps text-label-caps brutalist-hover w-fit inline-block text-center">
+              <Link href="/dashboard" className="bg-primary text-on-primary border border-primary px-8 py-4 font-label-caps text-label-caps brutalist-hover w-fit inline-block text-center">
                 GET STARTED
               </Link>
               <button className="bg-transparent text-primary border border-primary px-8 py-4 font-label-caps text-label-caps brutalist-hover w-fit">
