@@ -112,15 +112,19 @@ export default function SettingsPage() {
                 <div key={key} className="flex items-center justify-between py-1">
                   <span className="text-sm font-medium capitalize">{key}</span>
                   <button
+                    type="button"
                     onClick={() => setEngines({ ...engines, [key]: !engines[key] })}
-                    className={`relative w-10 h-5 rounded-none transition-colors duration-200 ${
+                    className={`relative w-10 h-5 transition-colors duration-200 ${
                       engines[key] ? "bg-[#0A0A0A]" : "bg-[#E0DDD8]"
                     }`}
+                    style={{ borderRadius: '10px' }}
                   >
                     <span
-                      className={`absolute top-0.5 w-4 h-4 bg-white transition-transform duration-200 ${
-                        engines[key] ? "translate-x-[22px]" : "translate-x-0.5"
-                      }`}
+                      className="absolute top-0.5 w-4 h-4 bg-white transition-transform duration-200"
+                      style={{
+                        borderRadius: '50%',
+                        transform: engines[key] ? 'translateX(20px)' : 'translateX(2px)'
+                      }}
                     />
                   </button>
                 </div>
@@ -140,15 +144,19 @@ export default function SettingsPage() {
                 <div key={item.key} className="flex items-center justify-between py-1">
                   <span className="text-sm font-medium">{item.label}</span>
                   <button
+                    type="button"
                     onClick={() => setNotifications({ ...notifications, [item.key]: !notifications[item.key] })}
-                    className={`relative w-10 h-5 rounded-none transition-colors duration-200 ${
+                    className={`relative w-10 h-5 transition-colors duration-200 ${
                       notifications[item.key] ? "bg-[#0A0A0A]" : "bg-[#E0DDD8]"
                     }`}
+                    style={{ borderRadius: '10px' }}
                   >
                     <span
-                      className={`absolute top-0.5 w-4 h-4 bg-white transition-transform duration-200 ${
-                        notifications[item.key] ? "translate-x-[22px]" : "translate-x-0.5"
-                      }`}
+                      className="absolute top-0.5 w-4 h-4 bg-white transition-transform duration-200"
+                      style={{
+                        borderRadius: '50%',
+                        transform: notifications[item.key] ? 'translateX(20px)' : 'translateX(2px)'
+                      }}
                     />
                   </button>
                 </div>
