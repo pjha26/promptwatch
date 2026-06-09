@@ -13,31 +13,31 @@ export default function OverviewPage() {
 
       {/* Row 1 - Stats */}
       <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 mb-8">
-        <div className="bg-[#FFFFFF] border border-[#E0DDD8] rounded-none p-6 shadow-[0_1px_3px_rgba(0,0,0,0.08)] flex flex-col justify-between h-full">
+        <div className="bg-[#FFFFFF] border border-[#C8C4BE] rounded-none p-6 shadow-[0_1px_3px_rgba(0,0,0,0.08)] flex flex-col justify-between h-full">
           <div className="text-[#E63946] text-xs font-semibold uppercase tracking-widest mb-4">TOTAL AI VISITS</div>
           <div>
-            <div className="font-dm-mono text-4xl font-bold text-[#0A0A0A] mb-1">100,000</div>
+            <div className="font-dm-mono text-5xl font-bold text-[#0A0A0A] mb-1">100,000</div>
             <div className="text-[#6B6560] text-sm">last 90 days</div>
           </div>
         </div>
-        <div className="bg-[#FFFFFF] border border-[#E0DDD8] rounded-none p-6 shadow-[0_1px_3px_rgba(0,0,0,0.08)] flex flex-col justify-between h-full">
+        <div className="bg-[#FFFFFF] border border-[#C8C4BE] rounded-none p-6 shadow-[0_1px_3px_rgba(0,0,0,0.08)] flex flex-col justify-between h-full">
           <div className="text-[#E63946] text-xs font-semibold uppercase tracking-widest mb-4">ACTIVE ACTIONS</div>
           <div>
-            <div className="font-dm-mono text-4xl font-bold text-[#0A0A0A] mb-1">30</div>
+            <div className="font-dm-mono text-5xl font-bold text-[#0A0A0A] mb-1">30</div>
             <div className="text-[#6B6560] text-sm">need your attention</div>
           </div>
         </div>
-        <div className="bg-[#FFFFFF] border border-[#E0DDD8] rounded-none p-6 shadow-[0_1px_3px_rgba(0,0,0,0.08)] flex flex-col justify-between h-full">
+        <div className="bg-[#FFFFFF] border border-[#C8C4BE] rounded-none p-6 shadow-[0_1px_3px_rgba(0,0,0,0.08)] flex flex-col justify-between h-full">
           <div className="text-[#E63946] text-xs font-semibold uppercase tracking-widest mb-4">PROMPTS TRACKED</div>
           <div>
-            <div className="font-dm-mono text-4xl font-bold text-[#0A0A0A] mb-1">10</div>
+            <div className="font-dm-mono text-5xl font-bold text-[#0A0A0A] mb-1">10</div>
             <div className="text-[#6B6560] text-sm">across 4 engines</div>
           </div>
         </div>
-        <div className="bg-[#FFFFFF] border border-[#E0DDD8] rounded-none p-6 shadow-[0_1px_3px_rgba(0,0,0,0.08)] flex flex-col justify-between h-full">
+        <div className="bg-[#FFFFFF] border border-[#C8C4BE] rounded-none p-6 shadow-[0_1px_3px_rgba(0,0,0,0.08)] flex flex-col justify-between h-full">
           <div className="text-[#E63946] text-xs font-semibold uppercase tracking-widest mb-4">COMPETITORS DETECTED</div>
           <div>
-            <div className="font-dm-mono text-4xl font-bold text-[#0A0A0A] mb-1">6</div>
+            <div className="font-dm-mono text-5xl font-bold text-[#0A0A0A] mb-1">6</div>
             <div className="text-[#6B6560] text-sm">cited instead of you</div>
           </div>
         </div>
@@ -52,11 +52,11 @@ export default function OverviewPage() {
             <div className="flex-1 flex items-end justify-between gap-2 h-48 mb-4 border-b border-[#E0DDD8] pb-4">
               {/* Mock Bar Chart */}
               <div className="w-full bg-[#0A0A0A] hover:bg-[#E63946] transition-colors" style={{ height: '30%' }}></div>
-              <div className="w-full bg-[#0A0A0A] hover:bg-[#E63946] transition-colors" style={{ height: '45%' }}></div>
+              <div className="w-full bg-[#6B6560] hover:bg-[#E63946] transition-colors" style={{ height: '45%' }}></div>
               <div className="w-full bg-[#0A0A0A] hover:bg-[#E63946] transition-colors" style={{ height: '20%' }}></div>
-              <div className="w-full bg-[#0A0A0A] hover:bg-[#E63946] transition-colors" style={{ height: '60%' }}></div>
+              <div className="w-full bg-[#6B6560] hover:bg-[#E63946] transition-colors" style={{ height: '60%' }}></div>
               <div className="w-full bg-[#0A0A0A] hover:bg-[#E63946] transition-colors" style={{ height: '80%' }}></div>
-              <div className="w-full bg-[#0A0A0A] hover:bg-[#E63946] transition-colors" style={{ height: '50%' }}></div>
+              <div className="w-full bg-[#6B6560] hover:bg-[#E63946] transition-colors" style={{ height: '50%' }}></div>
               <div className="w-full bg-[#0A0A0A] hover:bg-[#E63946] transition-colors" style={{ height: '100%' }}></div>
             </div>
             {/* X-axis labels */}
@@ -86,7 +86,7 @@ export default function OverviewPage() {
                     <div className="mt-1 inline-block border border-[#E0DDD8] text-[#6B6560] text-[10px] uppercase tracking-wider px-2 py-0.5 rounded-none">Outdated Info</div>
                   </div>
                 </div>
-                <button className="border border-[#E0DDD8] text-[#0A0A0A] hover:border-[#0A0A0A] text-xs font-medium px-3 py-1.5 rounded-none transition-colors">
+                <button className="border border-[#0A0A0A] bg-white text-[#0A0A0A] text-xs font-medium px-3 py-1.5 rounded-none transition-colors hover:bg-gray-50">
                   Accept
                 </button>
               </div>
@@ -100,7 +100,7 @@ export default function OverviewPage() {
                     <div className="mt-1 inline-block border border-[#E0DDD8] text-[#6B6560] text-[10px] uppercase tracking-wider px-2 py-0.5 rounded-none">Lost Share</div>
                   </div>
                 </div>
-                <button className="border border-[#E0DDD8] text-[#0A0A0A] hover:border-[#0A0A0A] text-xs font-medium px-3 py-1.5 rounded-none transition-colors">
+                <button className="border border-[#0A0A0A] bg-white text-[#0A0A0A] text-xs font-medium px-3 py-1.5 rounded-none transition-colors hover:bg-gray-50">
                   Accept
                 </button>
               </div>
@@ -114,7 +114,7 @@ export default function OverviewPage() {
                     <div className="mt-1 inline-block border border-[#E0DDD8] text-[#6B6560] text-[10px] uppercase tracking-wider px-2 py-0.5 rounded-none">Content Gap</div>
                   </div>
                 </div>
-                <button className="border border-[#E0DDD8] text-[#0A0A0A] hover:border-[#0A0A0A] text-xs font-medium px-3 py-1.5 rounded-none transition-colors">
+                <button className="border border-[#0A0A0A] bg-white text-[#0A0A0A] text-xs font-medium px-3 py-1.5 rounded-none transition-colors hover:bg-gray-50">
                   Accept
                 </button>
               </div>
