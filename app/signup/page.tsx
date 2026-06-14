@@ -4,13 +4,13 @@ import { useState } from "react";
 import { useRouter } from "next/navigation";
 import Link from "next/link";
 import { ArrowRight } from "lucide-react";
+import { createClient } from "@/utils/supabase/client";
 
 export default function SignupPage() {
   const router = useRouter();
   const [fullName, setFullName] = useState("");
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
-  const [website, setWebsite] = useState("");
   const [errors, setErrors] = useState<{ fullName?: string; email?: string; password?: string; website?: string }>({});
   const [loading, setLoading] = useState(false);
 
@@ -21,16 +21,35 @@ export default function SignupPage() {
     else if (!email.includes("@")) errs.email = "Please enter a valid email";
     if (!password.trim()) errs.password = "This field is required";
     else if (password.length < 8) errs.password = "Password must be at least 8 characters";
-    if (!website.trim()) errs.website = "This field is required";
+
     setErrors(errs);
     return Object.keys(errs).length === 0;
   };
 
-  const handleSubmit = (e: React.FormEvent) => {
+  const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     if (!validate()) return;
     setLoading(true);
-    setTimeout(() => router.push("/dashboard"), 1500);
+
+    const supabase = createClient();
+    const { error } = await supabase.auth.signUp({
+      email,
+      password,
+      options: {
+        data: {
+          full_name: fullName,
+        }
+      }
+    });
+
+    if (error) {
+      setErrors({ email: error.message });
+      setLoading(false);
+      return;
+    }
+
+    router.push("/dashboard");
+    router.refresh();
   };
 
   const handleGoogle = () => {
@@ -88,17 +107,6 @@ export default function SignupPage() {
               {errors.password && <p className="text-xs text-[#E63946] mt-1">{errors.password}</p>}
             </div>
 
-            <div>
-              <label className="block text-[#E63946] text-xs font-semibold uppercase tracking-widest mb-2">COMPANY WEBSITE</label>
-              <input
-                type="text"
-                value={website}
-                onChange={(e) => { setWebsite(e.target.value); setErrors((prev) => ({ ...prev, website: undefined })); }}
-                placeholder="https://yoursite.com"
-                className={`w-full border px-4 py-3 text-sm rounded-none focus:outline-none focus:border-[#0A0A0A] ${errors.website ? "border-[#E63946]" : "border-[#0A0A0A]"}`}
-              />
-              {errors.website && <p className="text-xs text-[#E63946] mt-1">{errors.website}</p>}
-            </div>
 
             <button
               type="submit"
