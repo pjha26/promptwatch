@@ -28,3 +28,15 @@ body {
 .clip-hide {
   clip-path: polygon(0 0, 100% 0, 100% 100%, 0 100%);
 }
+
+.bg-graph-paper {
+  background-image: 
+    linear-gradient(var(--tw-colors-outline-variant) 1px, transparent 1px),
+    linear-gradient(90deg, var(--tw-colors-outline-variant) 1px, transparent 1px);
+  background-size: 32px 32px;
+}
+
+/* Custom scrollbar for brutalist feel */
+::-webkit-scrollbar { width: 8px; height: 8px; }
+::-webkit-scrollbar-track { background: var(--tw-colors-background); border-left: 1px solid var(--tw-colors-primary); }
+::-webkit-scrollbar-thumb { background: var(--tw-colors-primary); }
