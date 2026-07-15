@@ -129,12 +129,12 @@ export default function LandingPage() {
           {/* Left 60% */}
           <div className="w-full md:w-[60%] p-margin-mobile md:p-margin-desktop flex flex-col justify-center gap-8 border-b md:border-b-0 border-primary">
             <h1 className="font-display-xl text-[64px] md:text-[100px] leading-[0.9] uppercase tracking-tight max-w-[90%]">
-              <span className="block overflow-hidden"><span className="block animate-slide-up opacity-0" style={{ animationDelay: '100ms' }}>YOUR BRAND</span></span>
-              <span className="block overflow-hidden"><span className="block animate-slide-up opacity-0" style={{ animationDelay: '200ms' }}>IS INVISIBLE TO AI.</span></span>
+              <span className="block overflow-hidden"><span className="block animate-slide-up opacity-0" style={{ animationDelay: '100ms' }}>YOUR SITE IS BEING</span></span>
+              <span className="block overflow-hidden"><span className="block animate-slide-up opacity-0" style={{ animationDelay: '200ms' }}>CRAWLED BLIND.</span></span>
               <span className="block overflow-hidden"><span className="block animate-slide-up opacity-0 text-secondary" style={{ animationDelay: '300ms' }}>FIX THAT.</span></span>
             </h1>
             <p className="font-body-md text-body-md text-on-surface-variant max-w-xl border-l-2 border-primary pl-4 animate-slide-up opacity-0" style={{ animationDelay: '400ms' }}>
-              Promptwatch tracks every AI crawler visit to your site, surfaces where competitors are cited instead of you, and gives you a prioritized action plan.
+              Promptwatch tracks every AI crawler that hits your site, shows you exactly who's taking the most, and lets you throttle or block them before they cost you bandwidth — automatically.
             </p>
             <div className="flex flex-col sm:flex-row gap-4 mt-4 animate-slide-up opacity-0" style={{ animationDelay: '500ms' }}>
               <Link href="/signup" className="bg-primary text-on-primary border border-primary px-8 py-4 font-label-caps text-label-caps brutalist-hover w-fit inline-block text-center">
