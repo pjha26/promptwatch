@@ -163,29 +163,30 @@ export default function LandingPage() {
             <div className="relative z-10 flex flex-col gap-16">
               <div>
                 <div className="font-label-caps text-label-caps text-secondary mb-2">
-                  01 — AI VISITS TRACKED
+                  01 — CRAWLER VISITS TRACKED
                 </div>
                 <div className="font-display-xl text-display-xl">{stats.visits},000+</div>
                 <div className="font-data-mono text-data-mono text-on-surface-variant">
-                  CRAWLER VISITS PER DAY
+                  BOT REQUESTS LOGGED (DEMO DATA)
                 </div>
               </div>
               <div className="border-t border-primary pt-8">
                 <div className="font-label-caps text-label-caps text-secondary mb-2">
-                  02 — ENGINES MONITORED
+                  02 — BOTS RECOGNIZED
                 </div>
-                <div className="font-display-xl text-display-xl">{stats.engines} ENGINES</div>
+                <div className="font-display-xl text-display-xl">{stats.engines} CRAWLERS</div>
                 <div className="font-data-mono text-data-mono text-on-surface-variant">
-                  CHATGPT · CLAUDE · PERPLEXITY · GEMINI
+                  GPTBOT · CLAUDEBOT · PERPLEXITYBOT · CCBOT
                 </div>
               </div>
               <div className="border-t border-primary pt-8">
                 <div className="font-label-caps text-label-caps text-secondary mb-2">
-                  03 — ACTIONS GENERATED
+                  03 — REQUESTS THROTTLED
                 </div>
-                <div className="font-display-xl text-display-xl">{stats.actions} ACTIONS</div>
+                {/* TODO: Replace placeholder with real data once available */}
+                <div className="font-display-xl text-display-xl">[PLACEHOLDER]</div>
                 <div className="font-data-mono text-data-mono text-on-surface-variant">
-                  PER MONITORING AUDIT
+                  AUTO-BLOCKED BEFORE THEY COST YOU
                 </div>
               </div>
             </div>
