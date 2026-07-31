@@ -1,5 +1,7 @@
 # Promptwatch — 
 
+🔗 Live demo: https://promptwatch.vercel.app/
+
 ## Setup
 
 ```bash

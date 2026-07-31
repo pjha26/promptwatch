@@ -2,6 +2,7 @@
   "name": "verseodin-trial-2026",
   "version": "0.1.0",
   "private": true,
+  "homepage": "https://promptwatch.vercel.app/",
   "scripts": {
     "dev": "next dev --turbopack",
     "dev:clean": "npx rimraf .next && next dev --turbopack",

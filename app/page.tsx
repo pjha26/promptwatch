@@ -99,18 +99,21 @@ export default function LandingPage() {
           ■ PROMPTWATCH
         </div>
         <div className="hidden md:flex gap-8 items-center">
+          {/* TODO: Add real destination for FEATURES link or remove */}
           <a
             className="font-label-caps text-label-caps text-on-surface-variant hover:border-b-2 hover:border-primary transition-all duration-75 pb-1"
             href="#"
           >
             FEATURES
           </a>
+          {/* TODO: Add real destination for INTELLIGENCE link or remove */}
           <a
             className="font-label-caps text-label-caps text-on-surface-variant hover:border-b-2 hover:border-primary transition-all duration-75 pb-1"
             href="#"
           >
             INTELLIGENCE
           </a>
+          {/* TODO: Add real destination for PRICING link or remove */}
           <a
             className="font-label-caps text-label-caps text-on-surface-variant hover:border-b-2 hover:border-primary transition-all duration-75 pb-1"
             href="#"
@@ -355,24 +358,28 @@ export default function LandingPage() {
           ■ PROMPTWATCH
         </div>
         <div className="flex flex-col md:flex-row gap-8 lg:gap-16">
+          {/* TODO: Add real destination for PRIVACY POLICY link or remove */}
           <a
             className="font-label-caps text-label-caps text-on-surface-variant hover:text-primary transition-colors"
             href="#"
           >
             PRIVACY POLICY
           </a>
+          {/* TODO: Add real destination for TERMS OF SERVICE link or remove */}
           <a
             className="font-label-caps text-label-caps text-on-surface-variant hover:text-primary transition-colors"
             href="#"
           >
             TERMS OF SERVICE
           </a>
+          {/* TODO: Add real destination for CONTACT link or remove */}
           <a
             className="font-label-caps text-label-caps text-on-surface-variant hover:text-primary transition-colors"
             href="#"
           >
             CONTACT
           </a>
+          {/* TODO: Add real destination for DOCUMENTATION link or remove */}
           <a
             className="font-label-caps text-label-caps text-on-surface-variant hover:text-primary transition-colors"
             href="#"
