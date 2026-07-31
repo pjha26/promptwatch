@@ -10,15 +10,21 @@ import {
   Tooltip,
   ResponsiveContainer,
 } from "recharts";
-import { BotName } from "@/lib/types";
 import { BOT_CHART_COLORS } from "@/lib/constants";
 import { DailyTraffic } from "../hooks/useTrafficData";
 
+// Fallback palette for bots not in the legacy BOT_CHART_COLORS map
+const FALLBACK_COLORS = ["#8b5cf6", "#f59e0b", "#ef4444", "#14b8a6", "#6366f1", "#ec4899"];
+
+function getBotColor(bot: string, index: number): string {
+  return (BOT_CHART_COLORS as Record<string, string>)[bot] ?? FALLBACK_COLORS[index % FALLBACK_COLORS.length];
+}
+
 interface TrafficChartProps {
   chartData: DailyTraffic[];
-  botTotals: Record<BotName, number>;
-  hiddenBots: Set<BotName>;
-  toggleBot: (bot: BotName) => void;
+  botTotals: Record<string, number>;
+  hiddenBots: Set<string>;
+  toggleBot: (bot: string) => void;
 }
 
 const CustomTooltip = ({ active, payload, label }: any) => {
@@ -66,7 +72,7 @@ const CustomTooltip = ({ active, payload, label }: any) => {
 export function TrafficChart({ chartData, botTotals, hiddenBots, toggleBot }: TrafficChartProps) {
   // Sort bots by total visits descending for the legend and stack order
   const sortedBots = useMemo(() => {
-    return (Object.entries(botTotals) as [BotName, number][])
+    return Object.entries(botTotals)
       .sort(([, a], [, b]) => b - a)
       .map(([bot]) => bot);
   }, [botTotals]);
@@ -74,15 +80,14 @@ export function TrafficChart({ chartData, botTotals, hiddenBots, toggleBot }: Tr
   // X-Axis tick logic: label every Nth bar where N = floor(barCount / 12)
   const xTickInterval = useMemo(() => {
     const n = Math.floor(chartData.length / 12);
-    return n > 0 ? n - 1 : 0; // Recharts interval is 0-indexed gaps, but we will just pass a function to tickFormatter or filter ticks.
-    // Actually, setting interval={n-1} usually works, but let's just let Recharts handle it if it gets messy, or implement it precisely.
+    return n > 0 ? n - 1 : 0;
   }, [chartData.length]);
 
   return (
     <div className="w-full bg-white border border-gray-200 rounded-xl overflow-hidden flex flex-col mb-6">
       {/* Legend Strip */}
       <div className="flex flex-wrap gap-2 p-4 border-b border-gray-100 bg-gray-50/50">
-        {sortedBots.map((bot) => {
+        {sortedBots.map((bot, i) => {
           const isHidden = hiddenBots.has(bot);
           return (
             <button
@@ -94,7 +99,7 @@ export function TrafficChart({ chartData, botTotals, hiddenBots, toggleBot }: Tr
             >
               <div
                 className="w-2 h-2 rounded-full"
-                style={{ backgroundColor: BOT_CHART_COLORS[bot] }}
+                style={{ backgroundColor: getBotColor(bot, i) }}
               />
               <span className={isHidden ? "text-gray-500" : "text-gray-700"}>
                 {bot}
@@ -140,12 +145,12 @@ export function TrafficChart({ chartData, botTotals, hiddenBots, toggleBot }: Tr
                     Recharts stacks in the order they are rendered.
                     So we render the largest bot first (sortedBots is descending).
                 */}
-                {sortedBots.map((bot) => (
+                {sortedBots.map((bot, i) => (
                   <Bar
                     key={bot}
                     dataKey={bot}
                     stackId="a"
-                    fill={BOT_CHART_COLORS[bot]}
+                    fill={getBotColor(bot, i)}
                     hide={hiddenBots.has(bot)}
                     isAnimationActive={false} // Disable animation for pure performance
                   />

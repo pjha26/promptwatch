@@ -1,14 +1,16 @@
 import { useMemo } from "react";
-import { BotName } from "@/lib/types";
 import { BOT_CHART_COLORS, BOT_PARENTS } from "@/lib/constants";
 
+// Fallback palette for bots not in the legacy color map
+const FALLBACK_COLORS = ["#8b5cf6", "#f59e0b", "#ef4444", "#14b8a6", "#6366f1", "#ec4899"];
+
 interface TopCrawlersProps {
-  botTotals: Record<BotName, number>;
+  botTotals: Record<string, number>;
 }
 
 export function TopCrawlers({ botTotals }: TopCrawlersProps) {
   const topBots = useMemo(() => {
-    return (Object.entries(botTotals) as [BotName, number][])
+    return Object.entries(botTotals)
       .filter(([, count]) => count > 0)
       .sort(([, a], [, b]) => b - a)
       .slice(0, 8);
@@ -31,11 +33,11 @@ export function TopCrawlers({ botTotals }: TopCrawlersProps) {
     <div className="flex-1 bg-white border border-gray-200 rounded-xl p-6 flex flex-col min-w-0">
       <h2 className="text-sm font-semibold text-gray-900 mb-4">Top Crawlers</h2>
       <div className="flex flex-col gap-3">
-        {topBots.map(([bot, count]) => {
+        {topBots.map(([bot, count], i) => {
           const percentage = (count / maxCount) * 100;
           const initial = bot.charAt(0).toUpperCase();
-          const color = BOT_CHART_COLORS[bot];
-          const parent = BOT_PARENTS[bot];
+          const color = (BOT_CHART_COLORS as Record<string, string>)[bot] ?? FALLBACK_COLORS[i % FALLBACK_COLORS.length];
+          const parent = (BOT_PARENTS as Record<string, string>)[bot] ?? "";
 
           return (
             <div key={bot} className="relative flex items-center justify-between text-sm py-1 text-gray-900">
@@ -59,7 +61,7 @@ export function TopCrawlers({ botTotals }: TopCrawlersProps) {
                   {initial}
                 </div>
                 <span className="text-gray-900 font-medium truncate">
-                  {bot} <span className="text-gray-500 font-normal">({parent})</span>
+                  {bot} {parent && <span className="text-gray-500 font-normal">({parent})</span>}
                 </span>
               </div>
               <span className="text-gray-900 font-medium z-10 pr-1 shrink-0">{count.toLocaleString()}</span>

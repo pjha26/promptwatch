@@ -1,5 +1,6 @@
+"use client";
+
 import { useState, useEffect, useMemo } from "react";
-import { AiVisit, BotName } from "@/lib/types";
 
 export interface DailyTraffic {
   date: string;
@@ -7,8 +8,19 @@ export interface DailyTraffic {
   [key: string]: string | number; // Bot names mapped to their counts
 }
 
+interface HistoryBot {
+  id: string;
+  name: string;
+  hitsByDay: number[];
+}
+
+interface HistoryResponse {
+  days: string[];
+  bots: HistoryBot[];
+}
+
 export function useTrafficData() {
-  const [data, setData] = useState<AiVisit[] | null>(null);
+  const [historyData, setHistoryData] = useState<HistoryResponse | null>(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(false);
   const [attempt, setAttempt] = useState(0);
@@ -18,13 +30,13 @@ export function useTrafficData() {
   useEffect(() => {
     setLoading(true);
     setError(false);
-    fetch("/visits.json")
+    fetch("/api/bot-stats/history")
       .then((res) => {
         if (!res.ok) throw new Error("Failed to load");
         return res.json();
       })
-      .then((json) => {
-        setData(json);
+      .then((json: HistoryResponse) => {
+        setHistoryData(json);
         setLoading(false);
       })
       .catch((err) => {
@@ -35,46 +47,42 @@ export function useTrafficData() {
   }, [attempt]);
 
   const { chartData, botTotals, pageTotals, totalVisits } = useMemo(() => {
-    if (!data) {
-      return { chartData: [], botTotals: {} as Record<BotName, number>, pageTotals: {} as Record<string, number>, totalVisits: 0 };
+    if (!historyData) {
+      return {
+        chartData: [] as DailyTraffic[],
+        botTotals: {} as Record<string, number>,
+        pageTotals: {} as Record<string, number>,
+        totalVisits: 0,
+      };
     }
 
-    const botTotals = {} as Record<BotName, number>;
-    const pageTotals = {} as Record<string, number>;
-    const dailyMap = new Map<string, DailyTraffic>();
+    const { days, bots } = historyData;
+    const botTotals = {} as Record<string, number>;
     let totalVisits = 0;
 
-    for (let i = 0; i < data.length; i++) {
-      const visit = data[i];
-      const bot = visit.bot;
-      const path = visit.page_path;
-      // Extract date string YYYY-MM-DD from timestamp
-      const date = visit.timestamp.substring(0, 10);
+    // The API returns pre-aggregated day × bot data, so we just reshape it
+    // into the DailyTraffic[] format the TrafficChart component expects.
+    const chartData: DailyTraffic[] = days.map((date, dayIndex) => {
+      const row: DailyTraffic = { date, total: 0 };
+      for (const bot of bots) {
+        const hits = bot.hitsByDay[dayIndex] ?? 0;
+        // Use bot.name as the key to match what TrafficChart expects
+        row[bot.name] = hits;
+        row.total += hits;
 
-      // Total count
-      totalVisits++;
-
-      // Bot totals
-      botTotals[bot] = (botTotals[bot] || 0) + 1;
-
-      // Page totals
-      pageTotals[path] = (pageTotals[path] || 0) + 1;
-
-      // Daily aggregation
-      let daily = dailyMap.get(date);
-      if (!daily) {
-        daily = { date, total: 0 };
-        dailyMap.set(date, daily);
+        // Accumulate bot totals
+        botTotals[bot.name] = (botTotals[bot.name] || 0) + hits;
+        totalVisits += hits;
       }
-      daily[bot] = (daily[bot] as number || 0) + 1;
-      daily.total += 1;
-    }
+      return row;
+    });
 
-    // Sort chart data by date
-    const chartData = Array.from(dailyMap.values()).sort((a, b) => a.date.localeCompare(b.date));
+    // TODO: Top Pages data requires path-level logging in middleware.ts (not yet implemented).
+    // Passing empty pageTotals so the TopPages panel renders its empty state.
+    const pageTotals = {} as Record<string, number>;
 
     return { chartData, botTotals, pageTotals, totalVisits };
-  }, [data]);
+  }, [historyData]);
 
-  return { data, loading, error, chartData, botTotals, pageTotals, totalVisits, retry };
+  return { data: historyData, loading, error, chartData, botTotals, pageTotals, totalVisits, retry };
 }
