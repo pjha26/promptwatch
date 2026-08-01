@@ -75,3 +75,14 @@ create policy "Users can manage prompts for their workspaces"
 create policy "Users can manage competitors for their workspaces"
   on public.competitors for all
   using (workspace_id in (select id from public.workspaces where user_id = auth.uid()));
+
+-- Bot Policies
+create table public.bot_policies (
+  bot_id text primary key,
+  policy text default 'allow' check (policy in ('allow', 'block')),
+  updated_at timestamptz default now()
+);
+
+-- Note: Depending on your exact auth requirements, you might want to add RLS 
+-- to bot_policies as well. Since this applies globally per bot, we keep it simple here.
+

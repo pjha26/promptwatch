@@ -1,6 +1,6 @@
 "use client";
 
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { Eye, EyeOff, Copy, Check } from "lucide-react";
 
 export default function SettingsPage() {
@@ -9,13 +9,42 @@ export default function SettingsPage() {
   const [siteName, setSiteName] = useState("Acme Corp Site");
   const [saved, setSaved] = useState(false);
 
-  // Engine toggles
-  const [engines, setEngines] = useState({
-    chatgpt: true,
-    claude: true,
-    perplexity: true,
-    gemini: false,
-  });
+  interface BotPolicy {
+    id: string;
+    name: string;
+    company: string;
+    policy: "allow" | "block";
+  }
+
+  const [botPolicies, setBotPolicies] = useState<BotPolicy[]>([]);
+  const [loadingPolicies, setLoadingPolicies] = useState(true);
+
+  useEffect(() => {
+    fetch('/api/bot-policies')
+      .then(res => res.json())
+      .then(data => {
+        if (Array.isArray(data)) {
+          setBotPolicies(data);
+        }
+        setLoadingPolicies(false);
+      })
+      .catch(() => setLoadingPolicies(false));
+  }, []);
+
+  const handlePolicyChange = async (botId: string, newPolicy: "allow" | "block") => {
+    // Optimistic update
+    setBotPolicies(prev => prev.map(b => b.id === botId ? { ...b, policy: newPolicy } : b));
+    
+    try {
+      await fetch('/api/bot-policies', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ botId, policy: newPolicy })
+      });
+    } catch (e) {
+      console.error("Failed to update policy", e);
+    }
+  };
 
   // Notification toggles
   const [notifications, setNotifications] = useState({
@@ -103,33 +132,47 @@ export default function SettingsPage() {
             </div>
           </div>
 
-          {/* Section 2 — Engines Tracked */}
+          {/* Section 2 — Bot Policies */}
           <div className="border-t border-[#E0DDD8] pt-8 pb-8">
-            <div className="text-[#E63946] text-[10px] font-semibold uppercase tracking-widest mb-2">ENGINES TRACKED</div>
-            <p className="text-sm text-[#6B6560] mb-5">Select which AI engines Promptwatch monitors for your site</p>
-            <div className="space-y-4">
-              {(Object.keys(engines) as (keyof typeof engines)[]).map((key) => (
-                <div key={key} className="flex items-center justify-between py-1">
-                  <span className="text-sm font-medium capitalize">{key}</span>
-                  <button
-                    type="button"
-                    onClick={() => setEngines({ ...engines, [key]: !engines[key] })}
-                    className={`relative w-10 h-5 transition-colors duration-200 ${
-                      engines[key] ? "bg-[#0A0A0A]" : "bg-[#E0DDD8]"
-                    }`}
-                    style={{ borderRadius: '10px' }}
-                  >
-                    <span
-                      className="absolute top-0.5 w-4 h-4 bg-white transition-transform duration-200"
-                      style={{
-                        borderRadius: '50%',
-                        transform: engines[key] ? 'translateX(20px)' : 'translateX(2px)'
-                      }}
-                    />
-                  </button>
-                </div>
-              ))}
-            </div>
+            <div className="text-[#E63946] text-[10px] font-semibold uppercase tracking-widest mb-2">BOT POLICIES</div>
+            <p className="text-sm text-[#6B6560] mb-5">Set access rules for known AI crawlers. These are enforced at the edge.</p>
+            
+            {loadingPolicies ? (
+              <div className="text-sm text-[#6B6560]">Loading policies...</div>
+            ) : (
+              <div className="space-y-3">
+                {botPolicies.map((bot) => (
+                  <div key={bot.id} className="flex items-center justify-between py-2 border-b border-[#E0DDD8] last:border-b-0">
+                    <div>
+                      <span className="text-sm font-medium block">{bot.name}</span>
+                      <span className="text-xs text-[#6B6560]">{bot.company}</span>
+                    </div>
+                    <div className="flex items-center bg-[#F5F2EE] border border-[#E0DDD8] p-0.5">
+                      <button
+                        onClick={() => handlePolicyChange(bot.id, "allow")}
+                        className={`text-xs font-medium px-4 py-1.5 transition-colors ${
+                          bot.policy === "allow" 
+                            ? "bg-[#0A0A0A] text-white" 
+                            : "text-[#6B6560] hover:text-[#0A0A0A]"
+                        }`}
+                      >
+                        ALLOW
+                      </button>
+                      <button
+                        onClick={() => handlePolicyChange(bot.id, "block")}
+                        className={`text-xs font-medium px-4 py-1.5 transition-colors ${
+                          bot.policy === "block" 
+                            ? "bg-[#E63946] text-white" 
+                            : "text-[#6B6560] hover:text-[#E63946]"
+                        }`}
+                      >
+                        BLOCK
+                      </button>
+                    </div>
+                  </div>
+                ))}
+              </div>
+            )}
           </div>
 
           {/* Section 3 — Notifications */}
