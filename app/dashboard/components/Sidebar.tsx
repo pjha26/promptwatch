@@ -1,8 +1,9 @@
 "use client";
 
 import Link from "next/link";
-import { usePathname } from "next/navigation";
+import { usePathname, useRouter } from "next/navigation";
 import { useState } from "react";
+import { createClient } from "@/utils/supabase/client";
 import { LayoutDashboard, BarChart2, Zap, Search, Users, Settings, LogOut, Menu, X } from "lucide-react";
 
 const navLinks = [
@@ -16,7 +17,15 @@ const navLinks = [
 
 export function Sidebar() {
   const pathname = usePathname();
+  const router = useRouter();
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
+
+  const handleLogout = async () => {
+    const supabase = createClient();
+    await supabase.auth.signOut();
+    router.push("/login");
+    router.refresh();
+  };
 
   return (
     <>
@@ -68,13 +77,13 @@ export function Sidebar() {
 
         {/* Bottom user profile area on sidebar */}
         <div className="shrink-0 pb-[80px]">
-          <Link 
-            href="/login"
-            className="flex items-center gap-3 px-6 py-3 font-dm-sans text-sm font-medium text-[#6B6560] hover:text-[#0A0A0A] hover:bg-[#EBE8E3] transition-colors"
+          <button 
+            onClick={handleLogout}
+            className="w-full flex items-center gap-3 px-6 py-3 font-dm-sans text-sm font-medium text-[#6B6560] hover:text-[#0A0A0A] hover:bg-[#EBE8E3] transition-colors text-left"
           >
             <LogOut className="w-4 h-4" />
             Log out
-          </Link>
+          </button>
         </div>
       </aside>
 
