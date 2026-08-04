@@ -8,9 +8,20 @@ const redis = new Redis({
   token: process.env.UPSTASH_REDIS_REST_TOKEN!,
 });
 
+interface BotPolicyRow {
+  bot_id: string;
+  policy: "allow" | "block";
+  updated_at: string;
+}
+
 export async function GET() {
   try {
     const supabase = await createClient();
+    const db = supabase as unknown as {
+      from: (table: string) => {
+        select: (columns: string) => Promise<{ data: BotPolicyRow[] | null; error: unknown }>;
+      };
+    };
     
     // Auth check
     const { data: { user } } = await supabase.auth.getUser();
@@ -19,13 +30,13 @@ export async function GET() {
   }
 
   // Fetch policies
-  const { data: policies, error } = await supabase.from('bot_policies' as any).select('*');
+  const { data: policies, error } = await db.from('bot_policies').select('*');
   if (error) {
     // If table doesn't exist yet, we still return the defaults rather than failing hard
     console.error("Error fetching policies:", error);
   }
 
-  const policyMap = new Map((policies || []).map((p: any) => [p.bot_id, p.policy]));
+  const policyMap = new Map((policies || []).map((p: BotPolicyRow) => [p.bot_id, p.policy]));
 
   const result = botSignatures.map(bot => ({
     id: bot.id,
@@ -35,14 +46,22 @@ export async function GET() {
   }));
 
     return NextResponse.json(result);
-  } catch (err: any) {
+  } catch (err: unknown) {
     console.error("API GET Error:", err);
-    return NextResponse.json({ error: err.message || "Unknown error", stack: err.stack }, { status: 500 });
+    return NextResponse.json({ 
+      error: err instanceof Error ? err.message : "Unknown error", 
+      stack: err instanceof Error ? err.stack : undefined 
+    }, { status: 500 });
   }
 }
 
 export async function POST(req: Request) {
   const supabase = await createClient();
+  const db = supabase as unknown as {
+    from: (table: string) => {
+      upsert: (values: BotPolicyRow) => Promise<{ error: unknown }>;
+    };
+  };
   
   // Auth check
   const { data: { user } } = await supabase.auth.getUser();
@@ -61,8 +80,8 @@ export async function POST(req: Request) {
     }
 
     // Upsert to Supabase
-    const { error } = await supabase
-      .from('bot_policies' as any)
+    const { error } = await db
+      .from('bot_policies')
       .upsert({ bot_id: botId, policy, updated_at: new Date().toISOString() });
 
     if (error) {
@@ -74,7 +93,7 @@ export async function POST(req: Request) {
     await redis.set(`policy:${botId}`, policy);
 
     return NextResponse.json({ success: true });
-  } catch (err) {
+  } catch {
     return NextResponse.json({ error: "Bad request" }, { status: 400 });
   }
 }
