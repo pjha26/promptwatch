@@ -12,6 +12,7 @@ interface HistoryBot {
   id: string;
   name: string;
   hitsByDay: number[];
+  blockedByDay: number[];
 }
 
 interface HistoryResponse {
@@ -51,6 +52,7 @@ export function useTrafficData() {
       return {
         chartData: [] as DailyTraffic[],
         botTotals: {} as Record<string, number>,
+        botBlockedTotals: {} as Record<string, number>,
         pageTotals: {} as Record<string, number>,
         totalVisits: 0,
       };
@@ -58,6 +60,7 @@ export function useTrafficData() {
 
     const { days, bots } = historyData;
     const botTotals = {} as Record<string, number>;
+    const botBlockedTotals = {} as Record<string, number>;
     let totalVisits = 0;
 
     // The API returns pre-aggregated day × bot data, so we just reshape it
@@ -66,12 +69,14 @@ export function useTrafficData() {
       const row: DailyTraffic = { date, total: 0 };
       for (const bot of bots) {
         const hits = bot.hitsByDay[dayIndex] ?? 0;
+        const blocked = bot.blockedByDay[dayIndex] ?? 0;
         // Use bot.name as the key to match what TrafficChart expects
         row[bot.name] = hits;
         row.total += hits;
 
         // Accumulate bot totals
         botTotals[bot.name] = (botTotals[bot.name] || 0) + hits;
+        botBlockedTotals[bot.name] = (botBlockedTotals[bot.name] || 0) + blocked;
         totalVisits += hits;
       }
       return row;
@@ -81,8 +86,8 @@ export function useTrafficData() {
     // Passing empty pageTotals so the TopPages panel renders its empty state.
     const pageTotals = {} as Record<string, number>;
 
-    return { chartData, botTotals, pageTotals, totalVisits };
+    return { chartData, botTotals, botBlockedTotals, pageTotals, totalVisits };
   }, [historyData]);
 
-  return { data: historyData, loading, error, chartData, botTotals, pageTotals, totalVisits, retry };
+  return { data: historyData, loading, error, chartData, botTotals, botBlockedTotals, pageTotals, totalVisits, retry };
 }

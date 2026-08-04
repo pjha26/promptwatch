@@ -6,9 +6,10 @@ const FALLBACK_COLORS = ["#8b5cf6", "#f59e0b", "#ef4444", "#14b8a6", "#6366f1", 
 
 interface TopCrawlersProps {
   botTotals: Record<string, number>;
+  botBlockedTotals?: Record<string, number>;
 }
 
-export function TopCrawlers({ botTotals }: TopCrawlersProps) {
+export function TopCrawlers({ botTotals, botBlockedTotals }: TopCrawlersProps) {
   const topBots = useMemo(() => {
     return Object.entries(botTotals)
       .filter(([, count]) => count > 0)
@@ -39,6 +40,8 @@ export function TopCrawlers({ botTotals }: TopCrawlersProps) {
           const color = (BOT_CHART_COLORS as Record<string, string>)[bot] ?? FALLBACK_COLORS[i % FALLBACK_COLORS.length];
           const parent = (BOT_PARENTS as Record<string, string>)[bot] ?? "";
 
+          const blockedCount = botBlockedTotals?.[bot] ?? 0;
+
           return (
             <div key={bot} className="relative flex items-center justify-between text-sm py-1 text-gray-900">
               <div
@@ -64,7 +67,14 @@ export function TopCrawlers({ botTotals }: TopCrawlersProps) {
                   {bot} {parent && <span className="text-gray-500 font-normal">({parent})</span>}
                 </span>
               </div>
-              <span className="text-gray-900 font-medium z-10 pr-1 shrink-0">{count.toLocaleString()}</span>
+              <div className="flex items-center gap-3 z-10 pr-1 shrink-0">
+                {blockedCount > 0 && (
+                  <span className="font-mono text-[10px] text-gray-400 uppercase tracking-wider">
+                    Blocked: {blockedCount.toLocaleString()}
+                  </span>
+                )}
+                <span className="text-gray-900 font-medium">{count.toLocaleString()}</span>
+              </div>
             </div>
           );
         })}

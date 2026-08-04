@@ -23,8 +23,11 @@ export async function GET() {
       days.map((day) => ({ botId: bot.id, botName: bot.name, day, key: `bot:${bot.id}:${day}` }))
     );
 
-    // Fetch all counts in parallel
-    const values = await Promise.all(keys.map((k) => redis.get<number>(k.key)));
+    // Fetch all counts in parallel (regular hits + blocked hits)
+    const values = await Promise.all([
+      ...keys.map((k) => redis.get<number>(k.key)),
+      ...keys.map((k) => redis.get<number>(`blocked:${k.botId}:${k.day}`))
+    ]);
 
     // Reshape into per-bot hitsByDay arrays
     const botsData = botSignatures.map((bot, botIndex) => {
@@ -32,7 +35,11 @@ export async function GET() {
         const flatIndex = botIndex * days.length + dayIndex;
         return values[flatIndex] ?? 0;
       });
-      return { id: bot.id, name: bot.name, hitsByDay };
+      const blockedByDay = days.map((_, dayIndex) => {
+        const flatIndex = keys.length + (botIndex * days.length + dayIndex);
+        return values[flatIndex] ?? 0;
+      });
+      return { id: bot.id, name: bot.name, hitsByDay, blockedByDay };
     });
 
     return NextResponse.json({ days, bots: botsData });

@@ -8,7 +8,7 @@ import { TopCrawlers } from "./components/TopCrawlers";
 import { TopPages } from "./components/TopPages";
 
 export default function TrafficDashboard() {
-  const { loading, error, chartData, botTotals, pageTotals, totalVisits, retry } = useTrafficData();
+  const { loading, error, chartData, botTotals, botBlockedTotals, pageTotals, totalVisits, retry } = useTrafficData();
   const [hiddenBots, setHiddenBots] = useState<Set<string>>(new Set());
 
   const toggleBot = useCallback((bot: string) => {
@@ -95,7 +95,7 @@ export default function TrafficDashboard() {
 
         {/* Bottom panels */}
         <div className="flex flex-col md:flex-row gap-4 mb-6">
-          <TopCrawlers botTotals={botTotals} />
+          <TopCrawlers botTotals={botTotals} botBlockedTotals={botBlockedTotals} />
           {/* TODO: TopPages requires path-level logging in middleware.ts — currently shows empty state */}
           <TopPages pageTotals={pageTotals} />
         </div>
