@@ -9,20 +9,32 @@ const redis = new Redis({
 })
 
 export async function middleware(request: NextRequest) {
-  // --- Bot detection & Redis logging (fire-and-forget, never blocks) ---
+  // --- Bot detection & Policy Enforcement ---
   try {
     const userAgent = request.headers.get('user-agent') ?? ''
     const bot = detectBot(userAgent)
 
     if (bot) {
       const today = new Date().toISOString().slice(0, 10) // YYYY-MM-DD (UTC)
-      const key = `bot:${bot.id}:${today}`
-      const count = await redis.incr(key)
+      
+      // Check policy
+      const policy = await redis.get(`policy:${bot.id}`)
 
-      // Set a 30-day TTL only when the key is first created,
-      // so subsequent hits don't reset the expiry window.
-      if (count === 1) {
-        await redis.expire(key, 60 * 60 * 24 * 30) // 30 days
+      if (policy === 'block') {
+        const key = `blocked:${bot.id}:${today}`
+        const count = await redis.incr(key)
+        if (count === 1) {
+          await redis.expire(key, 60 * 60 * 24 * 30) // 30 days
+        }
+        // Enforce block
+        return NextResponse.json({ error: "Access denied by site policy" }, { status: 403 })
+      } else {
+        // Proceed with regular hit logging
+        const key = `bot:${bot.id}:${today}`
+        const count = await redis.incr(key)
+        if (count === 1) {
+          await redis.expire(key, 60 * 60 * 24 * 30) // 30 days
+        }
       }
     }
   } catch (error) {
