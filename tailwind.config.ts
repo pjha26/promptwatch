@@ -58,10 +58,13 @@ const config: Config = {
         "primary-fixed-dim": "#c9c6c5"
       },
       borderRadius: {
-        "DEFAULT": "0px",
-        "lg": "0px",
-        "xl": "0px",
-        "full": "0px"
+        "DEFAULT": "0.375rem",
+        "md": "0.375rem",
+        "lg": "0.5rem",
+        "xl": "1rem",
+        "2xl": "1.5rem",
+        "3xl": "2rem",
+        "full": "9999px"
       },
       spacing: {
         "margin-mobile": "20px",

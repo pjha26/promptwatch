@@ -1,5 +1,7 @@
 import type { Metadata } from "next";
 import { Barlow_Condensed, DM_Sans, DM_Mono } from "next/font/google";
+import { ThemeProvider } from "@/components/ThemeProvider";
+import { SmoothScroll } from "@/components/SmoothScroll";
 import "./globals.css";
 
 const barlowCondensed = Barlow_Condensed({
@@ -32,8 +34,17 @@ export default function RootLayout({
 }>) {
   return (
     <html lang="en" className="light">
-      <body className={`${dmSans.variable} ${barlowCondensed.variable} ${dmMono.variable} bg-surface-container-lowest text-primary min-h-screen antialiased selection:bg-primary selection:text-on-primary`}>
-        {children}
+      <body className={`${dmSans.variable} ${barlowCondensed.variable} ${dmMono.variable} bg-surface-container-lowest text-on-surface min-h-screen antialiased selection:bg-primary selection:text-on-primary`}>
+        <ThemeProvider
+          attribute="class"
+          defaultTheme="dark"
+          enableSystem
+          disableTransitionOnChange
+        >
+          <SmoothScroll>
+            {children}
+          </SmoothScroll>
+        </ThemeProvider>
       </body>
     </html>
   );

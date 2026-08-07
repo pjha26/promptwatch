@@ -89,5 +89,5 @@ export function useTrafficData() {
     return { chartData, botTotals, botBlockedTotals, pageTotals, totalVisits };
   }, [historyData]);
 
-  return { data: historyData, loading, error, chartData, botTotals, botBlockedTotals, pageTotals, totalVisits, retry };
+  return { data: historyData, loading, error, chartData, botTotals, pageTotals, totalVisits, retry };
 }
