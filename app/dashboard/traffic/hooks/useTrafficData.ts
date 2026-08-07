@@ -47,7 +47,7 @@ export function useTrafficData() {
       });
   }, [attempt]);
 
-  const { chartData, botTotals, pageTotals, totalVisits } = useMemo(() => {
+  const { chartData, botTotals, botBlockedTotals, pageTotals, totalVisits } = useMemo(() => {
     if (!historyData) {
       return {
         chartData: [] as DailyTraffic[],
@@ -89,5 +89,5 @@ export function useTrafficData() {
     return { chartData, botTotals, botBlockedTotals, pageTotals, totalVisits };
   }, [historyData]);
 
-  return { data: historyData, loading, error, chartData, botTotals, pageTotals, totalVisits, retry };
+  return { data: historyData, loading, error, chartData, botTotals, botBlockedTotals, pageTotals, totalVisits, retry };
 }
