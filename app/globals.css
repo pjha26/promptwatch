@@ -2,9 +2,52 @@
 @tailwind components;
 @tailwind utilities;
 
+/* ─── Light-mode palette (default) ─── */
 :root {
-  --background: 0 0% 100%;
-  --foreground: 0 0% 4%;
+  --color-surface-dim: #d3daea;
+  --color-surface-container: #e7eefe;
+  --color-surface-container-lowest: #ffffff;
+  --color-surface-container-low: #f0f3ff;
+  --color-surface-container-high: #e2e8f8;
+  --color-surface-container-highest: #dce2f3;
+  --color-surface: #f9f9ff;
+  --color-surface-bright: #f9f9ff;
+  --color-surface-variant: #dce2f3;
+  --color-on-surface: #151c27;
+  --color-on-surface-variant: #444748;
+  --color-primary: #000000;
+  --color-on-primary: #ffffff;
+  --color-secondary: #b7102a;
+  --color-error: #ba1a1a;
+  --color-outline: #747878;
+  --color-outline-variant: #c4c7c7;
+  --color-on-primary-container: #858383;
+  --color-inverse-surface: #2a313d;
+  --color-background: #f9f9ff;
+}
+
+/* ─── Dark-mode palette ─── */
+.dark {
+  --color-surface-dim: #0e1117;
+  --color-surface-container: #161b22;
+  --color-surface-container-lowest: #0a0d12;
+  --color-surface-container-low: #121720;
+  --color-surface-container-high: #1c222d;
+  --color-surface-container-highest: #232a36;
+  --color-surface: #0f1419;
+  --color-surface-bright: #1c222d;
+  --color-surface-variant: #1c222d;
+  --color-on-surface: #e6edf3;
+  --color-on-surface-variant: #8b949e;
+  --color-primary: #e6edf3;
+  --color-on-primary: #0a0d12;
+  --color-secondary: #ff4d6a;
+  --color-error: #ff6b6b;
+  --color-outline: #484f58;
+  --color-outline-variant: #2d333b;
+  --color-on-primary-container: #8b949e;
+  --color-inverse-surface: #e6edf3;
+  --color-background: #0a0d12;
 }
 
 html,
@@ -29,14 +72,8 @@ body {
   clip-path: polygon(0 0, 100% 0, 100% 100%, 0 100%);
 }
 
-.bg-graph-paper {
-  background-image: 
-    linear-gradient(var(--tw-colors-outline-variant) 1px, transparent 1px),
-    linear-gradient(90deg, var(--tw-colors-outline-variant) 1px, transparent 1px);
-  background-size: 32px 32px;
-}
-
-/* Custom scrollbar for brutalist feel */
+/* Custom scrollbar */
 ::-webkit-scrollbar { width: 8px; height: 8px; }
-::-webkit-scrollbar-track { background: var(--tw-colors-background); border-left: 1px solid var(--tw-colors-primary); }
-::-webkit-scrollbar-thumb { background: var(--tw-colors-primary); }
+::-webkit-scrollbar-track { background: var(--color-surface); }
+::-webkit-scrollbar-thumb { background: var(--color-outline); border-radius: 4px; }
+::-webkit-scrollbar-thumb:hover { background: var(--color-on-surface-variant); }

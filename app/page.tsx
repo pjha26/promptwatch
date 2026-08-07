@@ -91,6 +91,9 @@ export default function LandingPage() {
 
   return (
     <>
+      {/* Floating theme toggle — fixed bottom-right */}
+      <ThemeToggle />
+
       {/* TopNavBar */}
       <nav
         className={`sticky top-0 z-50 transition-colors duration-300 ${
@@ -123,12 +126,9 @@ export default function LandingPage() {
             PRICING
           </a>
         </div>
-        <div className="flex items-center gap-4">
-          <ThemeToggle />
-          <Link href="/login" className="hidden md:block font-label-caps text-label-caps text-on-primary bg-primary rounded-full px-6 py-3 hover:scale-105 transition-transform text-center shadow-lg shadow-primary/20">
-            SIGN IN
-          </Link>
-        </div>
+        <Link href="/login" className="hidden md:block font-label-caps text-label-caps text-on-primary bg-primary rounded-full px-6 py-3 hover:scale-105 transition-transform text-center shadow-lg shadow-primary/20">
+          SIGN IN
+        </Link>
       </nav>
 
       <main>
@@ -147,7 +147,7 @@ export default function LandingPage() {
             >
               YOUR SITE IS BEING <br/>
               CRAWLED BLIND. <br/>
-              <span className="text-secondary bg-clip-text text-transparent bg-gradient-to-r from-primary to-secondary">FIX THAT.</span>
+              <span className="bg-clip-text text-transparent bg-gradient-to-r from-secondary to-error">FIX THAT.</span>
             </motion.h1>
             <motion.p 
               initial={{ opacity: 0, y: 20 }}
@@ -178,11 +178,11 @@ export default function LandingPage() {
           >
             {/* Grid background simulation */}
             <div
-              className="absolute inset-0 opacity-[0.03] dark:opacity-[0.02] pointer-events-none"
+              className="absolute inset-0 opacity-[0.06] dark:opacity-[0.04] pointer-events-none"
               style={{
                 backgroundImage:
-                  "linear-gradient(currentColor 1px, transparent 1px), linear-gradient(90deg, currentColor 1px, transparent 1px)",
-                backgroundSize: "32px 32px",
+                  "radial-gradient(circle, currentColor 1px, transparent 1px)",
+                backgroundSize: "24px 24px",
               }}
             ></div>
             <div className="relative z-10 flex flex-col gap-16">

@@ -33,7 +33,7 @@ export default function RootLayout({
   children: React.ReactNode;
 }>) {
   return (
-    <html lang="en" className="light">
+    <html lang="en" suppressHydrationWarning>
       <body className={`${dmSans.variable} ${barlowCondensed.variable} ${dmMono.variable} bg-surface-container-lowest text-on-surface min-h-screen antialiased selection:bg-primary selection:text-on-primary`}>
         <ThemeProvider
           attribute="class"
