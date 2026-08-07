@@ -207,13 +207,15 @@ export default function LandingPage() {
                 </div>
               </motion.div>
               <motion.div initial={{ opacity: 0, x: 20 }} whileInView={{ opacity: 1, x: 0 }} viewport={{ once: true }} transition={{ duration: 0.6, delay: 0.2 }} className="border-t border-outline-variant pt-8">
-                <div className="font-label-caps text-label-caps text-secondary mb-2 flex items-center gap-2">
-                  <div className="w-2 h-2 rounded-full bg-secondary/40"></div>
+                <div className="font-label-caps text-label-caps text-on-surface-variant/40 mb-2 flex items-center gap-2">
+                  <div className="w-2 h-2 rounded-full bg-on-surface-variant/30"></div>
                   03 — REQUESTS THROTTLED
                 </div>
-                <div className="font-display-xl text-display-xl text-on-surface/50">[PLACEHOLDER]</div>
-                <div className="font-data-mono text-data-mono text-on-surface-variant">
-                  AUTO-BLOCKED BEFORE THEY COST YOU
+                <div className="font-display-xl text-[48px] md:text-display-xl text-on-surface/20 flex items-baseline gap-3">
+                  COMING SOON
+                </div>
+                <div className="font-data-mono text-data-mono text-on-surface-variant/50 mt-1">
+                  POLICY ENGINE IN DEVELOPMENT — BLOCK &amp; THROTTLE BOTS AUTOMATICALLY
                 </div>
               </motion.div>
             </div>
