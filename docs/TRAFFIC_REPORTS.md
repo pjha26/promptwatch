@@ -1,7 +1,9 @@
 # Traffic reports
 
 The first additive milestone from [the implementation plan](IMPLEMENTATION_PLAN.md).
-All pre-existing tracked files are unchanged. No new dependencies or schema changes.
+Milestone A added these reports without changing pre-existing tracked files.
+The product continuation now protects them with configured-owner access; see
+[single-owner setup](SELF_HOSTING.md) before deployment.
 
 ## Open the feature
 
@@ -33,10 +35,9 @@ or crawler totals as CSV. CSV dates and filenames reflect the selected window.
   independently protects the dashboard route.
 - Uses one logical Redis `MGET` for the existing 420 allowed/blocked daily keys,
   rather than making 420 separate reads. No writes, seeds, or policy changes.
-- The report preserves **deployment-wide scope**. Every signed-in account has
-  access to the same global data, consistent with existing collection. Session
-  protection is not workspace authorization; do not offer isolated customer
-  accounts until milestone B is implemented.
+- The report preserves **deployment-wide scope** for a single-owner installation.
+  Only the configured owner can read it. Use a separate deployment and dedicated
+  Redis database for another website; this release is not multi-customer SaaS.
 - Observed requests = allowed-by-bot-policy + blocked. Allowed is not proof of a
   successful page response. Blocked-only crawlers count as active.
 - Dates use UTC and include the current partial day. The 7-day comparison uses

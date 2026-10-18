@@ -1,30 +1,32 @@
-import { Redis } from "@upstash/redis";
-import { NextResponse } from "next/server";
+import { apiJson, requireOwner } from "@/lib/api-auth";
 import { botSignatures } from "@/lib/botSignatures";
+import { createRedis } from "@/lib/redis";
 
-const redis = new Redis({
-  url: process.env.UPSTASH_REDIS_REST_URL!,
-  token: process.env.UPSTASH_REDIS_REST_TOKEN!,
-});
+export const dynamic = "force-dynamic";
 
 export async function GET() {
+  const denied = await requireOwner();
+  if (denied) return denied;
   try {
-    const today = new Date().toISOString().slice(0, 10);
-
-    const counts = await Promise.all(
-      botSignatures.map(async (bot) => {
-        const key = `bot:${bot.id}:${today}`;
-        const hits = (await redis.get<number>(key)) ?? 0;
-        return { id: bot.id, name: bot.name, hits };
-      })
+    const date = new Date().toISOString().slice(0, 10);
+    const values = await createRedis().mget<(number | null)[]>(
+      ...botSignatures.map((bot) => `bot:${bot.id}:${date}`),
     );
-
-    return NextResponse.json({ date: today, counts });
-  } catch (error) {
-    console.error("[api/bot-stats] Redis read error:", error);
-    return NextResponse.json(
-      { error: "Failed to fetch bot stats from Redis" },
-      { status: 500 }
-    );
+    if (
+      values.length !== botSignatures.length ||
+      values.some((value) => value !== null && (!Number.isSafeInteger(value) || value < 0))
+    ) {
+      throw new Error("Invalid counters");
+    }
+    return apiJson({
+      date,
+      counts: botSignatures.map((bot, index) => ({
+        id: bot.id,
+        name: bot.name,
+        hits: values[index] ?? 0,
+      })),
+    });
+  } catch {
+    return apiJson({ error: "Traffic statistics are temporarily unavailable." }, 503);
   }
 }

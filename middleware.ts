@@ -1,60 +1,32 @@
-import { NextResponse, type NextRequest } from 'next/server'
-import { Redis } from '@upstash/redis'
-import { updateSession } from '@/utils/supabase/middleware'
-import { detectBot } from '@/lib/botSignatures'
-
-const redis = new Redis({
-  url: process.env.UPSTASH_REDIS_REST_URL!,
-  token: process.env.UPSTASH_REDIS_REST_TOKEN!,
-})
+import { NextResponse, type NextRequest } from "next/server";
+import { updateSession } from "@/utils/supabase/middleware";
+import { detectBot } from "@/lib/botSignatures";
+import { createRedis } from "@/lib/redis";
+import { applyCrawlerPolicy } from "@/lib/crawler-policy";
 
 export async function middleware(request: NextRequest) {
-  // --- Bot detection & Policy Enforcement ---
-  try {
-    const userAgent = request.headers.get('user-agent') ?? ''
-    const bot = detectBot(userAgent)
-
-    if (bot) {
-      const today = new Date().toISOString().slice(0, 10) // YYYY-MM-DD (UTC)
-      
-      // Check policy
-      const policy = await redis.get(`policy:${bot.id}`)
-
-      if (policy === 'block') {
-        const key = `blocked:${bot.id}:${today}`
-        const count = await redis.incr(key)
-        if (count === 1) {
-          await redis.expire(key, 60 * 60 * 24 * 30) // 30 days
-        }
-        // Enforce block
-        return NextResponse.json({ error: "Access denied by site policy" }, { status: 403 })
-      } else {
-        // Proceed with regular hit logging
-        const key = `bot:${bot.id}:${today}`
-        const count = await redis.incr(key)
-        if (count === 1) {
-          await redis.expire(key, 60 * 60 * 24 * 30) // 30 days
-        }
-      }
+  const pathname = request.nextUrl.pathname;
+  const administrative = /^\/(?:api|dashboard|auth|login|signup)(?:\/|$)/.test(pathname);
+  const bot = administrative ? null : detectBot(request.headers.get("user-agent") ?? "");
+  if (bot) {
+    try {
+      const blocked = await applyCrawlerPolicy(
+        createRedis(),
+        bot.id,
+        new Date().toISOString().slice(0, 10),
+      );
+      if (blocked)
+        return NextResponse.json({ error: "Access denied by site policy" }, { status: 403 });
+    } catch {
+      // Fail open only when policy cannot be read; keep the website available.
+      console.error("[crawler] Policy unavailable; request allowed without a confirmed policy.");
     }
-  } catch (error) {
-    // Redis failure must never break the site — log and continue.
-    console.error('[middleware] Redis bot-logging error:', error)
   }
-
-  // --- Existing Supabase auth session handling ---
-  return await updateSession(request)
+  return await updateSession(request);
 }
 
 export const config = {
   matcher: [
-    /*
-     * Match all request paths except for the ones starting with:
-     * - _next/static (static files)
-     * - _next/image (image optimization files)
-     * - favicon.ico (favicon file)
-     * - common static file extensions
-     */
-    '/((?!_next/static|_next/image|favicon.ico|.*\\.(?:svg|png|jpg|jpeg|gif|webp|css|js|woff|woff2)$).*)',
+    "/((?!_next/static|_next/image|favicon.ico|.*\\.(?:svg|png|jpg|jpeg|gif|webp|css|js|woff|woff2)$).*)",
   ],
-}
+};

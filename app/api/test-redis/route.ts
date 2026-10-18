@@ -1,13 +1,15 @@
-import { Redis } from "@upstash/redis";
-import { NextResponse } from "next/server";
+import { apiJson, requireOwner } from "@/lib/api-auth";
+import { createRedis } from "@/lib/redis";
 
-const redis = new Redis({
-  url: process.env.UPSTASH_REDIS_REST_URL!,
-  token: process.env.UPSTASH_REDIS_REST_TOKEN!,
-});
+export const dynamic = "force-dynamic";
 
 export async function GET() {
-  await redis.set("test-key", "hello from promptwatch");
-  const value = await redis.get("test-key");
-  return NextResponse.json({ value });
+  const denied = await requireOwner();
+  if (denied) return denied;
+  try {
+    await createRedis().ping();
+    return apiJson({ status: "ok" });
+  } catch {
+    return apiJson({ error: "Redis is unavailable." }, 503);
+  }
 }

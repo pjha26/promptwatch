@@ -5,6 +5,22 @@ Reviewed on 18 October 2026 against local commit `bc24dcf` and the linked
 
 ## Direction
 
+### Product continuation, 18 October 2026
+
+The owner selected **single-owner, self-hosted product first** and authorized
+implementation changes and GitHub commits/pushes for each verified milestone.
+The original new-files-only restriction below describes milestone A, not this
+continuation. Preserve existing data and the core collector/dashboard contract.
+
+Milestone B now uses a server-configured owner UUID, protected administration
+APIs, Redis as the single policy authority, and a migration locking the legacy
+SQL policy table. Deployment setup is documented in `SELF_HOSTING.md`.
+
+Progress: A was committed and pushed as `a55aad9`. B passes 17 focused tests,
+TypeScript, targeted ESLint, the production build, and a built-app auth smoke
+test covering all existing administration APIs with Redis disabled. The owner
+environment variable and SQL migration must be configured by the installer.
+
 Make Promptwatch a trustworthy answer to three questions: **who is crawling my
 site, what are they reading, and are my access rules working?** Build that loop
 before investing in prompt rankings, billing, or more visual effects. Crawler
