@@ -21,6 +21,10 @@ Redis disabled: 37 tests, types, lint, build and API smoke checks. This does not
 verify live services or apply GitHub branch protection; hosted CI results must
 be checked after pushing.
 
+The first hosted run exposed two pre-existing skill gitlinks without a
+`.gitmodules` manifest. Added their existing origin URLs as metadata so GitHub
+checkout can clean up normally; no skill contents or product code changed.
+
 ### Product continuation, 18 October 2026
 
 The owner selected **single-owner, self-hosted product first** and authorized

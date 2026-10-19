@@ -1,0 +1,6 @@
+[submodule ".agents/skills/skills"]
+	path = .agents/skills/skills
+	url = https://github.com/emilkowalski/skills.git
+[submodule ".agents/skills/ui-ux-pro-max-skill"]
+	path = .agents/skills/ui-ux-pro-max-skill
+	url = https://github.com/nextlevelbuilder/ui-ux-pro-max-skill.git
