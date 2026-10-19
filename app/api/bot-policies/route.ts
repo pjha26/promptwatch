@@ -2,6 +2,7 @@ import { apiJson, requireOwner, requireSameOriginJson } from "@/lib/api-auth";
 import { botSignatures } from "@/lib/botSignatures";
 import { createRedis } from "@/lib/redis";
 import { parsePolicyUpdate, readPolicies } from "@/lib/bot-policies";
+import { savePolicyWithHistory } from "@/lib/policy-history";
 
 export const dynamic = "force-dynamic";
 
@@ -31,9 +32,8 @@ export async function POST(request: Request) {
     return apiJson({ error: "Provide a known botId and an allow or block policy." }, 400);
   }
   try {
-    // One authoritative write: the middleware reads this same key.
-    await createRedis().set(`policy:${update.botId}`, update.policy);
-    return apiJson({ success: true, ...update });
+    const saved = await savePolicyWithHistory(createRedis(), update);
+    return apiJson({ success: true, ...saved });
   } catch {
     return apiJson(
       { error: "Could not confirm the policy update. Refresh policies before retrying." },

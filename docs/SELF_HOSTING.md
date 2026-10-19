@@ -45,6 +45,22 @@ not an origin firewall or protection against forged User-Agent headers.
 Administrative/authentication routes are excluded from crawler policy evaluation
 so a crawler rule cannot lock the owner out of recovery controls.
 
+Settings also displays the latest **200 actual policy changes** through
+owner-only `/api/bot-policies/history`. One Redis script reads the previous
+effective rule, records the change and updates the same enforcement key, without
+interleaving another save. A missing key means the previous rule was Allow.
+Unchanged selections are no-ops. Existing policy keys and historical counters
+are preserved; changes made before this release are not backfilled.
+
+`policy:history` is a bounded list with no expiry; older entries are removed as
+new changes exceed the limit. It identifies the actor as the deployment owner
+and records bot, previous/new rule, unique event ID, and server time shown in UTC.
+It is not an immutable archive. Direct Redis edits are not recorded. Bad policy
+values or a history key of the wrong type prevent the script from saving;
+investigate and back up malformed keys before any manual repair. A timeout can
+mean the script ran but its reply was lost: refresh both policy and history
+before deciding whether another change is needed. No automatic retries occur.
+
 Traffic APIs, reports, policies and the read-only Redis connectivity check all
 require the configured owner and return private, non-cached responses. Errors do
 not include Redis credentials, database details, or stack traces. Auth callbacks

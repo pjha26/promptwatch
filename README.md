@@ -24,6 +24,8 @@ website.
 
 - Middleware matches known HTTP crawler User-Agent tokens on public requests.
 - Allow/Block policies are read and saved in Redis, the authoritative store.
+- Settings shows the latest 200 owner policy changes, recorded together with
+  each actual rule update. Selecting an unchanged rule creates no history entry.
 - A confirmed Block returns 403 even if its analytics write fails. Policy read
   outages fail open to keep the site available.
 - Traffic charts show 30 days of allowed requests, with separate blocked totals
@@ -146,9 +148,14 @@ configuration and no production secrets. Builds download Google fonts, so they
 need network access. Passing CI does not verify live owner login or Redis.
 The workflow does not configure branch protection or deploy the application.
 
+CI also runs `npm run test:redis` against its disposable Redis container, checking
+actual collector and policy-history scripts. To run that check locally, provide
+`PROMPTWATCH_TEST_REDIS_CONTAINER` with a disposable Redis 7 container ID; Docker
+must be running. Tests use unique key prefixes and never clear the database.
+
 ## What's next
 
-- Persist real site settings and add policy audit history
+- Persist real site settings
 - Validate the collector against active services and measure request latency
 - Add throttling and verified crawler identity where vendors support it
 - Package the middleware so other Next.js sites can install it without touching this codebase

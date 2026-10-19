@@ -16,6 +16,14 @@ jobs:
   checks:
     runs-on: ubuntu-latest
     timeout-minutes: 15
+    services:
+      redis:
+        image: redis:7-alpine
+        options: >-
+          --health-cmd "redis-cli ping"
+          --health-interval 5s
+          --health-timeout 3s
+          --health-retries 10
     env:
       NEXT_TELEMETRY_DISABLED: "1"
       # Dummy configuration: no Supabase or Redis account is needed for these checks.
@@ -36,5 +44,8 @@ jobs:
       - run: npm run lint
       - run: npm run typecheck
       - run: npm test
+      - run: npm run test:redis
+        env:
+          PROMPTWATCH_TEST_REDIS_CONTAINER: ${{ job.services.redis.id }}
       - run: npm run build
       - run: npm run test:auth

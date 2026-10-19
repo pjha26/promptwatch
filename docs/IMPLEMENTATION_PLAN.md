@@ -5,6 +5,27 @@ Reviewed on 18 October 2026 against local commit `bc24dcf` and the linked
 
 ## Direction
 
+### Policy history milestone, 19 October 2026
+
+The automated checks and submodule metadata fixes were pushed as `ffeb953` and
+`ccb0788`. The hosted GitHub workflow passed after the metadata fix, including a
+fresh lockfile install, lint, types, tests, build and signed-out API checks.
+
+Policy writes now use one Redis script to retain the actual previous effective
+rule and newest 200 changes alongside the authoritative update. No-op saves
+create no entries. Settings displays owner-only history with refresh, UTC dates,
+and distinct error/empty states. A policy reload failure no longer displays a
+false save-success message. Existing enforcement keys are unchanged.
+
+Local validation: 41 regression tests, zero-warning lint, TypeScript, production
+build and anonymous API smoke checks passed. An isolated browser checked history
+refresh, no-ops, reload persistence, UTC/mobile layout, malformed/read failures,
+ambiguous saves and failed confirmation reloads using simulated API responses.
+CI now adds a disposable Redis service and real Lua integration tests for policy
+history, concurrent no-ops, malformed storage, bounds, collector counts, TTLs and
+page caps. Local Docker is not running; actual Redis results are checked in CI
+after pushing. No live Supabase or Upstash services were contacted.
+
 ### Automated checks milestone, 19 October 2026
 
 Added a secret-free GitHub Actions workflow for pushes and pull requests, pinned

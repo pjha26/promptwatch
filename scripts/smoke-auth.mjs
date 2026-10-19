@@ -43,6 +43,7 @@ try {
       "/api/bot-stats/history",
       "/api/traffic-report",
       "/api/bot-policies",
+      "/api/bot-policies/history",
       "/api/test-redis",
       "/api/top-pages",
       "/api/tracking-health",
