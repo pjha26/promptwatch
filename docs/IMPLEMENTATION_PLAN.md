@@ -5,6 +5,22 @@ Reviewed on 18 October 2026 against local commit `bc24dcf` and the linked
 
 ## Direction
 
+### Automated checks milestone, 19 October 2026
+
+Added a secret-free GitHub Actions workflow for pushes and pull requests, pinned
+to official action commits with read-only repository permissions. Node 22 runs
+the lockfile install, zero-warning product lint, TypeScript, regression tests,
+production build and signed-out API smoke checks. `npm run check` provides the
+same checks locally. Build and dev cleanup no longer download undeclared rimraf.
+
+Existing unused imports and the landing-page effect dependency warning were
+fixed without changing crawler behavior. The preview retains its source and
+layout using an unoptimized Next image. Generated/tool directories are excluded
+from lint. Local CI-equivalent checks passed with dummy auth configuration and
+Redis disabled: 37 tests, types, lint, build and API smoke checks. This does not
+verify live services or apply GitHub branch protection; hosted CI results must
+be checked after pushing.
+
 ### Product continuation, 18 October 2026
 
 The owner selected **single-owner, self-hosted product first** and authorized

@@ -133,6 +133,19 @@ For example, `/,/docs,/blog` enables the homepage, docs and blog. Each UTC day
 stores up to 200 distinct paths for each outcome, with 30-day retention. Reports
 are not exhaustive after a cap is reached; per-bot totals keep counting.
 
+## Development checks
+
+Use Node.js 22 and `npm ci` with the committed lockfile. Run `npm run check`
+for lint (zero warnings), TypeScript, regression tests, production build, and
+signed-out API smoke checks. Individual commands are `npm run lint`,
+`npm run typecheck`, `npm test`, `npm run build`, and `npm run test:auth`.
+The smoke test requires a completed build and disables Redis writes.
+
+GitHub Actions runs these checks on pushes and pull requests using dummy auth
+configuration and no production secrets. Builds download Google fonts, so they
+need network access. Passing CI does not verify live owner login or Redis.
+The workflow does not configure branch protection or deploy the application.
+
 ## What's next
 
 - Persist real site settings and add policy audit history

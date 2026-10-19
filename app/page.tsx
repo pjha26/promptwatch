@@ -2,6 +2,7 @@
 
 import { useEffect, useRef, useState } from "react";
 import Link from "next/link";
+import Image from "next/image";
 import { Check, ArrowRight } from "lucide-react";
 import { ThemeToggle } from "@/components/ThemeToggle";
 import { motion } from "framer-motion";
@@ -33,6 +34,27 @@ export default function LandingPage() {
   }, []);
 
   useEffect(() => {
+    const animateCounter = (key: keyof typeof stats, target: number, duration: number) => {
+      let startTimestamp: number | null = null;
+      const step = (timestamp: number) => {
+        if (!startTimestamp) startTimestamp = timestamp;
+        const progress = Math.min((timestamp - startTimestamp) / duration, 1);
+
+        // Easing function: easeOutExpo
+        const easeProgress = progress === 1 ? 1 : 1 - Math.pow(2, -10 * progress);
+
+        setStats(prev => ({
+          ...prev,
+          [key]: Math.floor(easeProgress * target)
+        }));
+
+        if (progress < 1) {
+          window.requestAnimationFrame(step);
+        }
+      };
+      window.requestAnimationFrame(step);
+    };
+
     // Intersection Observer for slide up/in elements
     observerRef.current = new IntersectionObserver(
       (entries) => {
@@ -68,26 +90,7 @@ export default function LandingPage() {
     return () => observerRef.current?.disconnect();
   }, []);
 
-  const animateCounter = (key: keyof typeof stats, target: number, duration: number) => {
-    let startTimestamp: number | null = null;
-    const step = (timestamp: number) => {
-      if (!startTimestamp) startTimestamp = timestamp;
-      const progress = Math.min((timestamp - startTimestamp) / duration, 1);
 
-      // Easing function: easeOutExpo
-      const easeProgress = progress === 1 ? 1 : 1 - Math.pow(2, -10 * progress);
-
-      setStats(prev => ({
-        ...prev,
-        [key]: Math.floor(easeProgress * target)
-      }));
-
-      if (progress < 1) {
-        window.requestAnimationFrame(step);
-      }
-    };
-    window.requestAnimationFrame(step);
-  };
 
   return (
     <>
@@ -269,7 +272,9 @@ export default function LandingPage() {
             transition={{ duration: 0.8, ease: "easeOut" }}
             className="w-full border border-outline-variant rounded-2xl bg-surface-container relative group cursor-pointer h-[500px] md:h-[700px] overflow-hidden shadow-2xl shadow-primary/5"
           >
-            <img
+            <Image
+              fill
+              unoptimized
               alt="Dashboard Preview"
               className="w-full h-full object-cover opacity-80 group-hover:opacity-100 group-hover:scale-105 transition-all duration-700"
               src="https://lh3.googleusercontent.com/aida-public/AB6AXuCTwzG8K62EJ57uzT05FYhOkaM3xjBicbo1mJLI1PeBgIrhr6uEFsiTglFk_pXIkC_LN3Pma0YmEvm8gxFvr_IlOulCl6BNlHQLxgUL0onpMkVrHu3gZg-eQ9w3CjwsC4px6oGfkMNFttlfyRctJnLkNMXXZult3-XmLWfi-EZtx0FiBiO17v2ockhCjOIing8P16oGg4ftHew-w3Zd0CKXpXDxGzxoSssKsO8X97P4FRGCsp0FeyJ1CNF4XfIpA6sBBfQzVvZWq_yG"
