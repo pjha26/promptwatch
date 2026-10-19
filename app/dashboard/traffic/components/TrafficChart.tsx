@@ -44,7 +44,7 @@ const CustomTooltip = ({ active, payload, label }: any) => {
 
     // Format label to Wed, 5 Mar 2026
     const dateObj = new Date(label);
-    const dateStr = dateObj.toLocaleDateString('en-US', { weekday: 'short', day: 'numeric', month: 'short', year: 'numeric' });
+    const dateStr = dateObj.toLocaleDateString('en-US', { weekday: 'short', day: 'numeric', month: 'short', year: 'numeric', timeZone: 'UTC' });
 
     return (
       <div className="bg-white p-3 border border-gray-200 shadow-md rounded-md text-sm min-w-[150px]">
@@ -110,7 +110,7 @@ export function TrafficChart({ chartData, botTotals, hiddenBots, toggleBot }: Tr
       </div>
 
       {/* Chart Body */}
-      <div className="w-full overflow-x-auto">
+      <div className="w-full overflow-x-auto focus-visible:outline focus-visible:outline-2" role="region" aria-label="Allowed crawler traffic chart, scroll horizontally on small screens" tabIndex={0}>
         <div className="min-w-[600px] min-h-[380px] h-[45vh] max-h-[600px] p-4 pt-6">
           {sortedBots.length === hiddenBots.size && sortedBots.length > 0 ? (
             <div className="w-full h-full flex items-center justify-center text-sm text-gray-500">
@@ -131,7 +131,7 @@ export function TrafficChart({ chartData, botTotals, hiddenBots, toggleBot }: Tr
                   tickFormatter={(val) => {
                      // Shorten date for x-axis, e.g. "Mar 5"
                      const d = new Date(val);
-                     return d.toLocaleDateString('en-US', { month: 'short', day: 'numeric' });
+                     return d.toLocaleDateString('en-US', { month: 'short', day: 'numeric', timeZone: 'UTC' });
                   }}
                 />
                 <YAxis

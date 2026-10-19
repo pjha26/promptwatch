@@ -47,13 +47,12 @@ export function useTrafficData() {
       });
   }, [attempt]);
 
-  const { chartData, botTotals, botBlockedTotals, pageTotals, totalVisits } = useMemo(() => {
+  const { chartData, botTotals, botBlockedTotals, totalVisits } = useMemo(() => {
     if (!historyData) {
       return {
         chartData: [] as DailyTraffic[],
         botTotals: {} as Record<string, number>,
         botBlockedTotals: {} as Record<string, number>,
-        pageTotals: {} as Record<string, number>,
         totalVisits: 0,
       };
     }
@@ -82,12 +81,17 @@ export function useTrafficData() {
       return row;
     });
 
-    // TODO: Top Pages data requires path-level logging in middleware.ts (not yet implemented).
-    // Passing empty pageTotals so the TopPages panel renders its empty state.
-    const pageTotals = {} as Record<string, number>;
-
-    return { chartData, botTotals, botBlockedTotals, pageTotals, totalVisits };
+    return { chartData, botTotals, botBlockedTotals, totalVisits };
   }, [historyData]);
 
-  return { data: historyData, loading, error, chartData, botTotals, botBlockedTotals, pageTotals, totalVisits, retry };
+  return {
+    data: historyData,
+    loading,
+    error,
+    chartData,
+    botTotals,
+    botBlockedTotals,
+    totalVisits,
+    retry,
+  };
 }

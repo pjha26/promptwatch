@@ -50,6 +50,58 @@ require the configured owner and return private, non-cached responses. Errors do
 not include Redis credentials, database details, or stack traces. Auth callbacks
 accept only local return paths.
 
+## Public page analytics
+
+`PROMPTWATCH_PUBLIC_PATH_PREFIXES` is a comma-separated allowlist. It defaults to
+`/`, which records the homepage only. To collect public documentation and blog
+paths as well, set `PROMPTWATCH_PUBLIC_PATH_PREFIXES=/,/docs,/blog`, then restart
+the deployment. `/docs` matches itself and descendants, not `/docs-other`.
+Do not include directories containing customer data, private identifiers, or
+one-time links. Only enable prefixes whose complete URL paths are public.
+
+The collector strips query strings/fragments, rejects malformed or encoded
+separator/control characters, and excludes known private/admin/auth segments.
+It also rejects email-like paths, UUID/long hexadecimal identifiers, and
+JWT-shaped path segments. These conservative filters may omit some legitimate
+public pages; the allowlist is still the installer's privacy boundary.
+
+Daily allowed and blocked page hashes each retain at most **200 distinct paths**.
+Existing paths continue counting when the cap is reached. New paths past the cap
+are omitted, while per-bot totals continue counting. Both hashes expire after
+30 days. Limits are enforced inside the same Redis script as request counting,
+so concurrent requests cannot expand a hash past the cap.
+
+Top Pages reads the last 30 UTC days through an owner-only endpoint. It ranks
+allowed plus blocked activity and displays both outcomes separately. The first
+recorded path date is shown; older bot totals cannot be backfilled into paths.
+Paths removed from the configured allowlist disappear from reports immediately;
+their already-stored daily hashes expire normally. Page totals are therefore a
+bounded, allowlisted subset of all crawler requests, not an exhaustive URL log.
+
+`paths:started_at` stores only the first path-collection date and does not expire.
+It is not an uptime or ingestion-health signal. A timeout/service failure shows
+an error with retry instead of a false zero-page result.
+
+## Crawler identities
+
+HTTP token matching now covers training/search/user-requested agents from
+OpenAI, Anthropic, and Perplexity, plus the existing CCBot and Bytespider tokens.
+Matching is case-insensitive and checks token boundaries to avoid incidental
+substring matches. User-Agent headers remain forgeable; IP verification is not
+implemented. A reported match is not proof of a successful page response or an
+AI citation.
+
+`Google-Extended` and `Applebot-Extended` remain readable as historical IDs, but
+are not classified as HTTP crawlers or offered as editable HTTP blocking rules.
+Their content-use directives belong in the site's robots.txt. Existing historical
+keys are preserved, including counts from the earlier classifier.
+
+Vendor references: [OpenAI](https://developers.openai.com/api/docs/bots),
+[Anthropic](https://support.claude.com/en/articles/8896518-does-anthropic-crawl-data-from-the-web-and-how-can-site-owners-block-the-crawler),
+[Perplexity](https://docs.perplexity.ai/docs/resources/perplexity-crawlers),
+[Google](https://developers.google.cn/crawling/docs/crawlers-fetchers/google-common-crawlers?hl=en),
+and [Apple](https://support.apple.com/en-gb/119829).
+
 ## Verification and operations
 
 Run the tests, type check, lint and production build before updating an installation.

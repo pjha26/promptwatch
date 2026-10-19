@@ -33,8 +33,8 @@ or crawler totals as CSV. CSV dates and filenames reflect the selected window.
   or service failures, and `Cache-Control: private, no-store` on all responses.
 - The page also checks the session on the server. The existing middleware
   independently protects the dashboard route.
-- Uses one logical Redis `MGET` for the existing 420 allowed/blocked daily keys,
-  rather than making 420 separate reads. No writes, seeds, or policy changes.
+- Uses one logical Redis `MGET` for 30 allowed and 30 blocked daily keys per
+  configured crawler identity. No writes, seeds, or policy changes.
 - The report preserves **deployment-wide scope** for a single-owner installation.
   Only the configured owner can read it. Use a separate deployment and dedicated
   Redis database for another website; this release is not multi-customer SaaS.
@@ -46,7 +46,8 @@ or crawler totals as CSV. CSV dates and filenames reflect the selected window.
 - Missing counters count as zero recorded activity; no ingestion-health history
   exists to distinguish quiet traffic, expired counters, or collection outages.
 - User-Agent matching does not verify crawler identity or demonstrate citations.
-  Existing signature definitions and historical counts are preserved as-is.
+  Historical counts are preserved. The current classifier skips robots-only
+  tokens; see the crawler identities section in the self-hosting guide.
 - Validates dates, count arrays, crawler identifiers, and nonnegative integer
   counts before displaying/exporting. CSV text is quoted and formula-prefixed
   content is neutralized. Downloads include no credentials or visitor identifiers.

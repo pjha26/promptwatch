@@ -21,6 +21,32 @@ TypeScript, targeted ESLint, the production build, and a built-app auth smoke
 test covering all existing administration APIs with Redis disabled. The owner
 environment variable and SQL migration must be configured by the installer.
 
+### Resumed analytics milestone, 19 October 2026
+
+B was committed and pushed as `2f44ac8`. The next implementation covers the
+public-path portion of C: allowlisted, query-free daily counters; 200-path limits
+per outcome; 30-day retention; a protected Top Pages API; and dashboard views
+that include blocked-only crawler/page activity. Old per-bot keys remain intact.
+
+The classifier now distinguishes HTTP agents from robots-only content-use
+controls, adds documented search/user-requested agents, and checks token
+boundaries without case sensitivity. Historical IDs/counts remain readable.
+Chart labels use UTC, and mobile crawler counts wrap within their cards.
+
+Validation: 23 focused tests, TypeScript, targeted ESLint, production build,
+anonymous-API smoke tests, and an isolated browser harness using simulated
+traffic/page/policy responses. The browser checks cover page failure/retry,
+malformed/empty responses, blocked-only traffic, robots-only policy controls,
+mobile containment, UTC labels from a US timezone, and policy-save recovery.
+The harness does not establish a live authenticated Supabase/Redis connection.
+Lua execution against a real Redis instance remains unverified locally; no
+production services were written to for these checks.
+
+Remaining C work: verified IP identity, response delivery/status/latency evidence,
+and measured Redis/collector performance budgets. D–F remain roadmap milestones,
+not completed product features. Do not infer citations or successful page
+delivery from crawler counters.
+
 Make Promptwatch a trustworthy answer to three questions: **who is crawling my
 site, what are they reading, and are my access rules working?** Build that loop
 before investing in prompt rankings, billing, or more visual effects. Crawler

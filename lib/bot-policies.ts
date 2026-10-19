@@ -8,7 +8,7 @@ export function parsePolicyUpdate(value: unknown): { botId: string; policy: BotP
   const { botId, policy } = value as Record<string, unknown>;
   if (
     typeof botId !== "string" ||
-    !botSignatures.some((bot) => bot.id === botId) ||
+    !botSignatures.some((bot) => bot.id === botId && !bot.robotsOnly) ||
     (policy !== "allow" && policy !== "block")
   ) {
     throw new Error("Invalid policy");

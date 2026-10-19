@@ -12,18 +12,19 @@ interface TopCrawlersProps {
 export function TopCrawlers({ botTotals, botBlockedTotals }: TopCrawlersProps) {
   const topBots = useMemo(() => {
     return Object.entries(botTotals)
+      .map(([bot, count]) => [bot, count + (botBlockedTotals?.[bot] ?? 0)] as const)
       .filter(([, count]) => count > 0)
       .sort(([, a], [, b]) => b - a)
       .slice(0, 8);
-  }, [botTotals]);
+  }, [botTotals, botBlockedTotals]);
 
   const maxCount = topBots.length > 0 ? topBots[0][1] : 1;
 
   if (topBots.length === 0) {
     return (
-      <div className="flex-1 bg-white border border-gray-200 rounded-xl p-6 flex flex-col min-w-0">
-        <h2 className="text-sm font-semibold text-gray-900 mb-4">Top Crawlers</h2>
-        <div className="flex-1 flex items-center justify-center text-sm text-gray-500">
+      <div className="flex min-w-0 flex-1 flex-col rounded-xl border border-gray-200 bg-white p-6">
+        <h2 className="mb-4 text-sm font-semibold text-gray-900">Top Crawlers</h2>
+        <div className="flex flex-1 items-center justify-center text-sm text-gray-500">
           No crawlers to show.
         </div>
       </div>
@@ -31,19 +32,24 @@ export function TopCrawlers({ botTotals, botBlockedTotals }: TopCrawlersProps) {
   }
 
   return (
-    <div className="flex-1 bg-white border border-gray-200 rounded-xl p-6 flex flex-col min-w-0">
-      <h2 className="text-sm font-semibold text-gray-900 mb-4">Top Crawlers</h2>
+    <div className="flex min-w-0 flex-1 flex-col rounded-xl border border-gray-200 bg-white p-6">
+      <h2 className="mb-4 text-sm font-semibold text-gray-900">Top Crawlers</h2>
       <div className="flex flex-col gap-3">
         {topBots.map(([bot, count], i) => {
           const percentage = (count / maxCount) * 100;
           const initial = bot.charAt(0).toUpperCase();
-          const color = (BOT_CHART_COLORS as Record<string, string>)[bot] ?? FALLBACK_COLORS[i % FALLBACK_COLORS.length];
+          const color =
+            (BOT_CHART_COLORS as Record<string, string>)[bot] ??
+            FALLBACK_COLORS[i % FALLBACK_COLORS.length];
           const parent = (BOT_PARENTS as Record<string, string>)[bot] ?? "";
 
           const blockedCount = botBlockedTotals?.[bot] ?? 0;
 
           return (
-            <div key={bot} className="relative flex items-center justify-between text-sm py-1 text-gray-900">
+            <div
+              key={bot}
+              className="relative flex flex-wrap items-center justify-between gap-x-3 gap-y-1 py-1 text-sm text-gray-900"
+            >
               <div
                 style={{
                   position: "absolute",
@@ -56,24 +62,26 @@ export function TopCrawlers({ botTotals, botBlockedTotals }: TopCrawlersProps) {
                   pointerEvents: "none",
                 }}
               />
-              <div className="flex items-center gap-2 z-10 pl-1">
+              <div className="z-10 flex min-w-0 basis-full items-center gap-2 pl-1 sm:basis-auto">
                 <div
-                  className="w-5 h-5 rounded-full flex items-center justify-center text-[10px] font-bold text-white shrink-0"
+                  className="flex h-5 w-5 shrink-0 items-center justify-center rounded-full text-[10px] font-bold text-white"
                   style={{ backgroundColor: color }}
                 >
                   {initial}
                 </div>
-                <span className="text-gray-900 font-medium truncate">
-                  {bot} {parent && <span className="text-gray-500 font-normal">({parent})</span>}
+                <span className="truncate font-medium text-gray-900">
+                  {bot} {parent && <span className="font-normal text-gray-500">({parent})</span>}
                 </span>
               </div>
-              <div className="flex items-center gap-3 z-10 pr-1 shrink-0">
+              <div className="z-10 ml-auto flex max-w-full flex-wrap items-center gap-3 pr-1">
                 {blockedCount > 0 && (
-                  <span className="font-mono text-[10px] text-gray-400 uppercase tracking-wider">
+                  <span className="font-mono text-[10px] uppercase tracking-wider text-gray-400">
                     Blocked: {blockedCount.toLocaleString()}
                   </span>
                 )}
-                <span className="text-gray-900 font-medium">{count.toLocaleString()}</span>
+                <span className="font-medium text-gray-900">
+                  {(botTotals[bot] ?? 0).toLocaleString()} allowed
+                </span>
               </div>
             </div>
           );

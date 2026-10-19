@@ -3,10 +3,14 @@ import { updateSession } from "@/utils/supabase/middleware";
 import { detectBot } from "@/lib/botSignatures";
 import { createRedis } from "@/lib/redis";
 import { applyCrawlerPolicy } from "@/lib/crawler-policy";
+import { publicAnalyticsPath } from "@/lib/public-paths";
 
 export async function middleware(request: NextRequest) {
   const pathname = request.nextUrl.pathname;
-  const administrative = /^\/(?:api|dashboard|auth|login|signup)(?:\/|$)/.test(pathname);
+  const administrative =
+    /^\/(?:api|dashboard|auth|login|signup|admin|account|private|internal|settings|reset-password|verify|_next)(?:\/|$)/i.test(
+      pathname,
+    );
   const bot = administrative ? null : detectBot(request.headers.get("user-agent") ?? "");
   if (bot) {
     try {
@@ -14,6 +18,7 @@ export async function middleware(request: NextRequest) {
         createRedis(),
         bot.id,
         new Date().toISOString().slice(0, 10),
+        publicAnalyticsPath(pathname, process.env.PROMPTWATCH_PUBLIC_PATH_PREFIXES ?? "/"),
       );
       if (blocked)
         return NextResponse.json({ error: "Access denied by site policy" }, { status: 403 });

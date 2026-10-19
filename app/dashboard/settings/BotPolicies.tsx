@@ -118,21 +118,27 @@ export function BotPolicies() {
                 <span className="block text-sm font-medium">{bot.name}</span>
                 <span className="text-xs text-[#6B6560]">{bot.company}</span>
               </div>
-              <div className="flex border border-[#E0DDD8] bg-[#F5F2EE] p-0.5">
-                {(["allow", "block"] as const).map((policy) => (
-                  <button
-                    key={policy}
-                    type="button"
-                    disabled={saving || loading}
-                    aria-pressed={policies[index] === policy}
-                    aria-label={`${policy} ${bot.name}`}
-                    onClick={() => void change(bot.id, policy)}
-                    className={`px-4 py-1.5 text-xs font-medium uppercase transition-colors disabled:opacity-50 ${policies[index] === policy ? (policy === "block" ? "bg-[#E63946] text-white" : "bg-[#0A0A0A] text-white") : "text-[#6B6560] hover:text-black"}`}
-                  >
-                    {policy}
-                  </button>
-                ))}
-              </div>
+              {bot.robotsOnly ? (
+                <p className="max-w-48 text-right text-xs text-[#6B6560]">
+                  Content-use control in robots.txt; not an HTTP crawler.
+                </p>
+              ) : (
+                <div className="flex border border-[#E0DDD8] bg-[#F5F2EE] p-0.5">
+                  {(["allow", "block"] as const).map((policy) => (
+                    <button
+                      key={policy}
+                      type="button"
+                      disabled={saving || loading}
+                      aria-pressed={policies[index] === policy}
+                      aria-label={`${policy} ${bot.name}`}
+                      onClick={() => void change(bot.id, policy)}
+                      className={`px-4 py-1.5 text-xs font-medium uppercase transition-colors disabled:opacity-50 ${policies[index] === policy ? (policy === "block" ? "bg-[#E63946] text-white" : "bg-[#0A0A0A] text-white") : "text-[#6B6560] hover:text-black"}`}
+                    >
+                      {policy}
+                    </button>
+                  ))}
+                </div>
+              )}
             </div>
           ))}
         </div>

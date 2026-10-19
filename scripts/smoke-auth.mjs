@@ -44,6 +44,7 @@ try {
       "/api/traffic-report",
       "/api/bot-policies",
       "/api/test-redis",
+      "/api/top-pages",
     ]) {
       const response = await fetch(base + path, {
         headers: { "User-Agent": agent },

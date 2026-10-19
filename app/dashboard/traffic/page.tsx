@@ -2,13 +2,16 @@
 
 import { useState, useCallback } from "react";
 import { useTrafficData } from "./hooks/useTrafficData";
+import { usePageData } from "./hooks/usePageData";
 import { SummaryHeader } from "./components/SummaryHeader";
 import { TrafficChart } from "./components/TrafficChart";
 import { TopCrawlers } from "./components/TopCrawlers";
 import { TopPages } from "./components/TopPages";
 
 export default function TrafficDashboard() {
-  const { loading, error, chartData, botTotals, botBlockedTotals, pageTotals, totalVisits, retry } = useTrafficData();
+  const { loading, error, chartData, botTotals, botBlockedTotals, totalVisits, retry } =
+    useTrafficData();
+  const pages = usePageData();
   const [hiddenBots, setHiddenBots] = useState<Set<string>>(new Set());
 
   const toggleBot = useCallback((bot: string) => {
@@ -23,25 +26,28 @@ export default function TrafficDashboard() {
     });
   }, []);
 
-  const botCount = Object.keys(botTotals).filter((b) => botTotals[b] > 0).length;
-  const pageCount = Object.keys(pageTotals).length;
+  const botCount = Object.keys(botTotals).filter(
+    (b) => botTotals[b] > 0 || botBlockedTotals[b] > 0,
+  ).length;
+  const pageCount = pages.data ? Object.keys(pages.data.pageTotals).length : null;
+  const blockedTotal = Object.values(botBlockedTotals).reduce((sum, count) => sum + count, 0);
 
   if (loading) {
     return (
       <div className="w-full px-margin-mobile md:px-0">
         <header className="mb-gutter mt-8 md:mt-0">
-          <h1 className="font-data-mono text-data-mono text-secondary uppercase tracking-widest flex items-center gap-2">
-            <span className="w-2 h-2 bg-secondary block"></span>
+          <h1 className="flex items-center gap-2 font-data-mono text-data-mono uppercase tracking-widest text-secondary">
+            <span className="block h-2 w-2 bg-secondary"></span>
             01 — BOT TRAFFIC OVERVIEW
           </h1>
         </header>
         {/* Loading skeleton */}
         <div className="animate-pulse space-y-6">
-          <div className="h-16 bg-gray-200 rounded-xl"></div>
-          <div className="h-[400px] bg-gray-200 rounded-xl"></div>
+          <div className="h-16 rounded-xl bg-gray-200"></div>
+          <div className="h-[400px] rounded-xl bg-gray-200"></div>
           <div className="flex gap-4">
-            <div className="flex-1 h-[300px] bg-gray-200 rounded-xl"></div>
-            <div className="flex-1 h-[300px] bg-gray-200 rounded-xl"></div>
+            <div className="h-[300px] flex-1 rounded-xl bg-gray-200"></div>
+            <div className="h-[300px] flex-1 rounded-xl bg-gray-200"></div>
           </div>
         </div>
       </div>
@@ -52,16 +58,16 @@ export default function TrafficDashboard() {
     return (
       <div className="w-full px-margin-mobile md:px-0">
         <header className="mb-gutter mt-8 md:mt-0">
-          <h1 className="font-data-mono text-data-mono text-secondary uppercase tracking-widest flex items-center gap-2">
-            <span className="w-2 h-2 bg-secondary block"></span>
+          <h1 className="flex items-center gap-2 font-data-mono text-data-mono uppercase tracking-widest text-secondary">
+            <span className="block h-2 w-2 bg-secondary"></span>
             01 — BOT TRAFFIC OVERVIEW
           </h1>
         </header>
-        <div className="border border-gray-200 rounded-xl p-8 text-center">
-          <p className="text-gray-500 mb-4">Failed to load traffic data.</p>
+        <div className="rounded-xl border border-gray-200 p-8 text-center">
+          <p className="mb-4 text-gray-500">Failed to load traffic data.</p>
           <button
             onClick={retry}
-            className="border border-primary px-6 py-2 font-label-caps text-label-caps brutalist-hover"
+            className="brutalist-hover border border-primary px-6 py-2 font-label-caps text-label-caps"
           >
             RETRY
           </button>
@@ -73,9 +79,9 @@ export default function TrafficDashboard() {
   return (
     <div className="w-full">
       {/* Header */}
-      <header className="mb-gutter mt-8 md:mt-0 px-margin-mobile md:px-0">
-        <h1 className="font-data-mono text-data-mono text-secondary uppercase tracking-widest flex items-center gap-2">
-          <span className="w-2 h-2 bg-secondary block"></span>
+      <header className="mb-gutter mt-8 px-margin-mobile md:mt-0 md:px-0">
+        <h1 className="flex items-center gap-2 font-data-mono text-data-mono uppercase tracking-widest text-secondary">
+          <span className="block h-2 w-2 bg-secondary"></span>
           01 — BOT TRAFFIC OVERVIEW
         </h1>
       </header>
@@ -83,9 +89,18 @@ export default function TrafficDashboard() {
       {/* Responsive container for main content */}
       <div className="px-margin-mobile md:px-0">
         {/* Summary */}
-        <SummaryHeader total={totalVisits} botCount={botCount} pageCount={pageCount} />
+        <SummaryHeader
+          total={totalVisits}
+          blocked={blockedTotal}
+          botCount={botCount}
+          pageCount={pageCount}
+        />
 
         {/* Stacked Bar Chart */}
+        <p className="mb-4 text-sm text-gray-500">
+          The chart shows requests allowed by bot policy. Blocked requests are counted separately.
+          User-Agent matches do not verify crawler identity.
+        </p>
         <TrafficChart
           chartData={chartData}
           botTotals={botTotals}
@@ -94,10 +109,16 @@ export default function TrafficDashboard() {
         />
 
         {/* Bottom panels */}
-        <div className="flex flex-col md:flex-row gap-4 mb-6">
+        <div className="mb-6 flex flex-col gap-4 md:flex-row">
           <TopCrawlers botTotals={botTotals} botBlockedTotals={botBlockedTotals} />
-          {/* TODO: TopPages requires path-level logging in middleware.ts — currently shows empty state */}
-          <TopPages pageTotals={pageTotals} />
+          <TopPages
+            pageTotals={pages.data?.pageTotals ?? {}}
+            blockedPageTotals={pages.data?.blockedPageTotals ?? {}}
+            startedAt={pages.data?.startedAt ?? null}
+            loading={pages.loading}
+            error={pages.error}
+            retry={pages.retry}
+          />
         </div>
       </div>
     </div>
