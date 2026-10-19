@@ -3,10 +3,20 @@
 import Link from "next/link";
 import { useTrafficData } from "../traffic/hooks/useTrafficData";
 import { useActionState } from "../actions/hooks/useActionState";
+import { CRAWLER_ACTION_LABELS } from "@/lib/crawler-actions";
 
 export function OverviewClient() {
-  const { chartData, totalVisits, loading: trafficLoading } = useTrafficData();
-  const { actions, loading: actionsLoading, updateActionStatus } = useActionState();
+  const { chartData, totalVisits, loading: trafficLoading, error: trafficError } = useTrafficData();
+  const {
+    actions,
+    loading: actionsLoading,
+    error: actionsError,
+    saveError,
+    savingId,
+    needsRefresh,
+    retry: retryActions,
+    updateActionStatus,
+  } = useActionState();
 
   const activeActions = actions.filter((a) => a.status === "active");
   const activeCount = activeActions.length;
@@ -38,13 +48,13 @@ export function OverviewClient() {
   };
 
   return (
-    <div className="p-6 md:p-8 max-w-7xl mx-auto w-full font-dm-sans">
+    <div className="font-dm-sans mx-auto w-full max-w-7xl p-6 md:p-8">
       {/* Header */}
-      <div className="flex justify-between items-end mb-8 border-b border-[#E0DDD8] pb-4">
-        <h1 className="font-barlow-condensed text-2xl font-bold tracking-tight text-[#0A0A0A] uppercase">
+      <div className="mb-8 flex items-end justify-between border-b border-[#E0DDD8] pb-4">
+        <h1 className="font-barlow-condensed text-2xl font-bold uppercase tracking-tight text-[#0A0A0A]">
           OVERVIEW
         </h1>
-        <div className="font-dm-mono text-[#6B6560] text-sm uppercase">
+        <div className="font-dm-mono text-sm uppercase text-[#6B6560]">
           {new Date().toLocaleDateString("en-GB", {
             weekday: "short",
             day: "2-digit",
@@ -55,100 +65,112 @@ export function OverviewClient() {
       </div>
 
       {/* Row 1 - Stats */}
-      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 mb-8">
+      <div className="mb-8 grid grid-cols-1 gap-6 md:grid-cols-2 lg:grid-cols-4">
         <Link
           href="/dashboard/traffic"
-          className="bg-[#FFFFFF] border border-[#C8C4BE] rounded-none p-6 shadow-[0_1px_3px_rgba(0,0,0,0.08)] flex flex-col justify-between h-full hover:bg-gray-50 transition-colors"
+          className="flex h-full flex-col justify-between rounded-none border border-[#C8C4BE] bg-[#FFFFFF] p-6 shadow-[0_1px_3px_rgba(0,0,0,0.08)] transition-colors hover:bg-gray-50"
         >
-          <div className="text-[#E63946] text-xs font-semibold uppercase tracking-widest mb-4">
-            TOTAL AI VISITS
+          <div className="mb-4 text-xs font-semibold uppercase tracking-widest text-[#E63946]">
+            ALLOWED CRAWLER REQUESTS
           </div>
           <div>
-            <div className="font-dm-mono text-5xl font-bold text-[#0A0A0A] mb-1">
-              {trafficLoading ? "..." : totalVisits.toLocaleString()}
+            <div
+              className={`font-dm-mono mb-1 font-bold text-[#0A0A0A] ${trafficError ? "text-2xl" : "text-5xl"}`}
+            >
+              {trafficLoading ? "..." : trafficError ? "Unavailable" : totalVisits.toLocaleString()}
             </div>
-            <div className="text-[#6B6560] text-sm">last 30 days</div>
+            <div className="text-sm text-[#6B6560]">last 30 days</div>
           </div>
         </Link>
 
         <Link
           href="/dashboard/actions"
-          className="bg-[#FFFFFF] border border-[#C8C4BE] rounded-none p-6 shadow-[0_1px_3px_rgba(0,0,0,0.08)] flex flex-col justify-between h-full hover:bg-gray-50 transition-colors"
+          className="flex h-full flex-col justify-between rounded-none border border-[#C8C4BE] bg-[#FFFFFF] p-6 shadow-[0_1px_3px_rgba(0,0,0,0.08)] transition-colors hover:bg-gray-50"
         >
-          <div className="text-[#E63946] text-xs font-semibold uppercase tracking-widest mb-4">
+          <div className="mb-4 text-xs font-semibold uppercase tracking-widest text-[#E63946]">
             ACTIVE ACTIONS
           </div>
           <div>
-            <div className="font-dm-mono text-5xl font-bold text-[#0A0A0A] mb-1">
-              {actionsLoading ? "..." : activeCount}
+            <div
+              className={`font-dm-mono mb-1 font-bold text-[#0A0A0A] ${actionsError ? "text-2xl" : "text-5xl"}`}
+            >
+              {actionsLoading ? "..." : actionsError ? "Unavailable" : activeCount}
             </div>
-            <div className="text-[#6B6560] text-sm">need your attention</div>
+            <div className="text-sm text-[#6B6560]">need your attention</div>
           </div>
         </Link>
 
         {/* Muted / Coming Soon */}
-        <div className="bg-[#F5F2EE] opacity-60 border border-[#C8C4BE] border-dashed rounded-none p-6 shadow-none flex flex-col justify-between h-full cursor-not-allowed">
-          <div className="text-[#6B6560] text-xs font-semibold uppercase tracking-widest mb-4">
+        <div className="flex h-full cursor-not-allowed flex-col justify-between rounded-none border border-dashed border-[#C8C4BE] bg-[#F5F2EE] p-6 opacity-60 shadow-none">
+          <div className="mb-4 text-xs font-semibold uppercase tracking-widest text-[#6B6560]">
             PROMPTS TRACKED
           </div>
           <div>
-            <div className="font-dm-mono text-2xl font-bold text-[#6B6560] mb-1">
-              COMING SOON
-            </div>
-            <div className="text-[#6B6560] text-sm">Feature in development</div>
+            <div className="font-dm-mono mb-1 text-2xl font-bold text-[#6B6560]">COMING SOON</div>
+            <div className="text-sm text-[#6B6560]">Feature in development</div>
           </div>
         </div>
 
         {/* Muted / Coming Soon */}
-        <div className="bg-[#F5F2EE] opacity-60 border border-[#C8C4BE] border-dashed rounded-none p-6 shadow-none flex flex-col justify-between h-full cursor-not-allowed">
-          <div className="text-[#6B6560] text-xs font-semibold uppercase tracking-widest mb-4">
+        <div className="flex h-full cursor-not-allowed flex-col justify-between rounded-none border border-dashed border-[#C8C4BE] bg-[#F5F2EE] p-6 opacity-60 shadow-none">
+          <div className="mb-4 text-xs font-semibold uppercase tracking-widest text-[#6B6560]">
             COMPETITORS DETECTED
           </div>
           <div>
-            <div className="font-dm-mono text-2xl font-bold text-[#6B6560] mb-1">
-              COMING SOON
-            </div>
-            <div className="text-[#6B6560] text-sm">Feature in development</div>
+            <div className="font-dm-mono mb-1 text-2xl font-bold text-[#6B6560]">COMING SOON</div>
+            <div className="text-sm text-[#6B6560]">Feature in development</div>
           </div>
         </div>
       </div>
 
+      {saveError && (
+        <p role="alert" className="mb-6 border border-amber-300 bg-amber-50 p-4 text-sm">
+          {saveError}{" "}
+          <button type="button" onClick={retryActions} className="underline">
+            Refresh actions
+          </button>
+        </p>
+      )}
       {/* Row 2 - Two Columns */}
-      <div className="flex flex-col lg:flex-row gap-6">
+      <div className="flex flex-col gap-6 lg:flex-row">
         {/* Left Column - 60% */}
-        <div className="lg:w-[60%] flex flex-col">
-          <div className="text-[#E63946] text-xs font-semibold uppercase tracking-widest mb-4">
+        <div className="flex flex-col lg:w-[60%]">
+          <div className="mb-4 text-xs font-semibold uppercase tracking-widest text-[#E63946]">
             RECENT TRAFFIC
           </div>
-          <div className="bg-[#FFFFFF] border border-[#E0DDD8] rounded-none p-6 shadow-[0_1px_3px_rgba(0,0,0,0.08)] flex-1 flex flex-col">
-            <div className="flex-1 flex items-end justify-between gap-2 h-48 mb-4 border-b border-[#E0DDD8] pb-4">
+          <div className="flex flex-1 flex-col rounded-none border border-[#E0DDD8] bg-[#FFFFFF] p-6 shadow-[0_1px_3px_rgba(0,0,0,0.08)]">
+            <div className="mb-4 flex h-48 flex-1 items-end justify-between gap-2 border-b border-[#E0DDD8] pb-4">
               {trafficLoading ? (
-                <div className="w-full h-full flex items-center justify-center text-[#6B6560] text-sm">
+                <div className="flex h-full w-full items-center justify-center text-sm text-[#6B6560]">
                   Loading data...
                 </div>
+              ) : trafficError ? (
+                <p role="alert" className="text-sm text-gray-600">
+                  Traffic could not be loaded.
+                </p>
               ) : last7Days.length > 0 ? (
                 last7Days.map((day, i) => (
                   <div
                     key={i}
-                    className="w-full bg-[#0A0A0A] hover:bg-[#E63946] transition-colors relative group"
+                    className="group relative w-full bg-[#0A0A0A] transition-colors hover:bg-[#E63946]"
                     style={{
                       height: day.total > 0 ? `${(day.total / maxTraffic) * 100}%` : "1%",
                     }}
                   >
-                    <div className="absolute -top-8 left-1/2 -translate-x-1/2 bg-black text-white text-xs px-2 py-1 opacity-0 group-hover:opacity-100 transition-opacity pointer-events-none whitespace-nowrap z-10">
+                    <div className="pointer-events-none absolute -top-8 left-1/2 z-10 -translate-x-1/2 whitespace-nowrap bg-black px-2 py-1 text-xs text-white opacity-0 transition-opacity group-hover:opacity-100">
                       {day.total} visits
                     </div>
                   </div>
                 ))
               ) : (
-                <div className="w-full h-full flex items-center justify-center text-[#6B6560] text-sm">
+                <div className="flex h-full w-full items-center justify-center text-sm text-[#6B6560]">
                   No data available
                 </div>
               )}
             </div>
             {/* X-axis labels */}
-            <div className="flex justify-between font-dm-mono text-xs text-[#6B6560]">
-              {trafficLoading
+            <div className="font-dm-mono flex justify-between text-xs text-[#6B6560]">
+              {trafficLoading || trafficError
                 ? null
                 : last7Days.map((day, i) => (
                     <div key={i} className="w-full text-center">
@@ -157,7 +179,7 @@ export function OverviewClient() {
                             const d = new Date(day.date);
                             // Ensure UTC string display properly if needed, but local string is fine for simple display
                             return `${String(d.getUTCDate()).padStart(2, "0")}/${String(
-                              d.getUTCMonth() + 1
+                              d.getUTCMonth() + 1,
                             ).padStart(2, "0")}`;
                           })()
                         : "-"}
@@ -168,53 +190,61 @@ export function OverviewClient() {
         </div>
 
         {/* Right Column - 40% */}
-        <div className="lg:w-[40%] flex flex-col">
-          <div className="text-[#E63946] text-xs font-semibold uppercase tracking-widest mb-4">
+        <div className="flex flex-col lg:w-[40%]">
+          <div className="mb-4 text-xs font-semibold uppercase tracking-widest text-[#E63946]">
             TOP ACTIONS
           </div>
-          <div className="bg-[#FFFFFF] border border-[#E0DDD8] rounded-none p-6 shadow-[0_1px_3px_rgba(0,0,0,0.08)] flex-1 flex flex-col justify-between">
+          <div className="flex flex-1 flex-col justify-between rounded-none border border-[#E0DDD8] bg-[#FFFFFF] p-6 shadow-[0_1px_3px_rgba(0,0,0,0.08)]">
             <div>
               {actionsLoading ? (
-                <div className="py-4 text-[#6B6560] text-sm">Loading actions...</div>
+                <div className="py-4 text-sm text-[#6B6560]">Loading actions...</div>
+              ) : actionsError ? (
+                <p role="alert" className="py-4 text-sm text-gray-600">
+                  Recommendations could not be loaded.{" "}
+                  <button type="button" onClick={retryActions} className="underline">
+                    Retry actions
+                  </button>
+                </p>
               ) : topActions.length > 0 ? (
                 topActions.map((action) => (
                   <div
                     key={action.id}
-                    className="flex items-center justify-between py-4 border-b border-[#E0DDD8] last:border-b-0"
+                    className="flex flex-wrap items-center justify-between gap-3 border-b border-[#E0DDD8] py-4 last:border-b-0"
                   >
                     <div className="flex items-center gap-3">
                       <div
-                        className={`w-2 h-2 rounded-full shrink-0 ${getSeverityColor(
-                          action.severity
+                        className={`h-2 w-2 shrink-0 rounded-full ${getSeverityColor(
+                          action.severity,
                         )}`}
                       ></div>
                       <div>
-                        <div className="text-sm font-medium text-[#0A0A0A] line-clamp-1">
+                        <div className="line-clamp-1 text-sm font-medium text-[#0A0A0A]">
                           {action.title}
                         </div>
-                        <div className="mt-1 inline-block border border-[#E0DDD8] text-[#6B6560] text-[10px] uppercase tracking-wider px-2 py-0.5 rounded-none">
-                          {action.type.replace(/_/g, " ")}
+                        <div className="mt-1 inline-block rounded-none border border-[#E0DDD8] px-2 py-0.5 text-[10px] uppercase tracking-wider text-[#6B6560]">
+                          {CRAWLER_ACTION_LABELS[action.type]}
                         </div>
                       </div>
                     </div>
                     <button
-                      onClick={() => updateActionStatus(action.id, "accepted")}
-                      className="border border-[#0A0A0A] bg-white text-[#0A0A0A] text-xs font-medium px-3 py-1.5 rounded-none transition-colors hover:bg-gray-50 shrink-0 ml-4"
+                      disabled={!!savingId || needsRefresh}
+                      onClick={() => void updateActionStatus(action.id, "accepted")}
+                      className="ml-4 shrink-0 rounded-none border border-[#0A0A0A] bg-white px-3 py-1.5 text-xs font-medium text-[#0A0A0A] transition-colors hover:bg-gray-50"
                     >
-                      Accept
+                      {savingId === action.id ? "Saving…" : "Mark reviewed"}
                     </button>
                   </div>
                 ))
               ) : (
-                <div className="py-4 text-[#6B6560] text-sm">No active actions.</div>
+                <div className="py-4 text-sm text-[#6B6560]">No active actions.</div>
               )}
             </div>
 
             <Link
               href="/dashboard/actions"
-              className="text-[#E63946] text-sm font-medium hover:underline mt-6 block"
+              className="mt-6 block text-sm font-medium text-[#E63946] hover:underline"
             >
-              View all {activeCount} actions &rarr;
+              {actionsError ? "View actions" : `View all ${activeCount} actions`} &rarr;
             </Link>
           </div>
         </div>

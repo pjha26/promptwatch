@@ -33,12 +33,14 @@ website.
 - Reports provide 7/30-day totals and daily/crawler CSV exports.
 - Tracking Health separates Redis connectivity, collector evidence, and recorded
   failures, with an optional isolated storage self-check.
+- Action Centre and Overview derive recommendations from actual crawler counters:
+  request increases, repeated blocks, and newly observed activity. Reviews are
+  saved in Redis. See [action rules and limits](docs/CRAWLER_ACTIONS.md).
 - Supabase authentication supports email/password and Google. Dashboard APIs and
   pages require the server-configured owner UUID.
 
 **Still demo-backed or incomplete:**
 
-- Action Centre and Overview recommendations use seeded monitoring events.
 - Prompt/competitor screens contain examples; no real citation collection exists.
 - Site settings, notifications, API key and deletion controls remain placeholders.
 - Throttling, IP verification, external-site installation, and continuous uptime
@@ -133,8 +135,8 @@ are not exhaustive after a cap is reached; per-bot totals keep counting.
 
 ## What's next
 
-- Derive recommendations from actual crawler activity instead of demo events
-- Persist real site settings and decisions, then add operational health checks
+- Persist real site settings and add policy audit history
+- Validate the collector against active services and measure request latency
 - Add throttling and verified crawler identity where vendors support it
 - Package the middleware so other Next.js sites can install it without touching this codebase
 

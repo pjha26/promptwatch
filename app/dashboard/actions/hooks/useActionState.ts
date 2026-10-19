@@ -1,108 +1,104 @@
-import { useState, useEffect, useCallback } from "react";
-import { Action, Status } from "@/lib/types";
-import { deriveActions } from "../lib/derivation";
+"use client";
 
-const STORAGE_KEY = "actionCentre.v1";
+import { useCallback, useEffect, useState } from "react";
+import { parseActionResponse, parseDecision } from "@/lib/crawler-actions";
+import type { Status } from "@/lib/types";
 
-type StoredState = Record<string, Status>;
+type Snapshot = ReturnType<typeof parseActionResponse>;
 
 export function useActionState() {
-  const [actions, setActions] = useState<Action[]>([]);
+  const [snapshot, setSnapshot] = useState<Snapshot | null>(null);
   const [loading, setLoading] = useState(true);
-  const [error, setError] = useState(false);
-  const [hydrated, setHydrated] = useState(false);
+  const [error, setError] = useState("");
+  const [saveError, setSaveError] = useState("");
+  const [savingId, setSavingId] = useState<string | null>(null);
+  const [needsRefresh, setNeedsRefresh] = useState(false);
+  const [attempt, setAttempt] = useState(0);
 
   useEffect(() => {
-    let isMounted = true;
-
-    async function loadData() {
+    const controller = new AbortController();
+    const signal = AbortSignal.any([controller.signal, AbortSignal.timeout(15_000)]);
+    setLoading(true);
+    setError("");
+    setSnapshot(null);
+    void (async () => {
       try {
-        const res = await fetch("/monitoring-events.json");
-        if (!res.ok) throw new Error("Failed to load events");
-        const events = await res.json();
-
-        if (!isMounted) return;
-
-        // 1. Derive base actions from events
-        const derived = deriveActions(events);
-
-        // 2. Hydrate from localStorage
-        let storedState: StoredState = {};
-        try {
-          const raw = localStorage.getItem(STORAGE_KEY);
-          if (raw) {
-            storedState = JSON.parse(raw);
-          }
-        } catch (e) {
-          console.warn("Could not read from localStorage", e);
-          // If quota or private browsing, we ignore and use empty storedState
+        const response = await fetch("/api/actions", { cache: "no-store", signal });
+        if (!response.ok)
+          throw new Error(
+            "Could not load recommendations and saved decisions. Check owner access and storage, then retry.",
+          );
+        const data = parseActionResponse(await response.json());
+        if (!controller.signal.aborted) {
+          setSnapshot(data);
+          setSaveError("");
+          setNeedsRefresh(false);
         }
-
-        // 3. Merge stored statuses into derived actions
-        const merged: Action[] = derived.map((action) => {
-          if (storedState[action.id]) {
-            return { ...action, status: storedState[action.id] };
-          }
-          return action;
-        });
-
-        // 4. Save cleaned state back to local storage (drops orphaned stored states)
-        const newStoredState: StoredState = {};
-        merged.forEach((a) => {
-          newStoredState[a.id] = a.status;
-        });
-        
-        try {
-          localStorage.setItem(STORAGE_KEY, JSON.stringify(newStoredState));
-        } catch (e) {
-          console.warn("Could not write to localStorage", e);
-          // Handle quota / private browsing error cleanly later if needed
-          setError(true); 
-          // We set error true specifically to display the inline warning as spec asks: 
-          // "Error (localStorage unavailable — quota / private browsing): fall back to in-memory state, show inline notice"
-          // We don't crash, we just let it stay true.
-        }
-
-        setActions(merged);
-        setLoading(false);
-        setHydrated(true);
-      } catch (err) {
-        if (isMounted) {
-          console.error(err);
-          setLoading(false);
-          setHydrated(true);
-          // Only true fetch errors should probably show a different state, but the spec mainly talks about storage errors.
-          // We'll let the UI handle empty actions if fetch fails completely.
-        }
+      } catch (cause) {
+        if (!controller.signal.aborted)
+          setError(cause instanceof Error ? cause.message : "Recommendations are unavailable.");
+      } finally {
+        if (!controller.signal.aborted) setLoading(false);
       }
-    }
+    })();
+    return () => controller.abort();
+  }, [attempt]);
 
-    loadData();
-
-    return () => {
-      isMounted = false;
-    };
-  }, []);
-
-  const updateActionStatus = useCallback((id: string, status: Status) => {
-    setActions((prev) => {
-      const updated = prev.map((a) => (a.id === id ? { ...a, status } : a));
-      
-      // Sync to local storage
-      const newStoredState: StoredState = {};
-      updated.forEach((a) => {
-        newStoredState[a.id] = a.status;
-      });
+  const updateActionStatus = useCallback(
+    async (id: string, status: Status) => {
+      if (savingId || needsRefresh) return;
+      setSavingId(id);
+      setSaveError("");
       try {
-        localStorage.setItem(STORAGE_KEY, JSON.stringify(newStoredState));
-      } catch (e) {
-        console.warn("Could not write to localStorage on update", e);
-        setError(true);
+        const response = await fetch("/api/actions", {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({ id, status }),
+          signal: AbortSignal.timeout(15_000),
+        });
+        if (!response.ok)
+          throw new Error(
+            "The review decision could not be confirmed. Refresh actions before making more changes.",
+          );
+        const json = await response.json();
+        const decision = parseDecision(json);
+        if (json.id !== id || decision.status !== status || !decision.reviewedAt)
+          throw new Error("Unexpected review response. Refresh actions before retrying.");
+        setSnapshot((current) =>
+          current
+            ? {
+                ...current,
+                actions: current.actions.map((action) =>
+                  action.id === id ? { ...action, ...decision } : action,
+                ),
+              }
+            : current,
+        );
+      } catch (cause) {
+        setNeedsRefresh(true);
+        setSaveError(
+          cause instanceof Error
+            ? cause.message
+            : "The review decision could not be confirmed. Refresh actions.",
+        );
+      } finally {
+        setSavingId(null);
       }
+    },
+    [savingId, needsRefresh],
+  );
 
-      return updated;
-    });
-  }, []);
-
-  return { actions, loading, hydrated, storageError: error, updateActionStatus };
+  return {
+    actions: snapshot?.actions ?? [],
+    window: snapshot?.window ?? null,
+    observedRequests: snapshot?.observedRequests ?? 0,
+    generatedAt: snapshot?.generatedAt ?? null,
+    loading,
+    error,
+    saveError,
+    savingId,
+    needsRefresh,
+    retry: () => setAttempt((value) => value + 1),
+    updateActionStatus,
+  };
 }

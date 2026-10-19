@@ -74,6 +74,30 @@ site, what are they reading, and are my access rules working?** Build that loop
 before investing in prompt rankings, billing, or more visual effects. Crawler
 visits alone do not prove that an AI answer cited a site.
 
+### Real Action Centre milestone, 19 October 2026
+
+Tracking Health was committed and pushed as `1b96c3f`. Action Centre and Overview
+now derive evidence-backed recommendations from real counters: traffic increases,
+repeated blocks, and newly observed activity over completed UTC days. Owner-only
+GET/POST endpoints persist review/dismiss/reopen decisions in expiring Redis
+hashes, independently of policies. Demo files and historical counters are retained.
+
+Failures are distinguished from empty results. Ambiguous saves require a refresh
+before another decision. Cards expose counts, dates, source links, and limits on
+identity and discovery claims. Rules and retention are in `CRAWLER_ACTIONS.md`.
+The reviewed filter covers current recommendations, not a permanent audit archive.
+
+Validation includes 37 focused tests, TypeScript, targeted lint, production build,
+signed-out API smoke checks, and an isolated browser harness covering filters,
+review persistence across reload, reopen, save-failure recovery, Overview,
+empty/error states and mobile cards. Browser responses are simulated; live
+Supabase/Redis verification and owner setup remain pending service reactivation.
+
+The following review tables and initial restrictions are historical baseline
+findings; completed milestones above supersede them. Remaining priorities are
+live installation verification, policy audit history, verified identities,
+measured collection latency, and installation on a second site.
+
 Preservation rule for this iteration: add new files only. Keep the landing page,
 auth, dashboard, middleware, schema, dependencies, and existing API contracts
 unchanged. No production writes, migrations, commits, pushes, or deployment.

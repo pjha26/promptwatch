@@ -1,10 +1,11 @@
-import { Severity, ActionType } from "@/lib/types";
+import type { Severity } from "@/lib/types";
+import { CRAWLER_ACTION_LABELS, type CrawlerActionType } from "@/lib/crawler-actions";
 
 interface ActionFiltersProps {
   severityFilter: Severity | "all";
   setSeverityFilter: (val: Severity | "all") => void;
-  typeFilter: ActionType | "all";
-  setTypeFilter: (val: ActionType | "all") => void;
+  typeFilter: CrawlerActionType | "all";
+  setTypeFilter: (val: CrawlerActionType | "all") => void;
 }
 
 export function ActionFilters({
@@ -14,14 +15,16 @@ export function ActionFilters({
   setTypeFilter,
 }: ActionFiltersProps) {
   return (
-    <div className="flex flex-wrap items-center gap-4 text-sm mt-4 sm:mt-0 sm:ml-auto shrink-0">
+    <div className="mt-4 flex shrink-0 flex-wrap items-center gap-4 text-sm sm:ml-auto sm:mt-0">
       <div className="flex items-center gap-2">
-        <label htmlFor="severity-filter" className="text-gray-500 font-medium">Severity</label>
+        <label htmlFor="severity-filter" className="font-medium text-gray-500">
+          Severity
+        </label>
         <select
           id="severity-filter"
           value={severityFilter}
           onChange={(e) => setSeverityFilter(e.target.value as Severity | "all")}
-          className="bg-white border border-gray-200 rounded-md px-2 py-1.5 text-gray-900 focus:outline-none focus:ring-2 focus:ring-gray-200"
+          className="rounded-md border border-gray-200 bg-white px-2 py-1.5 text-gray-900 focus:outline-none focus:ring-2 focus:ring-gray-200"
         >
           <option value="all">All</option>
           <option value="high">High</option>
@@ -31,17 +34,21 @@ export function ActionFilters({
       </div>
 
       <div className="flex items-center gap-2">
-        <label htmlFor="type-filter" className="text-gray-500 font-medium">Action type</label>
+        <label htmlFor="type-filter" className="font-medium text-gray-500">
+          Action type
+        </label>
         <select
           id="type-filter"
           value={typeFilter}
-          onChange={(e) => setTypeFilter(e.target.value as ActionType | "all")}
-          className="bg-white border border-gray-200 rounded-md px-2 py-1.5 text-gray-900 focus:outline-none focus:ring-2 focus:ring-gray-200"
+          onChange={(e) => setTypeFilter(e.target.value as CrawlerActionType | "all")}
+          className="rounded-md border border-gray-200 bg-white px-2 py-1.5 text-gray-900 focus:outline-none focus:ring-2 focus:ring-gray-200"
         >
           <option value="all">All</option>
-          <option value="reddit">Reddit</option>
-          <option value="outreach">Outreach</option>
-          <option value="content">Content</option>
+          {(Object.keys(CRAWLER_ACTION_LABELS) as CrawlerActionType[]).map((kind) => (
+            <option key={kind} value={kind}>
+              {CRAWLER_ACTION_LABELS[kind]}
+            </option>
+          ))}
         </select>
       </div>
     </div>

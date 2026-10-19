@@ -1,7 +1,6 @@
 import { 
   MonitoringEvent, 
   Action, 
-  ActionType, 
   Severity, 
   CitationMissedEvent, 
   CompetitorCitedInsteadEvent, 

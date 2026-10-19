@@ -46,6 +46,7 @@ try {
       "/api/test-redis",
       "/api/top-pages",
       "/api/tracking-health",
+      "/api/actions",
     ]) {
       const response = await fetch(base + path, {
         headers: { "User-Agent": agent },
@@ -62,7 +63,7 @@ try {
       assert.equal(body.stack, undefined);
     }
   }
-  for (const path of ["/api/bot-policies", "/api/tracking-health"]) {
+  for (const path of ["/api/bot-policies", "/api/tracking-health", "/api/actions"]) {
     const update = await fetch(base + path, {
       method: "POST",
       headers: { "Content-Type": "application/json" },

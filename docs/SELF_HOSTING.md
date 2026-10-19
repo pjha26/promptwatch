@@ -104,6 +104,11 @@ and [Apple](https://support.apple.com/en-gb/119829).
 
 ## Verification and operations
 
+Action Centre and Overview now use recorded crawler counters with owner-only
+review decisions saved in Redis. See [recommendation rules](CRAWLER_ACTIONS.md)
+for thresholds, rolling windows, decision retention and interpretation limits.
+Reviewing a recommendation never changes access policies.
+
 Open `/dashboard/health` to check Redis connectivity, the last recorded collector
 request, and any saved collector failure. Missing evidence is shown as unknown:
 quiet traffic is not declared healthy or broken. Instrumentation starts with
