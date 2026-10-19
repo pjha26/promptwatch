@@ -1,6 +1,7 @@
 import assert from "node:assert/strict";
 import { test } from "node:test";
 import { applyCrawlerPolicy, type CrawlerStore } from "../lib/crawler-policy";
+const observedAt = "2026-10-18T12:00:00.000Z";
 
 test("allowed and blocked hits retain existing key names and 30-day retention", async () => {
   for (const policy of [null, "allow", "block"]) {
@@ -14,9 +15,15 @@ test("allowed and blocked hits retain existing key names and 30-day retention", 
         writes.push({ keys, args });
       },
     };
-    assert.equal(await applyCrawlerPolicy(store, "gptbot", "2026-10-18"), policy === "block");
+    assert.equal(
+      await applyCrawlerPolicy(store, "gptbot", "2026-10-18", null, observedAt),
+      policy === "block",
+    );
     assert.deepEqual(writes, [
-      { keys: [`${policy === "block" ? "blocked" : "bot"}:gptbot:2026-10-18`], args: [2592000] },
+      {
+        keys: [`${policy === "block" ? "blocked" : "bot"}:gptbot:2026-10-18`, "collector:health"],
+        args: [2592000, observedAt],
+      },
     ]);
   }
 });
@@ -41,11 +48,13 @@ test("unavailable or corrupted policy reads are distinguished from confirmed all
   ]) {
     const store: CrawlerStore = {
       get,
-      eval: async () => {
+      eval: async (_, keys, args) => {
+        assert.deepEqual(keys, ["collector:health"]);
+        assert.equal(args[1], "policy-read");
         writes++;
       },
     };
     await assert.rejects(applyCrawlerPolicy(store, "gptbot", "2026-10-18"));
   }
-  assert.equal(writes, 0);
+  assert.equal(writes, 2);
 });

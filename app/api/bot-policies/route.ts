@@ -1,4 +1,4 @@
-import { apiJson, requireOwner } from "@/lib/api-auth";
+import { apiJson, requireOwner, requireSameOriginJson } from "@/lib/api-auth";
 import { botSignatures } from "@/lib/botSignatures";
 import { createRedis } from "@/lib/redis";
 import { parsePolicyUpdate, readPolicies } from "@/lib/bot-policies";
@@ -22,12 +22,8 @@ export async function GET() {
 export async function POST(request: Request) {
   const denied = await requireOwner();
   if (denied) return denied;
-  const origin = request.headers.get("origin");
-  if (origin && origin !== new URL(request.url).origin)
-    return apiJson({ error: "Invalid request origin." }, 403);
-  if (!request.headers.get("content-type")?.startsWith("application/json")) {
-    return apiJson({ error: "Send a JSON request." }, 415);
-  }
+  const invalid = requireSameOriginJson(request);
+  if (invalid) return invalid;
   let update;
   try {
     update = parsePolicyUpdate(await request.json());

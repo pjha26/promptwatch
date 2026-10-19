@@ -104,6 +104,38 @@ and [Apple](https://support.apple.com/en-gb/119829).
 
 ## Verification and operations
 
+Open `/dashboard/health` to check Redis connectivity, the last recorded collector
+request, and any saved collector failure. Missing evidence is shown as unknown:
+quiet traffic is not declared healthy or broken. Instrumentation starts with
+this version; older counters are not fabricated into health records.
+
+The **Run storage self-check** button is an owner-only mutation. It executes the
+real counter script against isolated diagnostic keys, reads the result back,
+and removes those keys. Diagnostic keys also expire after 60 seconds. A successful
+check stores its timestamp in `collector:health` but does not increment traffic
+totals, change policies, or prove that middleware is installed on another site.
+It does not clear a collector failure; later recorded traffic supplies that
+evidence. Failure markers are best-effort because an outage can prevent saving
+them too. Health metadata expires after 30 days without refresh/activity.
+
+Redis clients have a two-second request-lifetime budget with automatic retries
+disabled. An unconfirmed counter write is not automatically replayed. A confirmed
+Block remains blocked when analytics fails; an unreadable policy still fails open.
+
+Once the services are active, run these operator checks locally without printing
+credentials:
+
+```powershell
+npx --no-install tsx scripts/verify-services.ts
+# Explicit storage write/read check using temporary diagnostic keys:
+npx --no-install tsx scripts/verify-services.ts --self-check
+```
+
+The first command is read-only. It reports missing owner configuration and probes
+Redis plus the Supabase Auth service. It does not verify owner login, deployed
+RLS, or the legacy-policy migration. The optional self-check writes only temporary
+diagnostic keys and the self-check timestamp. Do not publish `.env.local`.
+
 Run the tests, type check, lint and production build before updating an installation.
 After deployment verify owner login, a second account being denied, an Allow and
 Block request, and the dashboard totals. Use a disposable Redis database when

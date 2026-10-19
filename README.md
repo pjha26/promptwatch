@@ -31,6 +31,8 @@ website.
 - Top Pages shows allowed/blocked requests on configured public paths, with
   bounded storage and a collection start date. Query strings are not stored.
 - Reports provide 7/30-day totals and daily/crawler CSV exports.
+- Tracking Health separates Redis connectivity, collector evidence, and recorded
+  failures, with an optional isolated storage self-check.
 - Supabase authentication supports email/password and Google. Dashboard APIs and
   pages require the server-configured owner UUID.
 
@@ -39,7 +41,7 @@ website.
 - Action Centre and Overview recommendations use seeded monitoring events.
 - Prompt/competitor screens contain examples; no real citation collection exists.
 - Site settings, notifications, API key and deletion controls remain placeholders.
-- Throttling, IP verification, external-site installation, and ingestion-health
+- Throttling, IP verification, external-site installation, and continuous uptime
   monitoring are not implemented. Crawler matches do not prove AI citations.
 
 ## How it works
@@ -121,6 +123,7 @@ Open http://localhost:3000, sign up or sign in, then navigate to:
 - `/dashboard/traffic` — real-time AI bot traffic
 - `/dashboard/actions` — action triage queue
 - `/dashboard/reports` — traffic reports and CSV downloads
+- `/dashboard/health` — connection status, collector evidence and storage self-check
 - `/dashboard/settings` — enforced Allow/Block rules
 
 Public path collection is configured with `PROMPTWATCH_PUBLIC_PATH_PREFIXES`.

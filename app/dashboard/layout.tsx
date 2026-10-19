@@ -41,7 +41,7 @@ export default async function DashboardLayout({ children }: { children: React.Re
     <div className="flex h-screen overflow-hidden bg-[#FFFFFF] text-[#0A0A0A] selection:bg-[#0A0A0A] selection:text-white">
       <Sidebar />
       <div className="relative flex flex-1 flex-col overflow-hidden pt-[56px] md:ml-[240px] md:pt-0">
-        <TopBar />
+        <TopBar email={user.email} />
         <main className="flex-1 overflow-y-auto">{children}</main>
       </div>
     </div>

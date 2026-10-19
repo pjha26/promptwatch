@@ -66,14 +66,16 @@ test("path logging passes an explicit limit, query-free path and policy-specific
       "gptbot",
       "2026-10-18",
       publicAnalyticsPath("/docs/a?secret=123", "/docs"),
+      "2026-10-18T12:00:00.000Z",
     );
     assert.deepEqual(calls[0], {
       keys: [
         `${policy === "block" ? "blocked" : "bot"}:gptbot:2026-10-18`,
         `${policy === "block" ? "blocked-pages" : "pages"}:2026-10-18`,
         "paths:started_at",
+        "collector:health",
       ],
-      args: [2592000, "/docs/a", DAILY_PATH_LIMIT, "2026-10-18"],
+      args: [2592000, "/docs/a", DAILY_PATH_LIMIT, "2026-10-18", "2026-10-18T12:00:00.000Z"],
     });
   }
 });

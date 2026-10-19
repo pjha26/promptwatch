@@ -47,6 +47,28 @@ and measured Redis/collector performance budgets. D–F remain roadmap milestone
 not completed product features. Do not infer citations or successful page
 delivery from crawler counters.
 
+### Tracking-health milestone, 19 October 2026
+
+Add owner-only `/dashboard/health` and `/api/tracking-health`, timestamp successful
+collector writes in the existing counting script, and save best-effort policy/read
+failure markers without changing enforcement decisions. Redis connectivity,
+historical collector evidence, and manual storage diagnostics are shown separately.
+The fake green workspace indicator was replaced by the real single-owner context.
+
+A manual self-check uses the actual counter script with isolated, expiring keys;
+it cannot prove public routing or continuous uptime. Automatic Redis retries are
+disabled and request lifetimes bounded so failed checks do not hold requests open.
+Focused health/parser/failure tests accompany the existing collection regressions.
+
+Live checks and owner configuration are pending while the owner reactivates the
+services and supplies the intended UUID. Do not grant ownership to an inferred
+account, apply production migrations, or manufacture successful live checks.
+
+Health validation: 28 focused tests passed, along with TypeScript, targeted lint,
+the production build, and signed-out API smoke tests (Redis disabled). An isolated
+browser checked waiting/recorded/failure states, self-check semantics, stale-status
+removal, refresh recovery, and mobile controls using simulated responses.
+
 Make Promptwatch a trustworthy answer to three questions: **who is crawling my
 site, what are they reading, and are my access rules working?** Build that loop
 before investing in prompt rankings, billing, or more visual effects. Crawler

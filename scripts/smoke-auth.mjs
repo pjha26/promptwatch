@@ -45,6 +45,7 @@ try {
       "/api/bot-policies",
       "/api/test-redis",
       "/api/top-pages",
+      "/api/tracking-health",
     ]) {
       const response = await fetch(base + path, {
         headers: { "User-Agent": agent },
@@ -61,12 +62,14 @@ try {
       assert.equal(body.stack, undefined);
     }
   }
-  const update = await fetch(base + "/api/bot-policies", {
-    method: "POST",
-    headers: { "Content-Type": "application/json" },
-    body: JSON.stringify({ botId: "gptbot", policy: "block" }),
-  });
-  assert.equal(update.status, 401);
+  for (const path of ["/api/bot-policies", "/api/tracking-health"]) {
+    const update = await fetch(base + path, {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ botId: "gptbot", policy: "block" }),
+    });
+    assert.equal(update.status, 401);
+  }
   const page = await fetch(base + "/dashboard/reports", { redirect: "manual" });
   assert.equal(page.status, 307);
   assert.equal(new URL(page.headers.get("location"), base).pathname, "/login");
