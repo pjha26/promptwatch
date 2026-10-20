@@ -1,0 +1,17 @@
+{
+  "name": "@promptwatch/collector",
+  "version": "0.1.0",
+  "private": true,
+  "description": "Single-site Promptwatch request collector for Next.js 15 middleware",
+  "main": "./dist/packages/collector/index.js",
+  "types": "./dist/packages/collector/index.d.ts",
+  "exports": {
+    ".": {
+      "types": "./dist/packages/collector/index.d.ts",
+      "default": "./dist/packages/collector/index.js"
+    }
+  },
+  "files": ["dist", "README.md"],
+  "engines": { "node": ">=22" },
+  "dependencies": { "@upstash/redis": "1.38.1" }
+}

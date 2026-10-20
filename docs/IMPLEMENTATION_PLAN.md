@@ -5,6 +5,28 @@ Reviewed on 18 October 2026 against local commit `bc24dcf` and the linked
 
 ## Direction
 
+### Local collector package, 21 October 2026
+
+IP observations were pushed as `5059101`; the hosted workflow passed, including
+the real Redis scripts. Extracted the existing middleware request handling into
+one shared Web Request helper used by this application and a private local
+collector archive. The package has no Supabase/dashboard dependency and retains
+the existing counting, paths, policy, health and optional IP behavior.
+
+A separate dashboard can explicitly disable its own collector without changing
+authentication, preventing mixed site traffic. Package instructions explain the
+single tracked-site database boundary, server-only credentials, how to retain a
+site's existing middleware, and how to distribute the local archive. No registry
+publication or production deployment is performed. A temporary independent
+Next.js fixture installs the actual archive and checks Edge middleware behavior
+against isolated storage responses; real deployment verification remains pending.
+
+Local validation passed: all 60 tests, zero-warning lint, TypeScript, production
+build and signed-out API smoke checks. The independent installed-package fixture
+also built successfully and passed human/Allow/Block, private query omission,
+retained site middleware, API exclusion and storage-failure checks. CI now runs
+that fixture too; the hosted result is checked after pushing.
+
 ### Optional direct-Vercel identity observations, 21 October 2026
 
 The owner confirmed that the tracked site receives requests directly through

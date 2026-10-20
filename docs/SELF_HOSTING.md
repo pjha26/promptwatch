@@ -3,6 +3,11 @@
 This release manages **one site per deployment**. Use a dedicated Upstash Redis
 database per installation. Unrelated sites must not share these counters or rules.
 
+To track an existing Next.js website from a separate owner dashboard, use the
+[local collector package](COLLECTOR_INSTALLATION.md). Disable collection on the
+dashboard with `PROMPTWATCH_COLLECTOR_ENABLED=false`; leave it enabled on the
+single tracked site. This setting does not disable dashboard authentication.
+
 ## Required setup before exposing the dashboard
 
 1. Configure the four Supabase/Upstash variables listed in `.env.example`.

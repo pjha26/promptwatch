@@ -9,6 +9,8 @@ out/
 
 # production
 build/
+packages/collector/dist/
+artifacts/
 
 # misc
 .DS_Store

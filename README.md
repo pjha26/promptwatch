@@ -26,6 +26,9 @@ website.
 - Optional direct-Vercel IP observations compare five crawlers against fresh
   official vendor ranges, without saving visitor IPs or changing access rules.
   See [crawler identity setup](docs/CRAWLER_IDENTITY.md).
+- A locally packed collector can be installed on a separate Next.js 15 site,
+  sharing this single-owner dashboard's Redis database. See
+  [collector installation](docs/COLLECTOR_INSTALLATION.md).
 - Allow/Block policies are read and saved in Redis, the authoritative store.
 - Settings shows the latest 200 owner policy changes, recorded together with
   each actual rule update. Selecting an unchanged rule creates no history entry.
@@ -48,7 +51,7 @@ website.
 
 - Prompt/competitor screens contain examples; no real citation collection exists.
 - Site settings, notifications, API key and deletion controls remain placeholders.
-- Throttling, external-site installation, and continuous uptime
+- Throttling, hosted second-site verification, and continuous uptime
   monitoring are not implemented. Crawler matches do not prove AI citations.
 
 ## How it works
@@ -152,6 +155,11 @@ configuration and no production secrets. Builds download Google fonts, so they
 need network access. Passing CI does not verify live owner login or Redis.
 The workflow does not configure branch protection or deploy the application.
 
+`npm run test:collector` builds and packs the shared collector, installs it in a
+separate temporary Next.js site, and tests its Edge middleware with isolated
+storage replies. CI runs this check too. It needs network access for dependency
+installation and does not contact the owner's Supabase or Redis services.
+
 CI also runs `npm run test:redis` against its disposable Redis container, checking
 actual collector and policy-history scripts. To run that check locally, provide
 `PROMPTWATCH_TEST_REDIS_CONTAINER` with a disposable Redis 7 container ID; Docker
@@ -167,7 +175,7 @@ measurements, the two-second budget and remaining deployment verification.
 - Persist real site settings
 - Validate the collector against active services and measure request latency
 - Add throttling and verified crawler identity where vendors support it
-- Package the middleware so other Next.js sites can install it without touching this codebase
+- Verify the collector package on a real second-site deployment
 
 The detailed sequence and completed milestones are in
 [IMPLEMENTATION_PLAN.md](docs/IMPLEMENTATION_PLAN.md).
