@@ -4,13 +4,16 @@ import { once } from "node:events";
 import { test } from "node:test";
 import { createRedis, REDIS_REQUEST_BUDGET_MS } from "../lib/redis";
 import { applyCrawlerPolicy } from "../lib/crawler-policy";
+import { verifyCrawlerIdentity } from "../lib/crawler-identity";
 
 test("actual Redis HTTP client respects the shared deadline and does not replay uncertain writes", async (t) => {
   const originalUrl = process.env.UPSTASH_REDIS_REST_URL;
   const originalToken = process.env.UPSTASH_REDIS_REST_TOKEN;
   let mode: "allow" | "block" | "read-timeout" | "write-timeout" | "write-error" = "allow";
   let commands: unknown[][] = [];
+  let requests = 0;
   const server = createServer(async (request, response) => {
+    requests++;
     let body = "";
     for await (const chunk of request) body += chunk;
     const payload = JSON.parse(body) as unknown[];
@@ -23,7 +26,14 @@ test("actual Redis HTTP client respects the shared deadline and does not replay 
       if (mode === "read-timeout" || (mode === "write-timeout" && operation === "EVAL")) return;
       // A controlled 25ms service delay per command; this is not an Upstash latency benchmark.
       await new Promise((resolve) => setTimeout(resolve, 25));
-      if (operation === "GET") results.push({ result: mode === "allow" ? "allow" : "block" });
+      if (operation === "GET" && command[1] === "identity:feed:gptbot")
+        results.push({
+          result: JSON.stringify({
+            fetchedAt: new Date(Date.now() - 1000).toISOString(),
+            ranges: ["192.0.2.0/24"],
+          }),
+        });
+      else if (operation === "GET") results.push({ result: mode === "allow" ? "allow" : "block" });
       else if (mode === "write-error" && command.includes("blocked:gptbot:2026-10-19"))
         results.push({ error: "Simulated counter failure" });
       else results.push({ result: 1 });
@@ -71,6 +81,36 @@ test("actual Redis HTTP client respects the shared deadline and does not replay 
         );
       });
     }
+    await t.test(
+      "optional verification batches the feed and policy reads and keeps Block effective",
+      async () => {
+        mode = "block";
+        commands = [];
+        requests = 0;
+        const store = createRedis();
+        const identity = verifyCrawlerIdentity(
+          store,
+          "gptbot",
+          new Headers({ "x-vercel-forwarded-for": "192.0.2.1" }),
+          true,
+        );
+        assert.equal(
+          await applyCrawlerPolicy(
+            store,
+            "gptbot",
+            "2026-10-21",
+            null,
+            new Date().toISOString(),
+            identity,
+          ),
+          true,
+        );
+        assert.equal(requests, 2, "auto-pipelined reads then one counting script");
+        assert.equal(commands.length, 3);
+        assert.ok(commands[2].includes("gptbot:verified"));
+        assert.ok(!commands[2].includes("192.0.2.1"));
+      },
+    );
     await t.test(
       "read timeout ends within the deadline, without retrying or claiming a confirmed policy",
       async () => {

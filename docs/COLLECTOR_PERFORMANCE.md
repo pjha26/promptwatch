@@ -40,6 +40,13 @@ failure marker. No Redis request is made by the collector for unmatched agents
 or excluded administration routes. Lua's internal operations may have separate
 provider billing implications; HTTP command counts are not a price estimate.
 
+When [optional IP observations](CRAWLER_IDENTITY.md) are enabled for a supported
+crawler with a trusted IP, one cached-feed GET is batched with the policy GET.
+That means three Redis commands in two HTTP requests, still with the shared
+two-second budget. Identity counts are included in the existing EVAL. The
+transport test checks this batching; the baseline fixture timings above apply
+to disabled mode.
+
 A confirmed policy still governs the response if analytics fails. An unreadable
 policy fails open. A lost write reply means the count may already have been
 recorded; automatically replaying it could double-count, so no retry is made.

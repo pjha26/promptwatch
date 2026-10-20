@@ -4,6 +4,7 @@ import { detectBot } from "@/lib/botSignatures";
 import { createRedis } from "@/lib/redis";
 import { applyCrawlerPolicy } from "@/lib/crawler-policy";
 import { publicAnalyticsPath } from "@/lib/public-paths";
+import { verifyCrawlerIdentity } from "@/lib/crawler-identity";
 
 export async function middleware(request: NextRequest) {
   const pathname = request.nextUrl.pathname;
@@ -14,11 +15,18 @@ export async function middleware(request: NextRequest) {
   const bot = administrative ? null : detectBot(request.headers.get("user-agent") ?? "");
   if (bot) {
     try {
+      const store = createRedis();
+      const identity =
+        process.env.PROMPTWATCH_IP_VERIFICATION === "vercel"
+          ? verifyCrawlerIdentity(store, bot.id, request.headers, process.env.VERCEL === "1")
+          : undefined;
       const blocked = await applyCrawlerPolicy(
-        createRedis(),
+        store,
         bot.id,
         new Date().toISOString().slice(0, 10),
         publicAnalyticsPath(pathname, process.env.PROMPTWATCH_PUBLIC_PATH_PREFIXES ?? "/"),
+        new Date().toISOString(),
+        identity,
       );
       if (blocked)
         return NextResponse.json({ error: "Access denied by site policy" }, { status: 403 });

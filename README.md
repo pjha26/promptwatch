@@ -23,6 +23,9 @@ website.
 **Implemented:**
 
 - Middleware matches known HTTP crawler User-Agent tokens on public requests.
+- Optional direct-Vercel IP observations compare five crawlers against fresh
+  official vendor ranges, without saving visitor IPs or changing access rules.
+  See [crawler identity setup](docs/CRAWLER_IDENTITY.md).
 - Allow/Block policies are read and saved in Redis, the authoritative store.
 - Settings shows the latest 200 owner policy changes, recorded together with
   each actual rule update. Selecting an unchanged rule creates no history entry.
@@ -45,7 +48,7 @@ website.
 
 - Prompt/competitor screens contain examples; no real citation collection exists.
 - Site settings, notifications, API key and deletion controls remain placeholders.
-- Throttling, IP verification, external-site installation, and continuous uptime
+- Throttling, external-site installation, and continuous uptime
   monitoring are not implemented. Crawler matches do not prove AI citations.
 
 ## How it works
@@ -128,6 +131,7 @@ Open http://localhost:3000, sign up or sign in, then navigate to:
 - `/dashboard/actions` — action triage queue
 - `/dashboard/reports` — traffic reports and CSV downloads
 - `/dashboard/health` — connection status, collector evidence and storage self-check
+- `/dashboard/identity` — optional IP observations and official feed refresh
 - `/dashboard/settings` — enforced Allow/Block rules
 
 Public path collection is configured with `PROMPTWATCH_PUBLIC_PATH_PREFIXES`.

@@ -5,6 +5,30 @@ Reviewed on 18 October 2026 against local commit `bc24dcf` and the linked
 
 ## Direction
 
+### Optional direct-Vercel identity observations, 21 October 2026
+
+The owner confirmed that the tracked site receives requests directly through
+Vercel. Implemented explicit opt-in IP-range observations for the five configured
+agents with OpenAI/Perplexity feeds. Only Vercel's client-IP header is used; raw
+IPs are never retained. Missing, expired, invalid and failed checks are separate
+from non-matching fresh ranges. Observations do not change access decisions.
+
+Owner-only feed refresh validates bounds and schema before replacing cached
+data, with a 24-hour TTL and no vendor requests in public middleware. Daily
+status hashes expire after 30 days and reuse the current counting script;
+old counters, paths, health and policy behavior are retained. Setup, limits,
+vendor references and pending Vercel deployment verification are documented in
+`CRAWLER_IDENTITY.md`. Feed refresh is manual; automatic alert delivery and
+throttling are still later milestones.
+
+Local validation passed: 57 tests, zero-warning lint, TypeScript, production
+build and anonymous API smoke checks. Isolated browser checks covered status
+modes, refresh and failure recovery, UTC and mobile containment. All five public
+vendor feeds were validated without Redis writes. The hosted Redis check also
+covers identity fields with/without paths and a corrupt optional identity key;
+its result is checked after pushing. Real Vercel ingress and owner login are
+still pending deployment setup.
+
 ### Collector transport checks, completed 21 October 2026
 
 Policy history was pushed as `d08edc5`. Its hosted workflow passed, including

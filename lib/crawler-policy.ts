@@ -1,5 +1,6 @@
 import { DAILY_PATH_LIMIT } from "./public-paths";
 import { COLLECTOR_HEALTH_KEY, recordCollectorFailure } from "./collector-health";
+import type { IdentityStatus } from "./crawler-identity";
 
 export interface CrawlerStore {
   get(key: string): Promise<unknown>;
@@ -9,12 +10,20 @@ export interface CrawlerStore {
 export const COUNT_VISIT = `
 local count = redis.call('INCR', KEYS[1])
 redis.call('EXPIRE', KEYS[1], ARGV[1])
-if #KEYS > 2 then
+if string.sub(ARGV[2], 1, 1) == '/' then
   if redis.call('HEXISTS', KEYS[2], ARGV[2]) == 1 or redis.call('HLEN', KEYS[2]) < tonumber(ARGV[3]) then
     redis.call('HINCRBY', KEYS[2], ARGV[2], 1)
     redis.call('EXPIRE', KEYS[2], ARGV[1])
     redis.call('SET', KEYS[3], ARGV[4], 'NX')
   end
+end
+local identityField = ARGV[#ARGV - 1]
+local identity = string.match(identityField, '^[%w%-]+:(%w+)$')
+if identity == 'verified' or identity == 'unverified' or identity == 'unavailable' or identity == 'unsupported' then
+  local key = KEYS[#KEYS - 1]
+  -- Optional identity statistics must not interrupt existing traffic counting.
+  redis.pcall('HINCRBY', key, identityField, 1)
+  redis.pcall('EXPIRE', key, ARGV[1])
 end
 local observed = ARGV[#ARGV]
 local meta = KEYS[#KEYS]
@@ -33,6 +42,7 @@ export async function applyCrawlerPolicy(
   date: string,
   path: string | null = null,
   observedAt = new Date().toISOString(),
+  identity?: Promise<IdentityStatus>,
 ) {
   let policy;
   try {
@@ -44,15 +54,22 @@ export async function applyCrawlerPolicy(
     throw new Error("Crawler policy could not be read");
   }
   const blocked = policy === "block";
+  const identityStatus = identity ? await identity.catch(() => "unavailable" as const) : null;
   try {
     await store.eval(
       COUNT_VISIT,
       [
         `${blocked ? "blocked" : "bot"}:${botId}:${date}`,
         ...(path ? [`${blocked ? "blocked-pages" : "pages"}:${date}`, "paths:started_at"] : []),
+        ...(identityStatus ? [`identity:${date}`] : []),
         COLLECTOR_HEALTH_KEY,
       ],
-      [60 * 60 * 24 * 30, ...(path ? [path, DAILY_PATH_LIMIT, date] : []), observedAt],
+      [
+        60 * 60 * 24 * 30,
+        ...(path ? [path, DAILY_PATH_LIMIT, date] : []),
+        ...(identityStatus ? [`${botId}:${identityStatus}`] : []),
+        observedAt,
+      ],
     );
   } catch {
     // An analytics failure must not reverse a policy decision already read.

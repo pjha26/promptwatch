@@ -4,6 +4,7 @@ import { promisify } from "node:util";
 import { test } from "node:test";
 import { applyCrawlerPolicy, type CrawlerStore } from "../lib/crawler-policy";
 import { parseCollectorHealth } from "../lib/collector-health";
+import { IDENTITY_STATUSES } from "../lib/crawler-identity";
 import {
   parsePolicyHistory,
   POLICY_HISTORY_KEY,
@@ -129,6 +130,27 @@ test("real Redis scripts preserve collector behavior and consistent bounded poli
     assert.equal(await command("GET", key("bot:gptbot:2026-10-19")), "2");
     await applyCrawlerPolicy(store, "gptbot", "2026-10-19", "/public-1", at);
     assert.equal(await command("HGET", key("pages:2026-10-19"), "/public-1"), "2");
+    for (const status of IDENTITY_STATUSES) {
+      for (const path of [null, "/public-1"]) {
+        await applyCrawlerPolicy(store, "gptbot", "2026-10-21", path, at, Promise.resolve(status));
+      }
+      assert.equal(await command("HGET", key("identity:2026-10-21"), `gptbot:${status}`), "2");
+    }
+    assert.equal(await command("GET", key("bot:gptbot:2026-10-21")), "8");
+    assert.ok((await command("TTL", key("identity:2026-10-21"))) > 2_591_900);
+    await command("SET", key("identity:2026-10-21"), "wrong type");
+    assert.equal(
+      await applyCrawlerPolicy(
+        store,
+        "claudebot",
+        "2026-10-21",
+        null,
+        at,
+        Promise.resolve("unsupported"),
+      ),
+      false,
+    );
+    assert.equal(await command("GET", key("bot:claudebot:2026-10-21")), "1");
   } finally {
     if (touched.size) await command("DEL", ...touched);
   }

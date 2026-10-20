@@ -100,11 +100,17 @@ an error with retry instead of a false zero-page result.
 
 ## Crawler identities
 
+Optional IP-range observations for **direct Vercel hosting** are now available
+at `/dashboard/identity`; follow [CRAWLER_IDENTITY.md](CRAWLER_IDENTITY.md) to
+refresh official feeds and opt in. They are disabled by default and never
+change access policies. No raw visitor IP addresses are stored.
+
 HTTP token matching now covers training/search/user-requested agents from
 OpenAI, Anthropic, and Perplexity, plus the existing CCBot and Bytespider tokens.
 Matching is case-insensitive and checks token boundaries to avoid incidental
-substring matches. User-Agent headers remain forgeable; IP verification is not
-implemented. A reported match is not proof of a successful page response or an
+substring matches. User-Agent headers remain forgeable; ordinary traffic totals
+still represent User-Agent matches, independently of optional IP observations.
+A reported match is not proof of a successful page response or an
 AI citation.
 
 `Google-Extended` and `Applebot-Extended` remain readable as historical IDs, but
