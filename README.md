@@ -153,6 +153,11 @@ actual collector and policy-history scripts. To run that check locally, provide
 `PROMPTWATCH_TEST_REDIS_CONTAINER` with a disposable Redis 7 container ID; Docker
 must be running. Tests use unique key prefixes and never clear the database.
 
+`npm run test:transport` measures the real Redis HTTP client against controlled
+local responses and timeouts, without live service access. See
+[collector performance and release checks](docs/COLLECTOR_PERFORMANCE.md) for
+measurements, the two-second budget and remaining deployment verification.
+
 ## What's next
 
 - Persist real site settings

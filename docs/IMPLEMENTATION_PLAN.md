@@ -5,6 +5,27 @@ Reviewed on 18 October 2026 against local commit `bc24dcf` and the linked
 
 ## Direction
 
+### Collector transport checks, completed 21 October 2026
+
+Policy history was pushed as `d08edc5`. Its hosted workflow passed, including
+the real Redis integration checks. Added actual-SDK HTTP transport checks using
+an isolated local service, measuring healthy Allow/Block requests and verifying
+the shared two-second deadline, no replay of uncertain writes, confirmed blocks
+during count failures, and best-effort error markers. These do not change policy
+or collection behavior. `COLLECTOR_PERFORMANCE.md` records the measured fixture
+timings and separates them from still-pending production measurements.
+
+Local `npm run check` passed with dummy service configuration: zero-warning lint,
+TypeScript, all 47 tests, production build and signed-out API checks. Healthy
+fixture timings are diagnostic; deadline and enforcement behavior are asserted.
+
+Remaining release sequence: live owner/services verification; production latency
+measurement in a disposable deployment; verified identity using the deployment's
+trusted client-IP source; second-site installation; then reliable opt-in alerts
+and optional throttling. Service reactivation and the owner UUID are still
+pending. Do not infer ownership or treat controlled test requests as verified
+real crawler traffic. No production settings or services were modified.
+
 ### Policy history milestone, 19 October 2026
 
 The automated checks and submodule metadata fixes were pushed as `ffeb953` and

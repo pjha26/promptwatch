@@ -142,6 +142,8 @@ them too. Health metadata expires after 30 days without refresh/activity.
 Redis clients have a two-second request-lifetime budget with automatic retries
 disabled. An unconfirmed counter write is not automatically replayed. A confirmed
 Block remains blocked when analytics fails; an unreadable policy still fails open.
+See [collector performance](COLLECTOR_PERFORMANCE.md) for controlled test timings,
+command counts and the live measurement procedure before release.
 
 Once the services are active, run these operator checks locally without printing
 credentials:
