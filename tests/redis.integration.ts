@@ -6,6 +6,15 @@ import { applyCrawlerPolicy, type CrawlerStore } from "../lib/crawler-policy";
 import { parseCollectorHealth } from "../lib/collector-health";
 import { IDENTITY_STATUSES } from "../lib/crawler-identity";
 import {
+  COMPLETE_IDENTITY_REFRESH,
+  IDENTITY_REFRESH_LOCK,
+  IDENTITY_REFRESH_RESULT,
+  parseRefreshResult,
+  RELEASE_IDENTITY_REFRESH,
+  runIdentityRefresh,
+  type RefreshStore,
+} from "../lib/identity-refresh";
+import {
   parsePolicyHistory,
   POLICY_HISTORY_KEY,
   POLICY_HISTORY_LIMIT,
@@ -151,6 +160,69 @@ test("real Redis scripts preserve collector behavior and consistent bounded poli
       false,
     );
     assert.equal(await command("GET", key("bot:claudebot:2026-10-21")), "1");
+
+    const jobStore = (): RefreshStore => ({
+      eval: store.eval,
+      set: async (name, value, options) =>
+        command("SET", key(name), value, "NX", "EX", String(options.ex)),
+    });
+    let refreshed = 0;
+    assert.equal(
+      (
+        await runIdentityRefresh(jobStore, async () => {
+          refreshed++;
+        })
+      ).status,
+      "success",
+    );
+    assert.equal(refreshed, 5);
+    assert.equal(await command("GET", key(IDENTITY_REFRESH_LOCK)), null);
+    const savedCompletion = await command("GET", key(IDENTITY_REFRESH_RESULT));
+    assert.equal(parseRefreshResult(JSON.parse(savedCompletion))?.status, "success");
+    assert.ok((await command("TTL", key(IDENTITY_REFRESH_RESULT))) > 2_591_900);
+
+    await command("SET", key(IDENTITY_REFRESH_LOCK), "other-owner", "EX", "120");
+    assert.deepEqual(
+      await runIdentityRefresh(jobStore, async () => {
+        throw new Error("Busy job must not refresh");
+      }),
+      { status: "busy" },
+    );
+    assert.equal(
+      await store.eval(RELEASE_IDENTITY_REFRESH, [IDENTITY_REFRESH_LOCK], ["wrong-owner"]),
+      0,
+    );
+    assert.equal(
+      await store.eval(
+        COMPLETE_IDENTITY_REFRESH,
+        [IDENTITY_REFRESH_LOCK, IDENTITY_REFRESH_RESULT],
+        ["wrong-owner", "invalid-result", 60],
+      ),
+      0,
+    );
+    assert.equal(await command("GET", key(IDENTITY_REFRESH_RESULT)), savedCompletion);
+    assert.equal(await command("GET", key(IDENTITY_REFRESH_LOCK)), "other-owner");
+    assert.equal(
+      await store.eval(RELEASE_IDENTITY_REFRESH, [IDENTITY_REFRESH_LOCK], ["other-owner"]),
+      1,
+    );
+
+    await assert.rejects(
+      runIdentityRefresh(jobStore, async (botId) => {
+        if (botId === "gptbot")
+          await command("SET", key(IDENTITY_REFRESH_LOCK), "replacement-owner", "EX", "120");
+      }),
+    );
+    assert.equal(
+      await command("GET", key(IDENTITY_REFRESH_LOCK)),
+      "replacement-owner",
+      "late cleanup must not remove a replacement lease",
+    );
+    assert.equal(
+      await command("GET", key(IDENTITY_REFRESH_RESULT)),
+      savedCompletion,
+      "late completion must not replace confirmed metadata",
+    );
   } finally {
     if (touched.size) await command("DEL", ...touched);
   }

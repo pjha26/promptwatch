@@ -7,9 +7,13 @@ import {
   parseIdentityReport,
   type IdentityReport,
 } from "@/lib/crawler-identity";
+import { parseAutomaticRefresh } from "@/lib/identity-refresh";
+import { botSignatures } from "@/lib/botSignatures";
+
+type Snapshot = IdentityReport & { automaticRefresh: ReturnType<typeof parseAutomaticRefresh> };
 
 export default function IdentityPage() {
-  const [data, setData] = useState<IdentityReport | null>(null);
+  const [data, setData] = useState<Snapshot | null>(null);
   const [error, setError] = useState("");
   const [saving, setSaving] = useState<string | null>(null);
   const [attempt, setAttempt] = useState(0);
@@ -27,7 +31,11 @@ export default function IdentityPage() {
           throw new Error(
             "Identity observations are unavailable. Check owner access and storage, then reload.",
           );
-        const parsed = parseIdentityReport(await response.json());
+        const json = await response.json();
+        const parsed = {
+          ...parseIdentityReport(json),
+          automaticRefresh: parseAutomaticRefresh(json.automaticRefresh),
+        };
         if (!controller.signal.aborted) setData(parsed);
       } catch {
         if (!controller.signal.aborted)
@@ -94,10 +102,55 @@ export default function IdentityPage() {
             blocked requests, start only after opt-in, and may have collection gaps.
           </p>
           <p className="mb-5 text-sm text-gray-600">
-            Vendor feeds expire after 24 hours. Refresh each supported feed at least daily; absent,
-            stale or failed checks are unavailable. “Unverified” means no match in a fresh feed, not
-            proof of impersonation. Other crawlers are unsupported by this version.
+            Vendor feeds expire after 24 hours. Scheduled refresh is optional; manual refresh
+            remains available. Delayed or missed runs can leave gaps. Absent, stale or failed checks
+            are unavailable. “Unverified” means no match in a fresh feed, not proof of
+            impersonation. Other crawlers are unsupported by this version.
           </p>
+          <section
+            aria-labelledby="automatic-refresh-title"
+            className="mb-5 rounded border border-gray-300 bg-white p-4 text-sm"
+          >
+            <h2 id="automatic-refresh-title" className="mb-2 font-semibold">
+              Automatic feed refresh
+            </h2>
+            <p>
+              {!data.automaticRefresh.configured
+                ? "Disabled. Manual feed refresh is available below."
+                : !data.automaticRefresh.ready
+                  ? "Enabled in configuration, but owner or scheduler authentication setup is incomplete."
+                  : "Configured for scheduled refresh. This does not confirm Vercel delivery; check the recorded completion and current feed freshness."}
+            </p>
+            {data.automaticRefresh.lastRun ? (
+              <>
+                <p className="mt-2">
+                  Last recorded completion: <strong>{data.automaticRefresh.lastRun.status}</strong>{" "}
+                  —{" "}
+                  <time dateTime={data.automaticRefresh.lastRun.finishedAt}>
+                    {new Date(data.automaticRefresh.lastRun.finishedAt).toLocaleString("en-GB", {
+                      timeZone: "UTC",
+                    })}{" "}
+                    UTC
+                  </time>
+                  .
+                </p>
+                <ul className="mt-2 space-y-1">
+                  {data.automaticRefresh.lastRun.results.map((result) => (
+                    <li key={result.botId}>
+                      {botSignatures.find((bot) => bot.id === result.botId)?.name}: {result.status}
+                    </li>
+                  ))}
+                </ul>
+              </>
+            ) : (
+              <p className="mt-2 text-gray-600">No scheduled completion recorded yet.</p>
+            )}
+            <p className="mt-2 text-xs text-gray-600">
+              This is the last saved completion, not proof that every invocation ran. Failures
+              before storage confirmation may only appear in deployment logs. Reload observations to
+              update this view.
+            </p>
+          </section>
           <div className="grid gap-4 md:grid-cols-2">
             {data.rows.map((row) => (
               <section

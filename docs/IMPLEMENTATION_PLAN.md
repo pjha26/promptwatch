@@ -5,6 +5,28 @@ Reviewed on 18 October 2026 against local commit `bc24dcf` and the linked
 
 ## Direction
 
+### Automatic IP-feed refresh, 21 October 2026
+
+Added an opt-in, secret-authenticated Vercel job using the existing feed refresh
+logic. The included daily schedule supports Hobby plans. It remains dormant
+until explicitly enabled with a valid cron secret and owner setting. No owner
+or service configuration was changed while the user reactivates the project.
+
+Refreshes are independent, with success/partial/failed results. A token-owned
+120-second Redis lease prevents overlap; completion cannot clear a replacement
+lease or overwrite its result. Last confirmed completion is retained for 30
+days and shown separately from configuration and current feed freshness. The
+24-hour freshness rule and manual controls remain unchanged, so delayed/missed
+runs are not portrayed as continuous healthy verification.
+
+Local `npm run check` passed: all 67 tests, zero-warning lint, TypeScript,
+production build and signed-out API checks (including cron authorization and
+setup guards). Isolated browser checks passed for status modes, per-feed
+outcomes, UTC/mobile layout and recovery from invalid/unavailable status data.
+CI also exercises the real Redis lease/completion scripts and replacement-token
+protection; hosted results are checked after pushing. Setup and platform limits
+are in `AUTOMATIC_FEED_REFRESH.md`. Actual activation is still a deployment step.
+
 ### Local collector package, 21 October 2026
 
 IP observations were pushed as `5059101`; the hosted workflow passed, including

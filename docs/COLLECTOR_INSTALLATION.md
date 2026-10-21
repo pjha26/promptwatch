@@ -24,7 +24,8 @@ policy store. One dedicated Redis database still represents **one tracked site**
    publicly visible paths without private identifiers. Query values are omitted.
 7. Optionally follow `CRAWLER_IDENTITY.md` for direct-Vercel IP observations.
    Use the same database for the dashboard's official-feed refresh and collector
-   reads. No vendor feed is downloaded during a public request.
+   reads. [Automatic feed refresh](AUTOMATIC_FEED_REFRESH.md) can be enabled on
+   the dashboard only. No vendor feed is downloaded during a public request.
 8. In a disposable deployment, confirm one allowed and one blocked matched
    request, path totals, health evidence and the site's existing auth behavior.
    Synthetic User-Agent requests test collection, not real crawler identity.

@@ -5,6 +5,7 @@ import { once } from "node:events";
 import { fileURLToPath } from "node:url";
 
 const root = fileURLToPath(new URL("../", import.meta.url));
+const cronSecret = "local-smoke-only-cron-secret-32-characters";
 const probe = createServer();
 probe.listen(0, "127.0.0.1");
 await once(probe, "listening");
@@ -17,7 +18,14 @@ const server = spawn(
     cwd: root,
     windowsHide: true,
     stdio: ["ignore", "pipe", "pipe"],
-    env: { ...process.env, UPSTASH_REDIS_REST_URL: "", UPSTASH_REDIS_REST_TOKEN: "" },
+    env: {
+      ...process.env,
+      UPSTASH_REDIS_REST_URL: "",
+      UPSTASH_REDIS_REST_TOKEN: "",
+      PROMPTWATCH_AUTO_REFRESH_FEEDS: "true",
+      CRON_SECRET: cronSecret,
+      PROMPTWATCH_OWNER_ID: "",
+    },
   },
 );
 let output = "";
@@ -49,6 +57,7 @@ try {
       "/api/tracking-health",
       "/api/actions",
       "/api/crawler-identity",
+      "/api/cron/identity-feeds",
     ]) {
       const response = await fetch(base + path, {
         headers: { "User-Agent": agent },
@@ -65,6 +74,21 @@ try {
       assert.equal(body.stack, undefined);
     }
   }
+  const authorizedWithoutOwner = await fetch(base + "/api/cron/identity-feeds", {
+    headers: { Authorization: `Bearer ${cronSecret}` },
+    signal: AbortSignal.timeout(15_000),
+  });
+  assert.equal(
+    authorizedWithoutOwner.status,
+    503,
+    "Scheduled writes require owner setup even with valid cron authentication",
+  );
+  const setupError = await authorizedWithoutOwner.json();
+  assert.equal(
+    setupError.error,
+    "Configure the deployment owner before enabling scheduled refresh.",
+  );
+  assert.ok(!JSON.stringify(setupError).includes(cronSecret));
   for (const path of [
     "/api/bot-policies",
     "/api/tracking-health",

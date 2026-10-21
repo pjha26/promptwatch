@@ -29,6 +29,12 @@ No owner is inferred from the first person to sign in. No privileged service-rol
 key is required by this application. Never use a service-role key as the public
 anonymous key.
 
+After those services and the intended owner are verified, you can opt into
+[automatic IP-feed refresh](AUTOMATIC_FEED_REFRESH.md) with a server-only cron
+secret and the included Vercel schedule. It is disabled by default, and rejects
+incomplete owner configuration before making refresh writes. Only enable it on
+the dashboard deployment sharing the tracked site's database.
+
 ## Policies and existing data
 
 Redis is the authoritative policy store because the middleware reads Redis on

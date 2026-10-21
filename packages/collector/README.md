@@ -56,7 +56,9 @@ public-path prefixes in both deployments; the default records the homepage only.
 
 IP observations are disabled by default. Enable only on a directly hosted Vercel
 site after refreshing official feeds through the owner dashboard. Feeds expire
-after 24 hours and require manual refresh in this preview. Do not imitate
+after 24 hours. Use manual refresh or the dashboard's optional automatic feed
+refresh; scheduler configuration belongs on the dashboard, not this package.
+Do not imitate
 `VERCEL=1` on another hosting provider.
 
 The helper returns a 403 for a confirmed Block and `null` otherwise. Unreadable

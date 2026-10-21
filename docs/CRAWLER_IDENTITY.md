@@ -15,8 +15,10 @@ not change Allow/Block enforcement, verify citations, or prove page delivery.
    Vercel's platform-provided `VERCEL=1`; do not simulate that variable on another
    host. Configure the dashboard similarly if it is a separate Vercel deployment.
 4. Refresh supported feeds at least daily. Each expires after **24 hours**.
-   Refresh is manual in this release; no scheduler or continuous verification
-   guarantee is included. Old valid data is not replaced with an error response.
+   Enable [optional automatic refresh](AUTOMATIC_FEED_REFRESH.md) on the owner
+   dashboard, or use the manual controls. A daily schedule can leave gaps when
+   late or failed; no continuous verification guarantee is included. Old valid
+   data is not replaced with an error response.
 5. Check the observation counts separately from the existing traffic totals.
    Only requests counted after opt-in contribute; old traffic is not backfilled.
 
@@ -62,7 +64,8 @@ existing two-command collection path.
 `identity:{UTC date}` hashes contain only `{botId}:{status}` counts, bounded to
 the configured HTTP bots and four statuses, with 30-day retention. They are
 updated in the existing counting script, which adds no write round trip. The
-dashboard reads 30 daily hashes plus five feed values in one pipeline. **Raw
+dashboard reads 30 daily hashes, five feed values and the last scheduled-job
+completion in one pipeline. **Raw
 client IPs are used only in memory and are never saved, returned or logged.**
 
 Identity counts include both allowed and blocked requests and can have collection

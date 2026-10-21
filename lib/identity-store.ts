@@ -1,6 +1,9 @@
 import { botSignatures } from "./botSignatures";
 import { createRedis } from "./redis";
 import { reportDays } from "./traffic-report";
+import { IDENTITY_REFRESH_RESULT, parseRefreshResult } from "./identity-refresh";
+import { cronSecretConfigured } from "./cron-auth";
+import { ownerAccessStatus } from "./owner-access";
 import {
   feedKey,
   feedIsFresh,
@@ -70,9 +73,11 @@ export async function readIdentityReport() {
   const supported = Object.keys(IDENTITY_SOURCES);
   for (const botId of supported) pipeline.get(feedKey(botId));
   for (const day of days) pipeline.hgetall(`identity:${day}`);
+  pipeline.get(IDENTITY_REFRESH_RESULT);
   const values = await pipeline.exec();
-  if (values.length !== supported.length + days.length) throw new Error("Incomplete identity data");
-  const totals = aggregateIdentityCounts(values.slice(supported.length));
+  if (values.length !== supported.length + days.length + 1)
+    throw new Error("Incomplete identity data");
+  const totals = aggregateIdentityCounts(values.slice(supported.length, -1));
   const rows = bots.map((bot) => {
     const index = supported.indexOf(bot.id);
     const cached = index < 0 ? null : values[index];
@@ -86,7 +91,17 @@ export async function readIdentityReport() {
       counts: totals[bot.id],
     };
   });
+  const configured = process.env.PROMPTWATCH_AUTO_REFRESH_FEEDS === "true";
+  const owner = process.env.PROMPTWATCH_OWNER_ID?.trim();
   return {
+    automaticRefresh: {
+      configured,
+      ready:
+        configured &&
+        cronSecretConfigured(process.env.CRON_SECRET) &&
+        ownerAccessStatus(owner ?? null, owner) === 200,
+      lastRun: parseRefreshResult(values.at(-1)),
+    },
     mode:
       process.env.PROMPTWATCH_IP_VERIFICATION !== "vercel"
         ? "disabled"

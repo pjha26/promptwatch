@@ -26,6 +26,8 @@ website.
 - Optional direct-Vercel IP observations compare five crawlers against fresh
   official vendor ranges, without saving visitor IPs or changing access rules.
   See [crawler identity setup](docs/CRAWLER_IDENTITY.md).
+- Optional protected daily feed refresh, with overlap protection and recorded
+  per-feed outcomes. See [automatic refresh setup](docs/AUTOMATIC_FEED_REFRESH.md).
 - A locally packed collector can be installed on a separate Next.js 15 site,
   sharing this single-owner dashboard's Redis database. See
   [collector installation](docs/COLLECTOR_INSTALLATION.md).
