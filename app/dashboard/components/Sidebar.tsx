@@ -9,6 +9,7 @@ import {
   BarChart2,
   Activity,
   ShieldCheck,
+  Bell,
   Zap,
   Search,
   Users,
@@ -25,9 +26,12 @@ const navLinks = [
   { name: "Tracking Health", href: "/dashboard/health", icon: Activity },
   { name: "Crawler Identity", href: "/dashboard/identity", icon: ShieldCheck },
   { name: "Actions", href: "/dashboard/actions", icon: Zap },
+  { name: "Webhook Alerts", href: "/dashboard/alerts", icon: Bell },
+  { name: "Settings", href: "/dashboard/settings", icon: Settings },
+];
+const demoLinks = [
   { name: "Prompts", href: "/dashboard/prompts", icon: Search },
   { name: "Competitors", href: "/dashboard/competitors", icon: Users },
-  { name: "Settings", href: "/dashboard/settings", icon: Settings },
 ];
 
 export function Sidebar() {
@@ -71,28 +75,44 @@ export function Sidebar() {
           </Link>
         </div>
 
-        <nav className="flex flex-1 flex-col gap-1 overflow-y-auto py-4">
-          {navLinks.map((link) => {
-            const isActive =
-              pathname === link.href ||
-              (link.href !== "/dashboard" && pathname.startsWith(link.href));
-            const Icon = link.icon;
-            return (
-              <Link
-                key={link.name}
-                href={link.href}
-                onClick={() => setMobileMenuOpen(false)}
-                className={`font-dm-sans flex items-center gap-3 px-6 py-3 text-sm font-medium transition-colors duration-150 ${
-                  isActive
-                    ? "bg-[#0A0A0A] text-white"
-                    : "text-[#6B6560] hover:bg-[#EBE8E3] hover:text-[#0A0A0A]"
-                }`}
-              >
-                <Icon className="h-4 w-4" />
-                {link.name}
-              </Link>
-            );
-          })}
+        <nav aria-label="Dashboard" className="flex flex-1 flex-col gap-1 overflow-y-auto py-4">
+          {[
+            { title: "Crawler monitoring", links: navLinks },
+            { title: "Demo previews", links: demoLinks },
+          ].map((section) => (
+            <div key={section.title}>
+              <p className="px-6 pb-2 pt-3 text-xs font-semibold uppercase tracking-wider text-[#6B6560]">
+                {section.title}
+              </p>
+              {section.links.map((link) => {
+                const isActive =
+                  pathname === link.href ||
+                  (link.href !== "/dashboard" && pathname.startsWith(link.href));
+                const Icon = link.icon;
+                return (
+                  <Link
+                    key={link.name}
+                    href={link.href}
+                    aria-current={isActive ? "page" : undefined}
+                    onClick={() => setMobileMenuOpen(false)}
+                    className={`font-dm-sans flex items-center gap-3 px-6 py-3 text-sm font-medium transition-colors duration-150 ${
+                      isActive
+                        ? "bg-[#0A0A0A] text-white"
+                        : "text-[#6B6560] hover:bg-[#EBE8E3] hover:text-[#0A0A0A]"
+                    }`}
+                  >
+                    <Icon className="h-4 w-4" />
+                    {link.name}
+                    {section.title === "Demo previews" && (
+                      <span className="ml-auto border border-current px-1 text-[10px] uppercase">
+                        Demo
+                      </span>
+                    )}
+                  </Link>
+                );
+              })}
+            </div>
+          ))}
         </nav>
 
         {/* Bottom user profile area on sidebar */}

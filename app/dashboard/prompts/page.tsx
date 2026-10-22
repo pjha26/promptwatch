@@ -2,6 +2,7 @@
 
 import { useState } from "react";
 import { Plus, X, Check } from "lucide-react";
+import { DemoNotice } from "../components/DemoNotice";
 
 type Engine = 'chatgpt' | 'claude' | 'perplexity' | 'gemini';
 
@@ -75,6 +76,7 @@ export default function PromptsPage() {
 
   return (
     <div className="p-6 md:p-8 max-w-7xl mx-auto w-full font-dm-sans bg-[#FFFFFF] min-h-screen text-[#0A0A0A]">
+      <DemoNotice />
       <div className="flex justify-between items-end mb-2">
         <h1 className="font-barlow-condensed text-2xl font-bold tracking-tight text-[#0A0A0A] uppercase">
           PROMPTS
@@ -84,23 +86,23 @@ export default function PromptsPage() {
           className="bg-[#0A0A0A] border border-[#0A0A0A] hover:bg-[#333333] transition-colors rounded-none text-white text-sm font-medium px-4 py-2 flex items-center gap-2"
         >
           <Plus className="w-4 h-4" />
-          ADD PROMPT
+          ADD EXAMPLE PROMPT
         </button>
       </div>
       <div className="font-dm-mono text-xs text-[#6B6560] mb-8 uppercase tracking-wider">
-        {prompts.length} PROMPTS TRACKED ACROSS {new Set(prompts.flatMap(p => p.engines)).size} ENGINES
+        {prompts.length} EXAMPLE PROMPTS · {new Set(prompts.flatMap(p => p.engines)).size} EXAMPLE ENGINES
       </div>
 
       {prompts.length === 0 ? (
         <div className="border border-[#E0DDD8] p-16 flex flex-col items-center justify-center text-center">
-          <h2 className="font-barlow-condensed text-xl font-bold mb-2">NO PROMPTS TRACKED YET</h2>
-          <p className="font-dm-sans text-sm text-[#6B6560] mb-6">Add your first prompt to start monitoring</p>
+          <h2 className="font-barlow-condensed text-xl font-bold mb-2">NO EXAMPLE PROMPTS</h2>
+          <p className="font-dm-sans text-sm text-[#6B6560] mb-6">Add an example prompt to explore this preview. No monitoring is performed.</p>
           <button 
             onClick={() => setIsModalOpen(true)}
             className="bg-[#0A0A0A] border border-[#0A0A0A] hover:bg-[#333333] transition-colors rounded-none text-white text-sm font-medium px-4 py-2 flex items-center gap-2"
           >
             <Plus className="w-4 h-4" />
-            ADD PROMPT
+            ADD EXAMPLE PROMPT
           </button>
         </div>
       ) : (
@@ -158,8 +160,8 @@ export default function PromptsPage() {
             >
               <X className="w-5 h-5" />
             </button>
-            <h2 className="font-barlow-condensed font-bold text-2xl uppercase mb-1">ADD PROMPT</h2>
-            <p className="font-dm-sans text-sm text-[#6B6560] mb-6">Enter a search query you want to track across AI engines</p>
+            <h2 className="font-barlow-condensed font-bold text-2xl uppercase mb-1">ADD EXAMPLE PROMPT</h2>
+            <p className="font-dm-sans text-sm text-[#6B6560] mb-6">Enter an example query to preview the layout. It will not be sent to any AI engine.</p>
             
             <input 
               type="text"
@@ -198,7 +200,7 @@ export default function PromptsPage() {
                 onClick={handleAddPrompt}
                 className="bg-[#0A0A0A] border border-[#0A0A0A] text-white hover:bg-[#333333] transition-colors rounded-none text-sm font-medium px-4 py-2"
               >
-                ADD PROMPT
+                ADD EXAMPLE PROMPT
               </button>
             </div>
           </div>

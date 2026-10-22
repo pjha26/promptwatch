@@ -4,9 +4,17 @@ import Link from "next/link";
 import { useTrafficData } from "../traffic/hooks/useTrafficData";
 import { useActionState } from "../actions/hooks/useActionState";
 import { CRAWLER_ACTION_LABELS } from "@/lib/crawler-actions";
+import { buildTrafficReport } from "@/lib/traffic-report";
 
 export function OverviewClient() {
-  const { chartData, totalVisits, loading: trafficLoading, error: trafficError } = useTrafficData();
+  const {
+    data,
+    chartData,
+    loading: trafficLoading,
+    error: trafficError,
+    retry: retryTraffic,
+  } = useTrafficData();
+  const traffic = data ? buildTrafficReport(data, 30) : null;
   const {
     actions,
     loading: actionsLoading,
@@ -50,38 +58,52 @@ export function OverviewClient() {
   return (
     <div className="font-dm-sans mx-auto w-full max-w-7xl p-6 md:p-8">
       {/* Header */}
-      <div className="mb-8 flex items-end justify-between border-b border-[#E0DDD8] pb-4">
+      <div className="mb-8 flex flex-wrap items-end justify-between gap-3 border-b border-[#E0DDD8] pb-4">
         <h1 className="font-barlow-condensed text-2xl font-bold uppercase tracking-tight text-[#0A0A0A]">
           OVERVIEW
         </h1>
-        <div className="font-dm-mono text-sm uppercase text-[#6B6560]">
-          {new Date().toLocaleDateString("en-GB", {
-            weekday: "short",
-            day: "2-digit",
-            month: "short",
-            year: "numeric",
-          })}
-        </div>
+        <p className="text-sm text-[#6B6560]">
+          Recorded crawler activity · UTC dates; today is partial
+        </p>
       </div>
 
       {/* Row 1 - Stats */}
       <div className="mb-8 grid grid-cols-1 gap-6 md:grid-cols-2 lg:grid-cols-4">
-        <Link
-          href="/dashboard/traffic"
-          className="flex h-full flex-col justify-between rounded-none border border-[#C8C4BE] bg-[#FFFFFF] p-6 shadow-[0_1px_3px_rgba(0,0,0,0.08)] transition-colors hover:bg-gray-50"
-        >
-          <div className="mb-4 text-xs font-semibold uppercase tracking-widest text-[#E63946]">
-            ALLOWED CRAWLER REQUESTS
-          </div>
-          <div>
-            <div
-              className={`font-dm-mono mb-1 font-bold text-[#0A0A0A] ${trafficError ? "text-2xl" : "text-5xl"}`}
-            >
-              {trafficLoading ? "..." : trafficError ? "Unavailable" : totalVisits.toLocaleString()}
+        {[
+          {
+            label: "Allowed crawler requests",
+            value: traffic?.allowed,
+            detail: "Last 30 days; page delivery is not measured",
+          },
+          {
+            label: "Blocked crawler requests",
+            value: traffic?.blocked,
+            detail: "Last 30 days; denied by bot policy",
+          },
+          {
+            label: "Active crawlers",
+            value: traffic?.activeCrawlers,
+            detail: "Last 30 days; includes blocked-only activity",
+          },
+        ].map((metric) => (
+          <Link
+            key={metric.label}
+            href="/dashboard/reports"
+            className="flex h-full min-w-0 flex-col justify-between border border-[#C8C4BE] bg-white p-6 transition-colors hover:bg-gray-50"
+          >
+            <div className="mb-4 text-xs font-semibold uppercase tracking-widest text-[#E63946]">
+              {metric.label}
             </div>
-            <div className="text-sm text-[#6B6560]">last 30 days</div>
-          </div>
-        </Link>
+            <div className="font-dm-mono mb-2 break-words text-3xl font-bold">
+              {trafficLoading
+                ? "Loading…"
+                : trafficError || !traffic
+                  ? "Unavailable"
+                  : metric.value?.toLocaleString()}
+            </div>
+            <p className="text-sm text-[#6B6560]">{metric.detail}</p>
+          </Link>
+        ))}
 
         <Link
           href="/dashboard/actions"
@@ -99,29 +121,16 @@ export function OverviewClient() {
             <div className="text-sm text-[#6B6560]">need your attention</div>
           </div>
         </Link>
-
-        {/* Muted / Coming Soon */}
-        <div className="flex h-full cursor-not-allowed flex-col justify-between rounded-none border border-dashed border-[#C8C4BE] bg-[#F5F2EE] p-6 opacity-60 shadow-none">
-          <div className="mb-4 text-xs font-semibold uppercase tracking-widest text-[#6B6560]">
-            PROMPTS TRACKED
-          </div>
-          <div>
-            <div className="font-dm-mono mb-1 text-2xl font-bold text-[#6B6560]">COMING SOON</div>
-            <div className="text-sm text-[#6B6560]">Feature in development</div>
-          </div>
-        </div>
-
-        {/* Muted / Coming Soon */}
-        <div className="flex h-full cursor-not-allowed flex-col justify-between rounded-none border border-dashed border-[#C8C4BE] bg-[#F5F2EE] p-6 opacity-60 shadow-none">
-          <div className="mb-4 text-xs font-semibold uppercase tracking-widest text-[#6B6560]">
-            COMPETITORS DETECTED
-          </div>
-          <div>
-            <div className="font-dm-mono mb-1 text-2xl font-bold text-[#6B6560]">COMING SOON</div>
-            <div className="text-sm text-[#6B6560]">Feature in development</div>
-          </div>
-        </div>
       </div>
+
+      <p className="mb-6 text-sm text-[#6B6560]">
+        Counts reflect recorded User-Agent matches, not verified identities or AI citations. Zero
+        counts alone do not confirm collection is healthy.{" "}
+        <Link href="/dashboard/health" className="underline">
+          Check tracking health
+        </Link>
+        .
+      </p>
 
       {saveError && (
         <p role="alert" className="mb-6 border border-amber-300 bg-amber-50 p-4 text-sm">
@@ -136,7 +145,7 @@ export function OverviewClient() {
         {/* Left Column - 60% */}
         <div className="flex flex-col lg:w-[60%]">
           <div className="mb-4 text-xs font-semibold uppercase tracking-widest text-[#E63946]">
-            RECENT TRAFFIC
+            ALLOWED REQUESTS · LAST 7 UTC DAYS
           </div>
           <div className="flex flex-1 flex-col rounded-none border border-[#E0DDD8] bg-[#FFFFFF] p-6 shadow-[0_1px_3px_rgba(0,0,0,0.08)]">
             <div className="mb-4 flex h-48 flex-1 items-end justify-between gap-2 border-b border-[#E0DDD8] pb-4">
@@ -147,6 +156,9 @@ export function OverviewClient() {
               ) : trafficError ? (
                 <p role="alert" className="text-sm text-gray-600">
                   Traffic could not be loaded.
+                  <button type="button" onClick={retryTraffic} className="ml-2 underline">
+                    Retry traffic
+                  </button>
                 </p>
               ) : last7Days.length > 0 ? (
                 last7Days.map((day, i) => (
@@ -158,7 +170,7 @@ export function OverviewClient() {
                     }}
                   >
                     <div className="pointer-events-none absolute -top-8 left-1/2 z-10 -translate-x-1/2 whitespace-nowrap bg-black px-2 py-1 text-xs text-white opacity-0 transition-opacity group-hover:opacity-100">
-                      {day.total} visits
+                      {day.total} allowed requests
                     </div>
                   </div>
                 ))

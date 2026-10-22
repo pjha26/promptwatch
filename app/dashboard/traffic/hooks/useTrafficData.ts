@@ -1,6 +1,7 @@
 "use client";
 
 import { useState, useEffect, useMemo } from "react";
+import { parseTrafficHistory, type TrafficHistory } from "@/lib/traffic-report";
 
 export interface DailyTraffic {
   date: string;
@@ -8,20 +9,8 @@ export interface DailyTraffic {
   [key: string]: string | number; // Bot names mapped to their counts
 }
 
-interface HistoryBot {
-  id: string;
-  name: string;
-  hitsByDay: number[];
-  blockedByDay: number[];
-}
-
-interface HistoryResponse {
-  days: string[];
-  bots: HistoryBot[];
-}
-
 export function useTrafficData() {
-  const [historyData, setHistoryData] = useState<HistoryResponse | null>(null);
+  const [historyData, setHistoryData] = useState<TrafficHistory | null>(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(false);
   const [attempt, setAttempt] = useState(0);
@@ -29,22 +18,28 @@ export function useTrafficData() {
   const retry = () => setAttempt((a) => a + 1);
 
   useEffect(() => {
+    const controller = new AbortController();
+    const signal = AbortSignal.any([controller.signal, AbortSignal.timeout(15_000)]);
     setLoading(true);
     setError(false);
-    fetch("/api/bot-stats/history")
+    setHistoryData(null);
+    fetch("/api/bot-stats/history", { cache: "no-store", signal })
       .then((res) => {
         if (!res.ok) throw new Error("Failed to load");
         return res.json();
       })
-      .then((json: HistoryResponse) => {
-        setHistoryData(json);
+      .then((json: unknown) => {
+        const history = parseTrafficHistory(json);
+        if (controller.signal.aborted) return;
+        setHistoryData(history);
         setLoading(false);
       })
-      .catch((err) => {
-        console.error(err);
+      .catch(() => {
+        if (controller.signal.aborted) return;
         setError(true);
         setLoading(false);
       });
+    return () => controller.abort();
   }, [attempt]);
 
   const { chartData, botTotals, botBlockedTotals, totalVisits } = useMemo(() => {

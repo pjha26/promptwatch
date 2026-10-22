@@ -1,6 +1,7 @@
 "use client";
 
 import { TrendingUp, TrendingDown } from "lucide-react";
+import { DemoNotice } from "../components/DemoNotice";
 
 type Engine = "chatgpt" | "claude" | "perplexity" | "gemini";
 
@@ -36,10 +37,11 @@ export default function CompetitorsPage() {
   if (competitors.length === 0) {
     return (
       <div className="p-6 md:p-8 max-w-7xl mx-auto w-full font-dm-sans bg-[#FFFFFF] min-h-screen text-[#0A0A0A]">
+      <DemoNotice />
         <h1 className="font-barlow-condensed text-2xl font-bold tracking-tight uppercase mb-2">COMPETITORS</h1>
         <div className="border border-[#E0DDD8] p-16 flex flex-col items-center justify-center text-center mt-8">
           <h2 className="font-barlow-condensed text-xl font-bold mb-2">NO COMPETITORS DETECTED</h2>
-          <p className="font-dm-sans text-sm text-[#6B6560]">Promptwatch hasn&apos;t detected any competitor citations yet.</p>
+          <p className="font-dm-sans text-sm text-[#6B6560]">No example competitors in this preview. Real citation monitoring is not implemented.</p>
         </div>
       </div>
     );
@@ -47,10 +49,11 @@ export default function CompetitorsPage() {
 
   return (
     <div className="p-6 md:p-8 max-w-7xl mx-auto w-full font-dm-sans bg-[#FFFFFF] min-h-screen text-[#0A0A0A]">
+      <DemoNotice />
       {/* Header */}
       <h1 className="font-barlow-condensed text-2xl font-bold tracking-tight uppercase mb-2">COMPETITORS</h1>
       <div className="font-dm-mono text-xs text-[#6B6560] uppercase tracking-wider mb-8">
-        {competitors.length} COMPETITORS DETECTED · LAST 90 DAYS
+        {competitors.length} EXAMPLE COMPETITORS · SIMULATED 90-DAY DATA
       </div>
 
       {/* Summary Strip */}

@@ -5,6 +5,21 @@ Reviewed on 18 October 2026 against local commit `bc24dcf` and the linked
 
 ## Direction
 
+### Core-focused Overview and demo labels, 22 October 2026
+
+Overview now shows allowed requests, blocked requests, active crawlers including
+blocked-only traffic, and saved review actions. Citation examples remain available
+under Demo previews, with prominent notices explaining that no real AI queries or
+citation measurement occur and local preview edits reset on reload. Webhook Alerts
+has a direct navigation entry. Existing example data and preview interactions remain.
+
+The shared traffic hook reuses the existing response parser, clears stale values,
+cancels superseded requests and has a bounded timeout. Bad data is unavailable,
+not a zero counter or a rendering exception. Local full checks passed (80 tests,
+lint, types, production build and anonymous API smoke). An isolated browser with
+real generated CSS verified metrics, blocked-only activity, malformed data, retry,
+zero states and both preview notices. Live owner access remains pending setup.
+
 ### Remaining release sequence, 22 October 2026
 
 Site settings, evidence filters and optional webhook delivery are implemented and

@@ -43,6 +43,9 @@ website.
 - Reports provide 7/30-day totals and daily/crawler CSV exports.
 - Report crawler, outcome and UTC date filters apply consistently to totals,
   tables and CSV exports without collecting additional visitor data.
+- Overview focuses on recorded allowed/blocked requests, active crawlers and
+  review actions. Citation previews are labelled as demo data and grouped
+  separately in navigation.
 - Tracking Health separates Redis connectivity, collector evidence, and recorded
   failures, with an optional isolated storage self-check.
 - Action Centre and Overview derive recommendations from actual crawler counters:
