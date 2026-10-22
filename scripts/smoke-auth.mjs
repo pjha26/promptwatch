@@ -25,6 +25,9 @@ const server = spawn(
       PROMPTWATCH_AUTO_REFRESH_FEEDS: "true",
       CRON_SECRET: cronSecret,
       PROMPTWATCH_OWNER_ID: "",
+      PROMPTWATCH_ALERTS_ENABLED: "true",
+      PROMPTWATCH_WEBHOOK_URL: "",
+      PROMPTWATCH_WEBHOOK_SECRET: "",
     },
   },
 );
@@ -57,6 +60,8 @@ try {
       "/api/tracking-health",
       "/api/actions",
       "/api/site-settings",
+      "/api/alerts",
+      "/api/cron/alerts",
       "/api/crawler-identity",
       "/api/cron/identity-feeds",
     ]) {
@@ -90,11 +95,20 @@ try {
     "Configure the deployment owner before enabling scheduled refresh.",
   );
   assert.ok(!JSON.stringify(setupError).includes(cronSecret));
+  const alertsWithoutOwner = await fetch(base + "/api/cron/alerts", {
+    headers: { Authorization: `Bearer ${cronSecret}` },
+  });
+  assert.equal(alertsWithoutOwner.status, 503);
+  assert.equal(
+    (await alertsWithoutOwner.json()).error,
+    "Configure the deployment owner before enabling scheduled alerts.",
+  );
   for (const path of [
     "/api/bot-policies",
     "/api/tracking-health",
     "/api/actions",
     "/api/site-settings",
+    "/api/alerts",
     "/api/crawler-identity",
   ]) {
     const update = await fetch(base + path, {

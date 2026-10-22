@@ -5,6 +5,29 @@ Reviewed on 18 October 2026 against local commit `bc24dcf` and the linked
 
 ## Direction
 
+### Optional webhook alerts, 22 October 2026
+
+The owner selected a webhook as the first channel. Added opt-in server-configured
+HTTPS delivery for active traffic spikes, saved unresolved collector failures,
+and partial/failed feed refreshes. Public collection and enforcement are unchanged.
+Signed bounded payloads, durable pre-send checkpoints, token-owned overlap
+protection, group cooldowns, three-attempt backoff and a four-send run limit keep
+delivery bounded. The owner can inspect history and manually run eligible work;
+a protected daily cron is included. No live endpoint or secret was configured.
+
+The queue depends on Redis, so independent outage notification and transient
+failures between daily checks remain outside this feature. Lost acknowledgements
+can repeat an event: receiver deduplication is required. Setup, retention,
+rotation and retry limits are in `WEBHOOK_ALERTS.md`.
+
+Local checks passed: lint, TypeScript, production build, anonymous API checks
+and the full regression suite. Isolated browser checks covered disabled/setup/
+ready states, recorded success, failed confirmation, malformed status and
+exhausted attempts. Unit checks cover signing, durable attempts, backoff,
+deduplication, overflow, recovery cancellation and lost acknowledgements. CI
+also runs the real Redis checkpoint/token-replacement tests. Hosted delivery,
+cron execution and a real receiver remain unverified until explicitly configured.
+
 ### Evidence filters, 22 October 2026
 
 Added crawler, outcome and inclusive UTC date filters to Reports using the

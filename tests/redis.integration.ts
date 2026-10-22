@@ -20,6 +20,14 @@ import {
   POLICY_HISTORY_LIMIT,
   savePolicyWithHistory,
 } from "../lib/policy-history";
+import {
+  ALERT_LOCK_KEY,
+  ALERT_STATE_KEY,
+  parseAlertState,
+  runWebhookAlerts,
+  SAVE_ALERT_STATE,
+  type AlertStore,
+} from "../lib/webhook-alerts";
 
 const execute = promisify(execFile);
 const container = process.env.PROMPTWATCH_TEST_REDIS_CONTAINER;
@@ -225,5 +233,69 @@ test("real Redis scripts preserve collector behavior and consistent bounded poli
     );
   } finally {
     if (touched.size) await command("DEL", ...touched);
+  }
+});
+
+test("real Redis alert checkpoints persist delivery and reject replaced leases", async () => {
+  const prefix = `test:alerts:${crypto.randomUUID()}:`;
+  const key = (name: string) => prefix + name;
+  const command = async (...args: string[]) => {
+    const { stdout } = await execute(
+      "docker",
+      ["exec", container!, "redis-cli", "--json", "-e", ...args],
+      { timeout: 10_000, maxBuffer: 1_000_000, windowsHide: true },
+    );
+    return JSON.parse(stdout.trim());
+  };
+  const store: AlertStore = {
+    get: async (name) => {
+      const value = await command("GET", key(name));
+      return value === null ? null : JSON.parse(value);
+    },
+    set: async (name, value, options) =>
+      command("SET", key(name), value, "NX", "EX", String(options.ex)),
+    eval: async (script, keys, args) =>
+      command("EVAL", script, String(keys.length), ...keys.map(key), ...args.map(String)),
+  };
+  const now = new Date("2026-10-22T04:00:00.000Z");
+  const event = {
+    id: "test:spike",
+    group: "test:spike",
+    type: "traffic-spike" as const,
+    title: "Isolated fixture",
+    occurredAt: now.toISOString(),
+    details: [],
+  };
+  try {
+    let sent = 0;
+    await runWebhookAlerts(
+      () => store,
+      async () => [event],
+      async () => {
+        const checkpoint = parseAlertState(await store.get(ALERT_STATE_KEY));
+        assert.equal(checkpoint.entries[0].attempts, 1);
+        sent++;
+      },
+      now,
+    );
+    assert.equal(sent, 1);
+    assert.equal(parseAlertState(await store.get(ALERT_STATE_KEY)).entries[0].status, "delivered");
+    assert.ok((await command("TTL", key(ALERT_STATE_KEY))) > 0);
+    assert.equal(await command("GET", key(ALERT_LOCK_KEY)), null);
+    const previous = await command("GET", key(ALERT_STATE_KEY));
+    await command("SET", key(ALERT_LOCK_KEY), "replacement", "EX", "120");
+    assert.equal(
+      await store.eval(
+        SAVE_ALERT_STATE,
+        [ALERT_LOCK_KEY, ALERT_STATE_KEY],
+        ["old-token", "{}", 60],
+      ),
+      0,
+    );
+    assert.equal(await command("GET", key(ALERT_STATE_KEY)), previous);
+    assert.equal(await store.eval(RELEASE_IDENTITY_REFRESH, [ALERT_LOCK_KEY], ["old-token"]), 0);
+    assert.equal(await command("GET", key(ALERT_LOCK_KEY)), "replacement");
+  } finally {
+    await command("DEL", key(ALERT_LOCK_KEY), key(ALERT_STATE_KEY));
   }
 });

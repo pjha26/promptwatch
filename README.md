@@ -52,12 +52,15 @@ website.
   pages require the server-configured owner UUID.
 - Site name and origin are validated and saved in owner-only settings, with a
   storage reload before success is shown. Saving details does not install a collector.
+- Optional signed webhook alerts use a bounded Redis queue, deduplication,
+  cooldowns and retries, with owner-visible delivery status. Disabled by default;
+  see [webhook setup and delivery limits](docs/WEBHOOK_ALERTS.md).
 
 **Still demo-backed or incomplete:**
 
 - Prompt/competitor screens contain examples; no real citation collection exists.
-- Notifications, external API keys and bulk deletion are unavailable and explicitly
-  described as such in Settings; there are no pretend keys or working toggles.
+- Email notifications, external API keys and bulk deletion are unavailable and
+  explicitly described as such in Settings; there are no pretend keys or toggles.
 - Throttling, hosted second-site verification, and continuous uptime
   monitoring are not implemented. Crawler matches do not prove AI citations.
 
@@ -142,7 +145,8 @@ Open http://localhost:3000, sign up or sign in, then navigate to:
 - `/dashboard/reports` — traffic reports and CSV downloads
 - `/dashboard/health` — connection status, collector evidence and storage self-check
 - `/dashboard/identity` — optional IP observations and official feed refresh
-- `/dashboard/settings` — enforced Allow/Block rules
+- `/dashboard/alerts` — optional webhook setup status and retained delivery results
+- `/dashboard/settings` — saved site details, enforced Allow/Block rules and history
 
 Public path collection is configured with `PROMPTWATCH_PUBLIC_PATH_PREFIXES`.
 For example, `/,/docs,/blog` enables the homepage, docs and blog. Each UTC day
@@ -179,10 +183,10 @@ measurements, the two-second budget and remaining deployment verification.
 
 ## What's next
 
-- Persist real site settings
-- Validate the collector against active services and measure request latency
-- Add throttling and verified crawler identity where vendors support it
-- Verify the collector package on a real second-site deployment
+- Complete live owner/service verification once the owner's UUID is available
+- Verify the collector package on a real tracked-site deployment and measure latency
+- Activate optional identity observations and webhook delivery only after setup checks
+- Add optional throttling after real usage confirms the required limits
 
 The detailed sequence and completed milestones are in
 [IMPLEMENTATION_PLAN.md](docs/IMPLEMENTATION_PLAN.md).

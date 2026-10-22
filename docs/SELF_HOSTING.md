@@ -35,6 +35,10 @@ secret and the included Vercel schedule. It is disabled by default, and rejects
 incomplete owner configuration before making refresh writes. Only enable it on
 the dashboard deployment sharing the tracked site's database.
 
+Optional [webhook alerts](WEBHOOK_ALERTS.md) use a separate signing secret and
+explicit opt-in. They process recorded evidence outside the collector and retain
+bounded delivery history. They cannot independently monitor a Redis outage.
+
 ## Policies and existing data
 
 Settings saves one site's display name and HTTP(S) origin under `settings:site`

@@ -207,5 +207,8 @@ test("corrupt stored job results never become a successful or empty status", () 
 
 test("the deployed schedule targets the protected endpoint once daily", async () => {
   const config = JSON.parse(await readFile(new URL("../vercel.json", import.meta.url), "utf8"));
-  assert.deepEqual(config.crons, [{ path: "/api/cron/identity-feeds", schedule: "0 3 * * *" }]);
+  assert.deepEqual(
+    config.crons.filter((job: { path: string }) => job.path === "/api/cron/identity-feeds"),
+    [{ path: "/api/cron/identity-feeds", schedule: "0 3 * * *" }],
+  );
 });

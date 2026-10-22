@@ -24,13 +24,13 @@ export default function SettingsPage() {
             </Link>
           </section>
           <section className="border border-[#E0DDD8] p-5">
-            <h2 className="mb-3 font-semibold">Notifications — not available yet</h2>
+            <h2 className="mb-3 font-semibold">Optional webhook alerts</h2>
             <p>
-              Promptwatch does not send alerts or weekly summaries. Action Centre recommendations
-              are available inside the dashboard.
+              Webhook delivery requires server configuration and stays disabled by default. Email
+              and weekly summaries are unavailable.
             </p>
-            <Link href="/dashboard/actions" className="mt-3 inline-block underline">
-              Review recorded activity
+            <Link href="/dashboard/alerts" className="mt-3 inline-block underline">
+              View webhook delivery status
             </Link>
           </section>
           <section className="border border-[#E0DDD8] p-5">
