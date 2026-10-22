@@ -37,6 +37,19 @@ the dashboard deployment sharing the tracked site's database.
 
 ## Policies and existing data
 
+Settings saves one site's display name and HTTP(S) origin under `settings:site`
+in the dedicated Redis database. The name is limited to 100 characters; URLs
+cannot include credentials, paths, query parameters or fragments. No URL is
+fetched. This is deployment metadata, not proof of ownership, collector
+installation, or a mechanism for separating or reassigning existing traffic.
+Use a new dedicated database for a different site's history.
+
+The owner-only `/api/site-settings` endpoint returns private, non-cached data.
+Saving requires same-origin JSON, and the UI reloads storage before confirming
+success. An uncertain write or failed confirmation requires a reload before
+another save. Metadata persists until explicitly maintained by the operator;
+existing policy and counter keys are untouched.
+
 Redis is the authoritative policy store because the middleware reads Redis on
 each detected request. Saving a policy writes the same `policy:{botId}` key once;
 the UI confirms the stored value by reloading policies. A failed or ambiguous

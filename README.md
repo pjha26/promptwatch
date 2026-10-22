@@ -48,11 +48,14 @@ website.
   saved in Redis. See [action rules and limits](docs/CRAWLER_ACTIONS.md).
 - Supabase authentication supports email/password and Google. Dashboard APIs and
   pages require the server-configured owner UUID.
+- Site name and origin are validated and saved in owner-only settings, with a
+  storage reload before success is shown. Saving details does not install a collector.
 
 **Still demo-backed or incomplete:**
 
 - Prompt/competitor screens contain examples; no real citation collection exists.
-- Site settings, notifications, API key and deletion controls remain placeholders.
+- Notifications, external API keys and bulk deletion are unavailable and explicitly
+  described as such in Settings; there are no pretend keys or working toggles.
 - Throttling, hosted second-site verification, and continuous uptime
   monitoring are not implemented. Crawler matches do not prove AI citations.
 

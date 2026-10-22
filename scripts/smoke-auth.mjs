@@ -56,6 +56,7 @@ try {
       "/api/top-pages",
       "/api/tracking-health",
       "/api/actions",
+      "/api/site-settings",
       "/api/crawler-identity",
       "/api/cron/identity-feeds",
     ]) {
@@ -93,6 +94,7 @@ try {
     "/api/bot-policies",
     "/api/tracking-health",
     "/api/actions",
+    "/api/site-settings",
     "/api/crawler-identity",
   ]) {
     const update = await fetch(base + path, {

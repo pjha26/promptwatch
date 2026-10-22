@@ -5,6 +5,21 @@ Reviewed on 18 October 2026 against local commit `bc24dcf` and the linked
 
 ## Direction
 
+### Product settings, 22 October 2026
+
+Replaced demo site details with validated owner-only Redis persistence and
+read-back confirmation. Removed fake API credentials, notification switches,
+upgrade promises and the no-op deletion action. Existing enforcement, counts
+and policy controls are unchanged. Tests cover input/storage validation,
+normalization and unconfirmed writes; anonymous API checks include settings.
+
+Next sequence: live owner/services and second-site verification (waiting for
+the owner's UUID and reactivated services); evidence filters using existing
+retained counters; optional webhook delivery (owner's selected channel);
+throttling only after real usage demonstrates a need; release operations docs.
+Do not treat blocked live checks as completed or enable services by guessing
+credentials. Keep all new delivery and enforcement options off by default.
+
 ### Automatic IP-feed refresh, 21 October 2026
 
 Added an opt-in, secret-authenticated Vercel job using the existing feed refresh
