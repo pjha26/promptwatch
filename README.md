@@ -41,6 +41,8 @@ website.
 - Top Pages shows allowed/blocked requests on configured public paths, with
   bounded storage and a collection start date. Query strings are not stored.
 - Reports provide 7/30-day totals and daily/crawler CSV exports.
+- Report crawler, outcome and UTC date filters apply consistently to totals,
+  tables and CSV exports without collecting additional visitor data.
 - Tracking Health separates Redis connectivity, collector evidence, and recorded
   failures, with an optional isolated storage self-check.
 - Action Centre and Overview derive recommendations from actual crawler counters:

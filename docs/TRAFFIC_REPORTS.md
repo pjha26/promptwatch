@@ -1,5 +1,16 @@
 # Traffic reports
 
+Reports now filter the existing retained counters by crawler, allowed/blocked
+outcome, and inclusive UTC start/end dates within the chosen 7/30-day period.
+Filters apply to summary totals, both tables and both CSV exports; the scope
+column identifies the selected crawler/outcome. Reset restores all traffic.
+An invalid or expired date range shows an error instead of silently widening
+the report. Custom dates disable the previous-week comparison. A normal
+seven-day comparison applies the same crawler/outcome to both weeks.
+
+These filters do not introduce new collection or claim a crawler-to-page
+relationship: existing page counts are aggregated separately from bot counts.
+
 The first additive milestone from [the implementation plan](IMPLEMENTATION_PLAN.md).
 Milestone A added these reports without changing pre-existing tracked files.
 The product continuation now protects them with configured-owner access; see

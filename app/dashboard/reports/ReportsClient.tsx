@@ -19,6 +19,10 @@ const percentageFormat = new Intl.NumberFormat("en-US", { maximumFractionDigits:
 export function ReportsClient() {
   const [history, setHistory] = useState<TrafficHistory | null>(null);
   const [period, setPeriod] = useState<ReportPeriod>(7);
+  const [crawlerId, setCrawlerId] = useState("");
+  const [outcome, setOutcome] = useState<"all" | "allowed" | "blocked">("all");
+  const [startDate, setStartDate] = useState("");
+  const [endDate, setEndDate] = useState("");
   const [attempt, setAttempt] = useState(0);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState("");
@@ -70,10 +74,28 @@ export function ReportsClient() {
     };
   }, [attempt]);
 
-  const report = useMemo(
-    () => (history ? buildTrafficReport(history, period) : null),
-    [history, period],
-  );
+  const selection = useMemo(() => {
+    if (!history) return { report: null, error: "" };
+    try {
+      return {
+        report: buildTrafficReport(history, period, { crawlerId, outcome, startDate, endDate }),
+        error: "",
+      };
+    } catch (cause) {
+      return {
+        report: null,
+        error: cause instanceof Error ? cause.message : "Invalid report filters.",
+      };
+    }
+  }, [history, period, crawlerId, outcome, startDate, endDate]);
+  const report = selection.report;
+
+  function resetFilters() {
+    setCrawlerId("");
+    setOutcome("all");
+    setStartDate("");
+    setEndDate("");
+  }
 
   function download(kind: "daily" | "crawlers") {
     if (!report) return;
@@ -85,7 +107,7 @@ export function ReportsClient() {
       const url = URL.createObjectURL(blob);
       const anchor = document.createElement("a");
       anchor.href = url;
-      anchor.download = `promptwatch-${kind}-${report.daily[0].date}-to-${report.daily[report.daily.length - 1].date}.csv`;
+      anchor.download = `promptwatch-${kind}-${crawlerId || "all"}-${outcome}-${report.daily[0].date}-to-${report.daily[report.daily.length - 1].date}.csv`;
       document.body.appendChild(anchor);
       anchor.click();
       anchor.remove();
@@ -122,7 +144,11 @@ export function ReportsClient() {
           <select
             id="report-period"
             value={period}
-            onChange={(event) => setPeriod(Number(event.target.value) as ReportPeriod)}
+            onChange={(event) => {
+              setPeriod(Number(event.target.value) as ReportPeriod);
+              setStartDate("");
+              setEndDate("");
+            }}
             className="border border-[#0A0A0A] bg-white px-3 py-2 text-sm"
           >
             <option value={7}>Last 7 days</option>
@@ -144,6 +170,72 @@ export function ReportsClient() {
         User-Agent matches, not verified crawler identities or AI citations. Missing counters are
         counted as zero; collection outages may leave gaps.
       </p>
+
+      {history && !loading && !error && (
+        <fieldset className="mb-6 flex flex-wrap items-end gap-4 border border-[#E0DDD8] p-4">
+          <legend className="px-2 text-sm font-medium">Filter recorded traffic</legend>
+          <label className="text-sm">
+            Crawler
+            <select
+              aria-label="Crawler"
+              value={crawlerId}
+              onChange={(event) => setCrawlerId(event.target.value)}
+              className="mt-1 block max-w-full border border-black bg-white px-3 py-2"
+            >
+              <option value="">All crawlers</option>
+              {history.bots.map((bot) => (
+                <option key={bot.id} value={bot.id}>
+                  {bot.name}
+                </option>
+              ))}
+            </select>
+          </label>
+          <label className="text-sm">
+            Outcome
+            <select
+              aria-label="Outcome"
+              value={outcome}
+              onChange={(event) => setOutcome(event.target.value as typeof outcome)}
+              className="mt-1 block border border-black bg-white px-3 py-2"
+            >
+              <option value="all">Allowed and blocked</option>
+              <option value="allowed">Allowed only</option>
+              <option value="blocked">Blocked only</option>
+            </select>
+          </label>
+          {(
+            [
+              ["Start date (UTC)", startDate, setStartDate],
+              ["End date (UTC)", endDate, setEndDate],
+            ] as const
+          ).map(([label, value, setter]) => (
+            <label key={label} className="text-sm">
+              {label}
+              <input
+                type="date"
+                aria-label={label}
+                value={value}
+                min={history.days[Math.max(0, history.days.length - period)]}
+                max={history.days[history.days.length - 1]}
+                onChange={(event) => setter(event.target.value)}
+                className="mt-1 block border border-black px-3 py-2"
+              />
+            </label>
+          ))}
+          <button type="button" className={buttonClass} onClick={resetFilters}>
+            Reset filters
+          </button>
+          <p className="w-full text-xs text-[#6B6560]">
+            Dates stay within the selected 7/30-day period. Filters apply to totals, tables and both
+            CSV exports. Custom dates disable the previous-week comparison.
+          </p>
+        </fieldset>
+      )}
+      {selection.error && (
+        <p role="alert" className="mb-4 text-sm text-red-700">
+          {selection.error}
+        </p>
+      )}
 
       <div aria-busy={loading}>
         {loading && (
@@ -174,6 +266,8 @@ export function ReportsClient() {
             <div className="mb-6 flex flex-wrap items-center justify-between gap-3">
               <p className="font-mono text-xs text-[#6B6560]">
                 {report.daily[0].date} — {report.daily[report.daily.length - 1].date} (UTC)
+                <br />
+                {report.scope}
               </p>
               <div className="flex flex-wrap gap-2">
                 <button type="button" className={buttonClass} onClick={() => download("daily")}>
@@ -224,7 +318,7 @@ export function ReportsClient() {
                 ? `${report.changePercent > 0 ? "+" : ""}${percentageFormat.format(report.changePercent)}% observed requests versus the previous 7 days (${numberFormat.format(report.previousTotal!)} requests).`
                 : report.previousTotal === 0
                   ? "The previous 7 days recorded no requests; percentage change is unavailable."
-                  : "A comparison needs an earlier complete period; only 30 days of counters are available."}
+                  : "Comparison is unavailable for custom dates or without an earlier complete period."}
             </p>
             {report.total === 0 && (
               <div

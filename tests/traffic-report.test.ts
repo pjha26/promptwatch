@@ -28,6 +28,34 @@ function history(): TrafficHistory {
   };
 }
 
+test("crawler, outcome and custom date filters reconcile totals and CSV scope without mutating history", () => {
+  const input = history();
+  const before = JSON.stringify(input);
+  const report = buildTrafficReport(input, 7, {
+    crawlerId: "blocked",
+    outcome: "blocked",
+    startDate: "2026-10-14",
+    endDate: "2026-10-16",
+  });
+  assert.equal(report.total, 9);
+  assert.equal(report.allowed, 0);
+  assert.equal(report.crawlers.length, 1);
+  assert.equal(report.daily.length, 3);
+  assert.equal(report.previousTotal, null);
+  assert.match(trafficReportCsv(report, "daily"), /crawler: BlockedBot; outcome: blocked/);
+  assert.match(trafficReportCsv(report, "crawlers"), /2026-10-14.*2026-10-16/);
+  assert.equal(buildTrafficReport(input, 7, { crawlerId: "blocked", outcome: "allowed" }).total, 0);
+  assert.equal(JSON.stringify(input), before);
+  for (const filters of [
+    { crawlerId: "unknown" },
+    { startDate: "2026-10-01" },
+    { endDate: "2026-99-99" },
+    { startDate: "2026-10-16", endDate: "2026-10-14" },
+  ])
+    assert.throws(() => buildTrafficReport(input, 7, filters));
+  assert.equal(buildTrafficReport(input, 7, { outcome: "blocked" }).previousTotal, 21);
+});
+
 test("UTC dates stay contiguous across leap days and year boundaries", () => {
   const leap = reportDays(new Date("2024-03-01T01:00:00+05:30"));
   assert.equal(leap.length, 30);

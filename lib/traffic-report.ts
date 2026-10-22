@@ -73,17 +73,51 @@ export function parseTrafficHistory(value: unknown): TrafficHistory {
   return { days, bots };
 }
 
-export function buildTrafficReport(history: TrafficHistory, period: ReportPeriod) {
-  const start = Math.max(0, history.days.length - period);
-  const daily = history.days.slice(start).map((date, index) => {
-    const allowed = history.bots.reduce((sum, bot) => sum + bot.hitsByDay[start + index], 0);
-    const blocked = history.bots.reduce((sum, bot) => sum + bot.blockedByDay[start + index], 0);
+export interface ReportFilters {
+  crawlerId?: string;
+  outcome?: "all" | "allowed" | "blocked";
+  startDate?: string;
+  endDate?: string;
+}
+
+export function buildTrafficReport(
+  history: TrafficHistory,
+  period: ReportPeriod,
+  filters: ReportFilters = {},
+) {
+  const periodStart = Math.max(0, history.days.length - period);
+  const start = filters.startDate ? history.days.indexOf(filters.startDate) : periodStart;
+  const end = filters.endDate ? history.days.indexOf(filters.endDate) + 1 : history.days.length;
+  if (start < periodStart || end <= start || end > history.days.length)
+    throw new Error("Choose a valid UTC date range within the selected period.");
+  if (filters.outcome && !["all", "allowed", "blocked"].includes(filters.outcome))
+    throw new Error("Choose a valid outcome.");
+  const selected = filters.crawlerId
+    ? history.bots.filter((bot) => bot.id === filters.crawlerId)
+    : history.bots;
+  if (filters.crawlerId && !selected.length)
+    throw new Error("Choose a crawler from the current report.");
+  const bots = selected.map((bot) => ({
+    ...bot,
+    hitsByDay: filters.outcome === "blocked" ? bot.hitsByDay.map(() => 0) : bot.hitsByDay,
+    blockedByDay: filters.outcome === "allowed" ? bot.blockedByDay.map(() => 0) : bot.blockedByDay,
+  }));
+  const scope = [
+    "Deployment-wide",
+    filters.crawlerId ? `crawler: ${selected[0].name}` : null,
+    filters.outcome && filters.outcome !== "all" ? `outcome: ${filters.outcome}` : null,
+  ]
+    .filter(Boolean)
+    .join("; ");
+  const daily = history.days.slice(start, end).map((date, index) => {
+    const allowed = bots.reduce((sum, bot) => sum + bot.hitsByDay[start + index], 0);
+    const blocked = bots.reduce((sum, bot) => sum + bot.blockedByDay[start + index], 0);
     return { date, allowed, blocked, total: allowed + blocked };
   });
-  const crawlers = history.bots
+  const crawlers = bots
     .map((bot) => {
-      const allowed = bot.hitsByDay.slice(start).reduce((sum, count) => sum + count, 0);
-      const blocked = bot.blockedByDay.slice(start).reduce((sum, count) => sum + count, 0);
+      const allowed = bot.hitsByDay.slice(start, end).reduce((sum, count) => sum + count, 0);
+      const blocked = bot.blockedByDay.slice(start, end).reduce((sum, count) => sum + count, 0);
       return { id: bot.id, name: bot.name, allowed, blocked, total: allowed + blocked };
     })
     .sort((a, b) => b.total - a.total || a.name.localeCompare(b.name));
@@ -91,8 +125,8 @@ export function buildTrafficReport(history: TrafficHistory, period: ReportPeriod
   const blocked = daily.reduce((sum, day) => sum + day.blocked, 0);
   const total = allowed + blocked;
   const previousTotal =
-    period === 7 && start >= 7
-      ? history.bots.reduce(
+    period === 7 && start >= 7 && !filters.startDate && !filters.endDate
+      ? bots.reduce(
           (sum, bot) =>
             sum +
             bot.hitsByDay.slice(start - 7, start).reduce((subtotal, count) => subtotal + count, 0) +
@@ -104,6 +138,7 @@ export function buildTrafficReport(history: TrafficHistory, period: ReportPeriod
       : null;
 
   return {
+    scope,
     daily,
     crawlers,
     allowed,
@@ -134,7 +169,7 @@ export function trafficReportCsv(report: TrafficReport, kind: "daily" | "crawler
       ? [
           ["Scope", "Date (UTC)", "Allowed by bot policy", "Blocked", "Observed requests"],
           ...report.daily.map((day) => [
-            "Deployment-wide",
+            report.scope,
             day.date,
             day.allowed,
             day.blocked,
@@ -153,7 +188,7 @@ export function trafficReportCsv(report: TrafficReport, kind: "daily" | "crawler
             "Observed requests",
           ],
           ...report.crawlers.map((bot) => [
-            "Deployment-wide",
+            report.scope,
             report.daily[0].date,
             report.daily[report.daily.length - 1].date,
             bot.id,

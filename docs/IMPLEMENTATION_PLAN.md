@@ -5,6 +5,18 @@ Reviewed on 18 October 2026 against local commit `bc24dcf` and the linked
 
 ## Direction
 
+### Evidence filters, 22 October 2026
+
+Added crawler, outcome and inclusive UTC date filters to Reports using the
+existing retained counters. Totals, breakdowns and exports share one calculation;
+CSV scope records the selection. Invalid ranges remain visible as errors.
+Custom ranges do not manufacture previous-week comparisons. No collector or
+storage format changes, and no unsupported per-crawler page attribution.
+
+Validation passed: 70 tests, lint, TypeScript, production build and anonymous
+API smoke checks. An isolated browser verified filtered totals, a downloaded
+scoped CSV, invalid-date recovery and reset using the actual Reports component.
+
 ### Product settings, 22 October 2026
 
 Replaced demo site details with validated owner-only Redis persistence and
