@@ -5,6 +5,23 @@ Reviewed on 18 October 2026 against local commit `bc24dcf` and the linked
 
 ## Direction
 
+### Remaining release sequence, 22 October 2026
+
+Site settings, evidence filters and optional webhook delivery are implemented and
+their hosted checks passed (`d185790`, `48affb3`, `8fff812`), including the new
+real-Redis delivery checkpoints and unchanged installed-collector fixture.
+All 80 local tests passed with localhost networking permitted; lint, types,
+production build and anonymous API smoke also passed. Added a concrete `RELEASE_CHECKLIST.md` separating
+implemented capabilities from owner/service activation, actual tracked-site
+deployment and receiver verification. `OPERATIONS.md` covers bounded retention,
+CSV export limits, backups and safe recovery without performing production work.
+
+Live owner and second-site checks remain pending the intended UUID and reactivated
+services. Usage-dependent throttling remains a conditional next milestone after
+production evidence, with its enforcement/counting contract written in the release
+checklist. No new access rules, deletion controls, ownership setting, service
+migration, scheduled job or external notification was enabled during development.
+
 ### Optional webhook alerts, 22 October 2026
 
 The owner selected a webhook as the first channel. Added opt-in server-configured

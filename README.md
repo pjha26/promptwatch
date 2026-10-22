@@ -190,6 +190,8 @@ measurements, the two-second budget and remaining deployment verification.
 
 The detailed sequence and completed milestones are in
 [IMPLEMENTATION_PLAN.md](docs/IMPLEMENTATION_PLAN.md).
+Use the [release checklist](docs/RELEASE_CHECKLIST.md) for live activation and
+[operations guide](docs/OPERATIONS.md) for retention, export and recovery.
 
 ## AI tool usage
 
