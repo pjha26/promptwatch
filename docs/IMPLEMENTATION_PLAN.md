@@ -5,6 +5,21 @@ Reviewed on 18 October 2026 against local commit `bc24dcf` and the linked
 
 ## Direction
 
+### Read-only deployment setup, 22 October 2026
+
+Added a linked Setup page using four existing owner-protected APIs, without new
+database keys, services, writes or automatic activation. Site settings, Redis
+reachability, collector evidence, identity configuration, feed refresh and webhook
+delivery are separate states. Available checks survive another source's failure;
+all sources are validated and bounded by a shared fetch timeout. The page states
+the limits of URL attribution, separate-site configuration and historical evidence.
+
+Unit checks cover missing details, quiet collection, optional disabled state,
+partial failure and malformed responses. An isolated browser with actual CSS
+verified missing/saved details, recorded/degraded/unknown evidence, configured
+delivery without completion proof, errors and reload recovery at desktop/mobile
+sizes. Signed-out build smoke now checks the new page's login redirect too.
+
 ### Core-focused Overview and demo labels, 22 October 2026
 
 Overview now shows allowed requests, blocked requests, active crawlers including

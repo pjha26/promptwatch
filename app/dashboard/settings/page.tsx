@@ -7,6 +7,9 @@ export default function SettingsPage() {
     <div className="mx-auto min-h-screen w-full max-w-7xl bg-white p-6 text-[#0A0A0A] md:p-8">
       <h1 className="mb-2 text-2xl font-bold uppercase tracking-tight">Settings</h1>
       <p className="mb-8 text-sm text-[#6B6560]">Single-owner deployment configuration</p>
+      <Link href="/dashboard/setup" className="mb-6 inline-block text-sm underline">
+        Review deployment setup and recorded evidence
+      </Link>
       <div className="grid gap-8 lg:grid-cols-[2fr_1fr]">
         <div>
           <SiteConfiguration />

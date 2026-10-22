@@ -10,6 +10,7 @@ import {
   Activity,
   ShieldCheck,
   Bell,
+  ListChecks,
   Zap,
   Search,
   Users,
@@ -21,6 +22,7 @@ import {
 
 const navLinks = [
   { name: "Overview", href: "/dashboard", icon: LayoutDashboard },
+  { name: "Deployment Setup", href: "/dashboard/setup", icon: ListChecks },
   { name: "AI Traffic", href: "/dashboard/traffic", icon: BarChart2 },
   { name: "Reports", href: "/dashboard/reports", icon: BarChart2 },
   { name: "Tracking Health", href: "/dashboard/health", icon: Activity },

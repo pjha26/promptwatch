@@ -118,9 +118,11 @@ try {
     });
     assert.equal(update.status, 401);
   }
-  const page = await fetch(base + "/dashboard/reports", { redirect: "manual" });
-  assert.equal(page.status, 307);
-  assert.equal(new URL(page.headers.get("location"), base).pathname, "/login");
+  for (const path of ["/dashboard/reports", "/dashboard/setup"]) {
+    const page = await fetch(base + path, { redirect: "manual" });
+    assert.equal(page.status, 307);
+    assert.equal(new URL(page.headers.get("location"), base).pathname, "/login");
+  }
   console.log(
     "PASS: anonymous browser/crawler requests denied by all administration APIs; policy writes denied; dashboard redirects to login. Redis disabled throughout.",
   );

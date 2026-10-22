@@ -46,6 +46,9 @@ website.
 - Overview focuses on recorded allowed/blocked requests, active crawlers and
   review actions. Citation previews are labelled as demo data and grouped
   separately in navigation.
+- Deployment Setup reads existing owner-only APIs to distinguish saved site
+  details, storage connectivity, collector evidence and optional feature setup.
+  It does not install collectors or activate jobs.
 - Tracking Health separates Redis connectivity, collector evidence, and recorded
   failures, with an optional isolated storage self-check.
 - Action Centre and Overview derive recommendations from actual crawler counters:
@@ -143,6 +146,7 @@ npm run dev
 Open http://localhost:3000, sign up or sign in, then navigate to:
 
 - `/dashboard` — Overview
+- `/dashboard/setup` — read-only deployment checks and next setup links
 - `/dashboard/traffic` — real-time AI bot traffic
 - `/dashboard/actions` — action triage queue
 - `/dashboard/reports` — traffic reports and CSV downloads

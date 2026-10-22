@@ -41,6 +41,19 @@ bounded delivery history. They cannot independently monitor a Redis outage.
 
 ## Policies and existing data
 
+After owner access is configured, open **Deployment Setup** (`/dashboard/setup`).
+It reads existing protected settings, health, identity and alert APIs on demand.
+Each source is validated independently: an unavailable source does not become a
+healthy/zero result or hide other checks. This page is read-only; there are no
+new background polls, credentials, database keys or activation writes.
+
+Site metadata does not attribute existing counters or collector evidence to the
+saved URL. Storage connectivity is not installation proof; historical writes
+are not continuous uptime. Optional identity configuration shown here belongs to
+the dashboard deployment; verify the tracked site's environment separately when
+using the collector package. Configured jobs/endpoints do not prove execution
+or delivery, and optional features may remain disabled.
+
 Settings saves one site's display name and HTTP(S) origin under `settings:site`
 in the dedicated Redis database. The name is limited to 100 characters; URLs
 cannot include credentials, paths, query parameters or fragments. No URL is
