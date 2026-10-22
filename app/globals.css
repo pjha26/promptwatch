@@ -77,3 +77,38 @@ body {
 ::-webkit-scrollbar-track { background: var(--color-surface); }
 ::-webkit-scrollbar-thumb { background: var(--color-outline); border-radius: 4px; }
 ::-webkit-scrollbar-thumb:hover { background: var(--color-on-surface-variant); }
+
+/* The owner dashboard uses its existing light palette independently of landing-page theme. */
+.dashboard-shell {
+  color-scheme: light;
+  font-family: var(--font-dm-sans), sans-serif;
+  --color-primary: #0a0a0a;
+  --color-on-primary: #ffffff;
+  --color-secondary: #b7102a;
+  --color-on-surface: #0a0a0a;
+  --color-on-surface-variant: #6b6560;
+  --color-background: #ffffff;
+}
+
+@layer components {
+  .dashboard-page { @apply mx-auto w-full max-w-7xl p-6 md:p-8; }
+  .dashboard-title { @apply font-condensed text-3xl font-bold uppercase tracking-tight; }
+}
+
+.dashboard-shell :is(a, button, input, select, textarea, summary, [tabindex]):focus-visible {
+  outline: 2px solid #b7102a;
+  outline-offset: 3px;
+}
+.dashboard-shell button,
+.dashboard-shell :is(input:not([type="checkbox"]):not([type="radio"]), select, textarea) {
+  min-height: 44px;
+}
+.dashboard-shell button:disabled { cursor: not-allowed; }
+
+@media (prefers-reduced-motion: reduce) {
+  .dashboard-shell *, .dashboard-shell *::before, .dashboard-shell *::after {
+    scroll-behavior: auto !important;
+    animation-duration: 0.01ms !important;
+    transition-duration: 0.01ms !important;
+  }
+}

@@ -66,9 +66,9 @@ export default function IdentityPage() {
     }
   }
   return (
-    <main className="mx-auto w-full max-w-7xl p-6 text-gray-900 md:p-8">
+    <div className="dashboard-page">
       <header className="mb-5 flex flex-wrap items-center justify-between gap-3">
-        <h1 className="text-2xl font-bold">Crawler identity observations</h1>
+        <h1 className="dashboard-title">Crawler identity observations</h1>
         <button
           type="button"
           disabled={!!saving}
@@ -195,6 +195,6 @@ export default function IdentityPage() {
           </div>
         </>
       )}
-    </main>
+    </div>
   );
 }

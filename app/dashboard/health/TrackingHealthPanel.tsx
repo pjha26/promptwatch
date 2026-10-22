@@ -45,10 +45,10 @@ export function TrackingHealthPanel() {
   }, [load]);
 
   return (
-    <div className="mx-auto max-w-7xl p-6 font-sans text-gray-900 md:p-8">
+    <div className="dashboard-page">
       <header className="mb-6 flex flex-wrap items-end justify-between gap-4 border-b border-gray-200 pb-5">
         <div>
-          <h1 className="font-condensed text-3xl font-bold uppercase">Tracking health</h1>
+          <h1 className="dashboard-title">Tracking health</h1>
           <p className="mt-2 text-sm text-gray-600">
             Storage connectivity and evidence from the collector.
           </p>

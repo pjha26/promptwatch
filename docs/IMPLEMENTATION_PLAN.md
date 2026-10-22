@@ -5,6 +5,29 @@ Reviewed on 18 October 2026 against local commit `bc24dcf` and the linked
 
 ## Direction
 
+### Dashboard consistency and keyboard/mobile access, 22 October 2026
+
+Added shared dashboard page/heading styles and a scoped light palette, preserving
+the landing theme. Traffic now has one page heading and consistent panels. Added
+a skip link, focus indicators, larger form/button targets and reduced-motion CSS.
+Mobile navigation and the local example editor use native modal dialogs rather
+than off-screen/overlay-only controls. The example query receives explicit focus
+after opening. No crawler enforcement, storage format, job or service setting changed.
+
+Overview's chart now has a screen-reader data table, real zero-height zero bars,
+and visible text priorities on actions. Traffic exposes legend pressed states,
+keyboard chart access and a tabular Reports alternative. Local full checks passed
+(82 tests, lint, types, production build and anonymous API smoke); the final focus
+adjustment passed browser checks and lint/types again. Isolated standards-mode
+browser checks with actual CSS verified 320/390/1366px containment, modal keyboard
+behavior, Escape/backdrop/focus return, resize, skip link, preview reset, chart
+toggles and reduced-motion layout. Screenshots were inspected locally.
+
+`DASHBOARD_UI.md` records behavior, manual release checks and fixture/browser limits.
+The previous Overview/setup commits (`8e623e0`, `48abe5f`) passed hosted CI. Live
+owner/service verification and external monitoring still need operator setup;
+worker scaling and throttling remain conditional on real usage measurements.
+
 ### Read-only deployment setup, 22 October 2026
 
 Added a linked Setup page using four existing owner-protected APIs, without new

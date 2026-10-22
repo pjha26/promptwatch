@@ -118,7 +118,7 @@ export function ReportsClient() {
   }
 
   return (
-    <div className="mx-auto w-full max-w-7xl p-6 font-sans text-[#0A0A0A] md:p-8">
+    <div className="dashboard-page">
       <Link
         href="/dashboard/traffic"
         className="text-sm text-[#6B6560] underline underline-offset-4"
@@ -130,9 +130,7 @@ export function ReportsClient() {
           <p className="mb-2 text-xs font-semibold uppercase tracking-widest text-[#E63946]">
             Traffic intelligence
           </p>
-          <h1 className="font-condensed text-3xl font-bold uppercase tracking-tight">
-            Traffic reports
-          </h1>
+          <h1 className="dashboard-title">Traffic reports</h1>
           <p className="mt-2 text-sm text-[#6B6560]">
             Review crawler activity and export the numbers behind it.
           </p>

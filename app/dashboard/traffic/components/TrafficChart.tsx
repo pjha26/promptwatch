@@ -12,6 +12,7 @@ import {
 } from "recharts";
 import { BOT_CHART_COLORS } from "@/lib/constants";
 import { DailyTraffic } from "../hooks/useTrafficData";
+import Link from "next/link";
 
 // Fallback palette for bots not in the legacy BOT_CHART_COLORS map
 const FALLBACK_COLORS = ["#8b5cf6", "#f59e0b", "#ef4444", "#14b8a6", "#6366f1", "#ec4899"];
@@ -84,7 +85,7 @@ export function TrafficChart({ chartData, botTotals, hiddenBots, toggleBot }: Tr
   }, [chartData.length]);
 
   return (
-    <div className="w-full bg-white border border-gray-200 rounded-xl overflow-hidden flex flex-col mb-6">
+    <div className="w-full bg-white border border-[#E0DDD8] overflow-hidden flex flex-col mb-6">
       {/* Legend Strip */}
       <div className="flex flex-wrap gap-2 p-4 border-b border-gray-100 bg-gray-50/50">
         {sortedBots.map((bot, i) => {
@@ -92,6 +93,9 @@ export function TrafficChart({ chartData, botTotals, hiddenBots, toggleBot }: Tr
           return (
             <button
               key={bot}
+              type="button"
+              aria-pressed={!isHidden}
+              aria-label={`Show ${bot} in chart`}
               onClick={() => toggleBot(bot)}
               className={`flex items-center gap-1.5 px-2.5 py-1 rounded-md text-xs font-medium transition-opacity ${
                 isHidden ? "opacity-40 hover:opacity-60 bg-gray-100" : "bg-white border border-gray-200 shadow-sm hover:bg-gray-50"
@@ -119,6 +123,7 @@ export function TrafficChart({ chartData, botTotals, hiddenBots, toggleBot }: Tr
           ) : (
             <ResponsiveContainer width="100%" height="100%">
               <BarChart
+                accessibilityLayer
                 data={chartData}
                 margin={{ top: 0, right: 0, left: -20, bottom: 0 }}
               >
@@ -160,6 +165,7 @@ export function TrafficChart({ chartData, botTotals, hiddenBots, toggleBot }: Tr
           )}
         </div>
       </div>
+      <Link href="/dashboard/reports" className="border-t border-[#E0DDD8] p-4 text-sm underline">View daily totals in Reports and download CSV</Link>
     </div>
   );
 }

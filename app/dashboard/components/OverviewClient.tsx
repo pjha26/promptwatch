@@ -39,11 +39,6 @@ export function OverviewClient() {
   const last7Days = chartData.slice(-7);
   const maxTraffic = Math.max(...last7Days.map((d) => d.total), 1);
 
-  // Pad to 7 days if less
-  while (last7Days.length > 0 && last7Days.length < 7) {
-    last7Days.unshift({ date: "", total: 0 });
-  }
-
   const getSeverityColor = (severity: string) => {
     switch (severity) {
       case "high":
@@ -56,12 +51,10 @@ export function OverviewClient() {
   };
 
   return (
-    <div className="font-dm-sans mx-auto w-full max-w-7xl p-6 md:p-8">
+    <div className="dashboard-page">
       {/* Header */}
       <div className="mb-8 flex flex-wrap items-end justify-between gap-3 border-b border-[#E0DDD8] pb-4">
-        <h1 className="font-barlow-condensed text-2xl font-bold uppercase tracking-tight text-[#0A0A0A]">
-          OVERVIEW
-        </h1>
+        <h1 className="dashboard-title">OVERVIEW</h1>
         <p className="text-sm text-[#6B6560]">
           Recorded crawler activity · UTC dates; today is partial
         </p>
@@ -89,12 +82,12 @@ export function OverviewClient() {
           <Link
             key={metric.label}
             href="/dashboard/reports"
-            className="flex h-full min-w-0 flex-col justify-between border border-[#C8C4BE] bg-white p-6 transition-colors hover:bg-gray-50"
+            className="flex h-full min-w-0 flex-col justify-between border border-[#E0DDD8] bg-white p-6 transition-colors hover:bg-gray-50"
           >
             <div className="mb-4 text-xs font-semibold uppercase tracking-widest text-[#E63946]">
               {metric.label}
             </div>
-            <div className="font-dm-mono mb-2 break-words text-3xl font-bold">
+            <div className="mb-2 break-words font-mono text-3xl font-bold">
               {trafficLoading
                 ? "Loading…"
                 : trafficError || !traffic
@@ -107,18 +100,16 @@ export function OverviewClient() {
 
         <Link
           href="/dashboard/actions"
-          className="flex h-full flex-col justify-between rounded-none border border-[#C8C4BE] bg-[#FFFFFF] p-6 shadow-[0_1px_3px_rgba(0,0,0,0.08)] transition-colors hover:bg-gray-50"
+          className="flex h-full flex-col justify-between rounded-none border border-[#E0DDD8] bg-[#FFFFFF] p-6 transition-colors hover:bg-gray-50"
         >
           <div className="mb-4 text-xs font-semibold uppercase tracking-widest text-[#E63946]">
             ACTIVE ACTIONS
           </div>
           <div>
-            <div
-              className={`font-dm-mono mb-1 font-bold text-[#0A0A0A] ${actionsError ? "text-2xl" : "text-5xl"}`}
-            >
-              {actionsLoading ? "..." : actionsError ? "Unavailable" : activeCount}
+            <div className="mb-2 break-words font-mono text-3xl font-bold text-[#0A0A0A]">
+              {actionsLoading ? "Loading…" : actionsError ? "Unavailable" : activeCount}
             </div>
-            <div className="text-sm text-[#6B6560]">need your attention</div>
+            <div className="text-sm text-[#6B6560]">Need attention; last 7 complete UTC days</div>
           </div>
         </Link>
       </div>
@@ -144,11 +135,14 @@ export function OverviewClient() {
       <div className="flex flex-col gap-6 lg:flex-row">
         {/* Left Column - 60% */}
         <div className="flex flex-col lg:w-[60%]">
-          <div className="mb-4 text-xs font-semibold uppercase tracking-widest text-[#E63946]">
+          <h2 className="mb-4 text-xs font-semibold uppercase tracking-widest text-[#E63946]">
             ALLOWED REQUESTS · LAST 7 UTC DAYS
-          </div>
-          <div className="flex flex-1 flex-col rounded-none border border-[#E0DDD8] bg-[#FFFFFF] p-6 shadow-[0_1px_3px_rgba(0,0,0,0.08)]">
-            <div className="mb-4 flex h-48 flex-1 items-end justify-between gap-2 border-b border-[#E0DDD8] pb-4">
+          </h2>
+          <div className="flex flex-1 flex-col rounded-none border border-[#E0DDD8] bg-[#FFFFFF] p-6">
+            <div
+              aria-hidden="true"
+              className="mb-4 flex h-48 items-end justify-between gap-2 border-b border-[#E0DDD8] pb-4"
+            >
               {trafficLoading ? (
                 <div className="flex h-full w-full items-center justify-center text-sm text-[#6B6560]">
                   Loading data...
@@ -156,9 +150,6 @@ export function OverviewClient() {
               ) : trafficError ? (
                 <p role="alert" className="text-sm text-gray-600">
                   Traffic could not be loaded.
-                  <button type="button" onClick={retryTraffic} className="ml-2 underline">
-                    Retry traffic
-                  </button>
                 </p>
               ) : last7Days.length > 0 ? (
                 last7Days.map((day, i) => (
@@ -166,7 +157,7 @@ export function OverviewClient() {
                     key={i}
                     className="group relative w-full bg-[#0A0A0A] transition-colors hover:bg-[#E63946]"
                     style={{
-                      height: day.total > 0 ? `${(day.total / maxTraffic) * 100}%` : "1%",
+                      height: `${(day.total / maxTraffic) * 100}%`,
                     }}
                   >
                     <div className="pointer-events-none absolute -top-8 left-1/2 z-10 -translate-x-1/2 whitespace-nowrap bg-black px-2 py-1 text-xs text-white opacity-0 transition-opacity group-hover:opacity-100">
@@ -181,7 +172,10 @@ export function OverviewClient() {
               )}
             </div>
             {/* X-axis labels */}
-            <div className="font-dm-mono flex justify-between text-xs text-[#6B6560]">
+            <div
+              aria-hidden="true"
+              className="flex justify-between font-mono text-xs text-[#6B6560]"
+            >
               {trafficLoading || trafficError
                 ? null
                 : last7Days.map((day, i) => (
@@ -198,15 +192,53 @@ export function OverviewClient() {
                     </div>
                   ))}
             </div>
+            {!trafficLoading && !trafficError && (
+              <table className="sr-only">
+                <caption>
+                  Allowed crawler requests for the last seven available UTC dates; today is partial
+                </caption>
+                <thead>
+                  <tr>
+                    <th scope="col">Date (UTC)</th>
+                    <th scope="col">Allowed requests</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  {last7Days.map((day) => (
+                    <tr key={day.date}>
+                      <th scope="row">{day.date}</th>
+                      <td>{day.total}</td>
+                    </tr>
+                  ))}
+                </tbody>
+              </table>
+            )}
+            {!trafficLoading && trafficError && (
+              <p role="alert" className="mt-3 text-sm">
+                Traffic could not be loaded.{" "}
+                <button type="button" onClick={retryTraffic} className="underline">
+                  Retry traffic
+                </button>
+              </p>
+            )}
+            {!trafficLoading &&
+              !trafficError &&
+              last7Days.length > 0 &&
+              last7Days.every((day) => day.total === 0) && (
+                <p className="mt-3 text-sm text-[#6B6560]">
+                  No allowed requests recorded in these dates. Check blocked counts and tracking
+                  health separately.
+                </p>
+              )}
           </div>
         </div>
 
         {/* Right Column - 40% */}
         <div className="flex flex-col lg:w-[40%]">
-          <div className="mb-4 text-xs font-semibold uppercase tracking-widest text-[#E63946]">
+          <h2 className="mb-4 text-xs font-semibold uppercase tracking-widest text-[#E63946]">
             TOP ACTIONS
-          </div>
-          <div className="flex flex-1 flex-col justify-between rounded-none border border-[#E0DDD8] bg-[#FFFFFF] p-6 shadow-[0_1px_3px_rgba(0,0,0,0.08)]">
+          </h2>
+          <div className="flex flex-1 flex-col justify-between rounded-none border border-[#E0DDD8] bg-[#FFFFFF] p-6">
             <div>
               {actionsLoading ? (
                 <div className="py-4 text-sm text-[#6B6560]">Loading actions...</div>
@@ -228,18 +260,20 @@ export function OverviewClient() {
                         className={`h-2 w-2 shrink-0 rounded-full ${getSeverityColor(
                           action.severity,
                         )}`}
+                        aria-hidden="true"
                       ></div>
                       <div>
                         <div className="line-clamp-1 text-sm font-medium text-[#0A0A0A]">
                           {action.title}
                         </div>
                         <div className="mt-1 inline-block rounded-none border border-[#E0DDD8] px-2 py-0.5 text-[10px] uppercase tracking-wider text-[#6B6560]">
-                          {CRAWLER_ACTION_LABELS[action.type]}
+                          {action.severity} priority · {CRAWLER_ACTION_LABELS[action.type]}
                         </div>
                       </div>
                     </div>
                     <button
                       disabled={!!savingId || needsRefresh}
+                      aria-label={`Mark ${action.title} as reviewed`}
                       onClick={() => void updateActionStatus(action.id, "accepted")}
                       className="ml-4 shrink-0 rounded-none border border-[#0A0A0A] bg-white px-3 py-1.5 text-xs font-medium text-[#0A0A0A] transition-colors hover:bg-gray-50"
                     >
@@ -256,7 +290,8 @@ export function OverviewClient() {
               href="/dashboard/actions"
               className="mt-6 block text-sm font-medium text-[#E63946] hover:underline"
             >
-              {actionsError ? "View actions" : `View all ${activeCount} actions`} &rarr;
+              {actionsLoading || actionsError ? "View actions" : `View all ${activeCount} actions`}{" "}
+              &rarr;
             </Link>
           </div>
         </div>

@@ -34,15 +34,15 @@ export default function TrafficDashboard() {
 
   if (loading) {
     return (
-      <div className="w-full px-margin-mobile md:px-0">
+      <div className="dashboard-page">
         <header className="mb-gutter mt-8 md:mt-0">
-          <h1 className="flex items-center gap-2 font-data-mono text-data-mono uppercase tracking-widest text-secondary">
-            <span className="block h-2 w-2 bg-secondary"></span>
-            01 — BOT TRAFFIC OVERVIEW
-          </h1>
+          <h1 className="dashboard-title">AI Traffic</h1>
         </header>
         {/* Loading skeleton */}
-        <div className="animate-pulse space-y-6">
+        <p role="status" className="mb-4 text-sm text-[#6B6560]">
+          Loading recorded traffic…
+        </p>
+        <div aria-hidden="true" className="animate-pulse space-y-6">
           <div className="h-16 rounded-xl bg-gray-200"></div>
           <div className="h-[400px] rounded-xl bg-gray-200"></div>
           <div className="flex gap-4">
@@ -56,14 +56,11 @@ export default function TrafficDashboard() {
 
   if (error) {
     return (
-      <div className="w-full px-margin-mobile md:px-0">
+      <div className="dashboard-page">
         <header className="mb-gutter mt-8 md:mt-0">
-          <h1 className="flex items-center gap-2 font-data-mono text-data-mono uppercase tracking-widest text-secondary">
-            <span className="block h-2 w-2 bg-secondary"></span>
-            01 — BOT TRAFFIC OVERVIEW
-          </h1>
+          <h1 className="dashboard-title">AI Traffic</h1>
         </header>
-        <div className="rounded-xl border border-gray-200 p-8 text-center">
+        <div role="alert" className="border border-[#E0DDD8] p-8 text-center">
           <p className="mb-4 text-gray-500">Failed to load traffic data.</p>
           <button
             onClick={retry}
@@ -77,17 +74,9 @@ export default function TrafficDashboard() {
   }
 
   return (
-    <div className="w-full">
-      {/* Header */}
-      <header className="mb-gutter mt-8 px-margin-mobile md:mt-0 md:px-0">
-        <h1 className="flex items-center gap-2 font-data-mono text-data-mono uppercase tracking-widest text-secondary">
-          <span className="block h-2 w-2 bg-secondary"></span>
-          01 — BOT TRAFFIC OVERVIEW
-        </h1>
-      </header>
-
+    <div className="dashboard-page">
       {/* Responsive container for main content */}
-      <div className="px-margin-mobile md:px-0">
+      <div>
         {/* Summary */}
         <SummaryHeader
           total={totalVisits}

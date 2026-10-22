@@ -45,10 +45,10 @@ export default function SetupPage() {
   const hasErrors = checks && Object.values(checks).some((check) => check.error);
 
   return (
-    <div className="mx-auto w-full max-w-7xl p-6 md:p-8">
+    <div className="dashboard-page">
       <header className="mb-6 flex flex-wrap items-end justify-between gap-4 border-b border-[#E0DDD8] pb-5">
         <div>
-          <h1 className="text-3xl font-bold">Deployment setup</h1>
+          <h1 className="dashboard-title">Deployment setup</h1>
           <p className="mt-2 text-sm text-[#6B6560]">
             Review each part of the single-owner installation. These checks are read-only.
           </p>

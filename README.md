@@ -49,6 +49,9 @@ website.
 - Deployment Setup reads existing owner-only APIs to distinguish saved site
   details, storage connectivity, collector evidence and optional feature setup.
   It does not install collectors or activate jobs.
+- Dashboard layout, native mobile navigation/dialogs, keyboard focus, chart data
+  alternatives and responsive containment are covered in
+  [UI behavior and release checks](docs/DASHBOARD_UI.md).
 - Tracking Health separates Redis connectivity, collector evidence, and recorded
   failures, with an optional isolated storage self-check.
 - Action Centre and Overview derive recommendations from actual crawler counters:

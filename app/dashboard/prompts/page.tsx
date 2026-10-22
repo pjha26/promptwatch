@@ -1,6 +1,6 @@
 "use client";
 
-import { useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import { Plus, X, Check } from "lucide-react";
 import { DemoNotice } from "../components/DemoNotice";
 
@@ -30,6 +30,14 @@ const initialPrompts: PromptData[] = [
 export default function PromptsPage() {
   const [prompts, setPrompts] = useState<PromptData[]>(initialPrompts);
   const [isModalOpen, setIsModalOpen] = useState(false);
+  const dialog = useRef<HTMLDialogElement>(null);
+  useEffect(() => {
+    if (isModalOpen && dialog.current && !dialog.current.open) {
+      dialog.current.showModal();
+      dialog.current.querySelector<HTMLInputElement>("#example-prompt")?.focus();
+    }
+    if (!isModalOpen && dialog.current?.open) dialog.current.close();
+  }, [isModalOpen]);
   const [newPromptText, setNewPromptText] = useState('');
   const [selectedEngines, setSelectedEngines] = useState<Record<Engine, boolean>>({
     chatgpt: true,
@@ -68,17 +76,18 @@ export default function PromptsPage() {
     setSelectedEngines({ chatgpt: true, claude: true, perplexity: true, gemini: true });
   };
 
-  const handleBackdropClick = (e: React.MouseEvent<HTMLDivElement>) => {
-    if (e.target === e.currentTarget) {
+  const handleBackdropClick = (e: React.MouseEvent<HTMLDialogElement>) => {
+    const rect = e.currentTarget.getBoundingClientRect();
+    if (e.target === e.currentTarget && (e.clientX < rect.left || e.clientX > rect.right || e.clientY < rect.top || e.clientY > rect.bottom)) {
       setIsModalOpen(false);
     }
   };
 
   return (
-    <div className="p-6 md:p-8 max-w-7xl mx-auto w-full font-dm-sans bg-[#FFFFFF] min-h-screen text-[#0A0A0A]">
+    <div className="dashboard-page">
       <DemoNotice />
       <div className="flex justify-between items-end mb-2">
-        <h1 className="font-barlow-condensed text-2xl font-bold tracking-tight text-[#0A0A0A] uppercase">
+        <h1 className="dashboard-title">
           PROMPTS
         </h1>
         <button 
@@ -106,8 +115,9 @@ export default function PromptsPage() {
           </button>
         </div>
       ) : (
-        <div className="w-full overflow-x-auto">
+        <div role="region" aria-label="Example prompts table, scroll horizontally on small screens" tabIndex={0} className="w-full overflow-x-auto">
           <table className="w-full text-left border border-[#E0DDD8] border-collapse min-w-[800px]">
+            <caption className="sr-only">Example prompts, engines, dates and simulated citation statuses; no real monitoring</caption>
             <thead>
               <tr className="border-b border-[#E0DDD8]">
                 <th className="py-3 px-4 w-[50%] text-xs font-semibold tracking-widest text-[#E63946] uppercase">PROMPT</th>
@@ -148,35 +158,35 @@ export default function PromptsPage() {
         </div>
       )}
 
-      {isModalOpen && (
-        <div 
-          className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/40"
+        <dialog ref={dialog} aria-labelledby="example-prompt-title" onClose={() => setIsModalOpen(false)}
+          className="m-auto max-h-[85dvh] w-[calc(100%-2rem)] max-w-md overflow-y-auto border border-black bg-white p-0 text-black backdrop:bg-black/40"
           onClick={handleBackdropClick}
         >
-          <div className="bg-white border border-[#0A0A0A] p-8 max-w-md w-full rounded-none shadow-xl relative animate-in fade-in zoom-in-95 duration-150">
+          <div className="relative p-6 md:p-8">
             <button 
+              type="button" aria-label="Close example prompt"
               onClick={() => setIsModalOpen(false)}
-              className="absolute top-4 right-4 text-[#6B6560] hover:text-[#0A0A0A]"
+              className="absolute top-4 right-4 flex min-h-11 min-w-11 items-center justify-center text-[#6B6560] hover:text-[#0A0A0A]"
             >
               <X className="w-5 h-5" />
             </button>
-            <h2 className="font-barlow-condensed font-bold text-2xl uppercase mb-1">ADD EXAMPLE PROMPT</h2>
+            <h2 id="example-prompt-title" className="pr-10 font-condensed font-bold text-2xl uppercase mb-1">ADD EXAMPLE PROMPT</h2>
             <p className="font-dm-sans text-sm text-[#6B6560] mb-6">Enter an example query to preview the layout. It will not be sent to any AI engine.</p>
             
-            <input 
+            <label htmlFor="example-prompt" className="mb-2 block text-sm font-medium">Example query</label>
+            <input id="example-prompt"
               type="text"
               value={newPromptText}
               onChange={(e) => setNewPromptText(e.target.value)}
               placeholder="e.g. best AI visibility tracking tool"
               className="w-full border border-[#0A0A0A] rounded-none px-4 py-3 text-sm focus:outline-none focus:ring-1 focus:ring-[#0A0A0A] mb-6"
-              autoFocus
             />
             
-            <div className="mb-8">
-              <label className="block text-xs font-semibold tracking-widest text-[#E63946] uppercase mb-3">SELECT ENGINES</label>
+            <fieldset className="mb-8">
+              <legend className="block text-xs font-semibold tracking-widest text-[#E63946] uppercase mb-3">SELECT EXAMPLE ENGINES</legend>
               <div className="flex flex-col gap-3">
                 {(['chatgpt', 'claude', 'perplexity', 'gemini'] as Engine[]).map(engine => (
-                  <label key={engine} className="flex items-center gap-3 cursor-pointer">
+                  <label key={engine} className="flex min-h-11 items-center gap-3 cursor-pointer">
                     <input 
                       type="checkbox"
                       checked={selectedEngines[engine]}
@@ -187,7 +197,7 @@ export default function PromptsPage() {
                   </label>
                 ))}
               </div>
-            </div>
+            </fieldset>
 
             <div className="flex justify-end gap-3">
               <button 
@@ -198,14 +208,14 @@ export default function PromptsPage() {
               </button>
               <button 
                 onClick={handleAddPrompt}
+                disabled={!newPromptText.trim() || !Object.values(selectedEngines).some(Boolean)}
                 className="bg-[#0A0A0A] border border-[#0A0A0A] text-white hover:bg-[#333333] transition-colors rounded-none text-sm font-medium px-4 py-2"
               >
                 ADD EXAMPLE PROMPT
               </button>
             </div>
           </div>
-        </div>
-      )}
+        </dialog>
     </div>
   );
 }

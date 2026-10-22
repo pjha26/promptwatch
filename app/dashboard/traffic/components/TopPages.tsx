@@ -31,7 +31,7 @@ export function TopPages({
   );
   const max = topPages.length ? topPages[0].allowed + topPages[0].blocked : 1;
   return (
-    <section className="flex min-w-0 flex-1 flex-col rounded-xl border border-gray-200 bg-white p-6">
+    <section className="flex min-w-0 flex-1 flex-col border border-[#E0DDD8] bg-white p-6">
       <h2 className="mb-2 text-sm font-semibold text-gray-900">Top Pages</h2>
       <p className="mb-4 text-xs text-gray-500">
         Configured public paths only; up to 200 paths per day per outcome. Query strings are never

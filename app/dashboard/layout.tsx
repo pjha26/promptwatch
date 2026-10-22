@@ -38,11 +38,19 @@ export default async function DashboardLayout({ children }: { children: React.Re
       </main>
     );
   return (
-    <div className="flex h-screen overflow-hidden bg-[#FFFFFF] text-[#0A0A0A] selection:bg-[#0A0A0A] selection:text-white">
+    <div className="dashboard-shell flex h-dvh overflow-hidden bg-[#FFFFFF] text-[#0A0A0A] selection:bg-[#0A0A0A] selection:text-white">
+      <a
+        href="#dashboard-main"
+        className="sr-only focus:not-sr-only focus:fixed focus:left-4 focus:top-4 focus:z-50 focus:bg-white focus:p-3 focus:underline"
+      >
+        Skip to content
+      </a>
       <Sidebar />
-      <div className="relative flex flex-1 flex-col overflow-hidden pt-[56px] md:ml-[240px] md:pt-0">
+      <div className="relative flex min-w-0 flex-1 flex-col overflow-hidden pt-[56px] md:ml-[240px] md:pt-0">
         <TopBar email={user.email} />
-        <main className="flex-1 overflow-y-auto">{children}</main>
+        <main id="dashboard-main" tabIndex={-1} className="min-w-0 flex-1 overflow-y-auto">
+          {children}
+        </main>
       </div>
     </div>
   );

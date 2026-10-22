@@ -80,11 +80,11 @@ export default function AlertsPage() {
   }
 
   return (
-    <div className="mx-auto w-full max-w-5xl p-6 md:p-8">
+    <div className="dashboard-page">
       <Link href="/dashboard/settings" className="text-sm underline">
         Back to Settings
       </Link>
-      <h1 className="mb-3 mt-5 text-3xl font-bold">Webhook alerts</h1>
+      <h1 className="dashboard-title mb-3 mt-5">Webhook alerts</h1>
       <p className="mb-5 text-sm text-[#6B6560]">
         Optional alerts for active traffic spikes, recorded collector failures and incomplete feed
         refreshes. Configure the HTTPS endpoint and signing secret on the server. Delivery is
