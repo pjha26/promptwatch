@@ -82,8 +82,9 @@ website.
 Every request to the site passes through Edge Middleware before reaching a page.
 The middleware reads the request's `User-Agent` header, checks it against a list of
 known AI crawler signatures (`lib/botSignatures.ts`), and if it matches, reads a
-policy in Upstash Redis keyed by bot. A Block rule returns 403; otherwise the
-request continues. A Redis script records allowed, blocked or rate-limited counters by UTC
+policy in Upstash Redis keyed by bot. A Block rule returns 403. If optional
+throttling is enabled, an Enforce rule above quota returns 429 with Retry-After;
+other requests continue. A Redis script records allowed, blocked or rate-limited counters by UTC
 date, plus eligible public path counts. The owner dashboard reads those counters
 through authenticated APIs.
 
@@ -94,7 +95,9 @@ flowchart TD
     A["Incoming Request<br/>(human or AI bot)"] --> B["Edge Middleware<br/>(middleware.ts)"]
     B --> C{"User-Agent matches<br/>a known bot?<br/>(lib/botSignatures.ts)"}
     C -- "Yes" --> P{"Redis policy"}
-    P -- "Allow" --> D["Record allowed counter<br/>and eligible path"]
+    P -- "Allow" --> Q{"Optional atomic quota<br/>confirmed denial?"}
+    Q -- "No / off / observe / unavailable" --> D["Record allowed counter<br/>when storage succeeds"]
+    Q -- "Yes" --> R["Record limited counter<br/>and eligible path, return 429<br/>with Retry-After"]
     P -- "Block" --> X["Record blocked counter<br/>and eligible path, return 403"]
     C -- "No" --> E["Pass through,<br/>no logging"]
     D --> F["Request continues<br/>to the page"]
@@ -118,7 +121,8 @@ flowchart TD
 1. A request hits the site (from a real user or an AI bot).
 2. Edge Middleware intercepts it before it reaches any page.
 3. The `User-Agent` header is checked against known bot signatures.
-4. If matched, the stored policy decides whether the request proceeds or returns 403.
+4. If matched, Block returns 403 first. Otherwise an enabled Enforce quota can
+   return 429 with Retry-After; Off/Observe continue. Unconfirmed quotas fail open.
    Existing `bot:{botId}:{date}` and `blocked:{botId}:{date}` counters are retained.
    Path logging defaults to the homepage; enable other public prefixes explicitly.
 5. The configured owner reads traffic and page counters through protected APIs.

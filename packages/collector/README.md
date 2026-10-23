@@ -62,8 +62,13 @@ refresh; scheduler configuration belongs on the dashboard, not this package.
 Do not imitate
 `VERCEL=1` on another hosting provider.
 
-The helper returns a 403 for a confirmed Block and `null` otherwise. Unreadable
-policies fail open; counter failures never cancel a confirmed Block. It excludes
+The helper returns HTTP 403 for a confirmed Block, HTTP 429 with `Retry-After`
+for an enabled Enforce rule above quota, or `null` to continue site middleware.
+Throttling defaults off. Start with Observe rules and measured limits; see the
+repository's `docs/THROTTLING.md` for activation and rollback. Quotas are shared
+across User-Agent matches for one crawler on this dedicated site/database.
+Unreadable policies or unconfirmed quotas fail open; optional analytics failures
+never cancel a confirmed denial. It excludes
 administration/auth routes and leaves your own middleware responsible for them.
 Collection has the same retention/path bounds and two-second Redis lifetime
 budget as Promptwatch. A permitted request is not evidence of page delivery or

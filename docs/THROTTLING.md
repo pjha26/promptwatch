@@ -90,3 +90,23 @@ Local browser fixtures use simulated owner APIs, not live services.
 
 Keep integration off until real owner/service access and the tracked installation are
 verified. Nothing in development activates a production rule or deployment flag.
+
+## Implementation verification, 23 October 2026
+
+- Code milestone: `82a5919`. Local lint, types, production build and anonymous
+  API checks passed; the final unit/HTTP transport suite passed all 90 tests.
+- The separately installed collector fixture passed observation, HTTP 429
+  headers, Block, middleware composition, private-query exclusion and outages.
+- Actual component browser checks passed Observe/Enforce save and read-back,
+  reload persistence, malformed/uncertain response locking, recovery, limited
+  report filters and downloaded CSV totals. These use isolated APIs.
+- Hosted real Redis checks passed atomic concurrent quotas, minute/revision
+  resets, Off rollback, disabled integration, corruption, Block precedence,
+  no-op rule history and bounded minute samples.
+- Rebuilt local private preview: `artifacts/promptwatch-collector-0.3.0.tgz`,
+  SHA-256 `26050fc8d93f4e373dc5a4109271bf41e881b36a6b007a4ffe1ff08013e9ba73`.
+  The archive is a local build artifact, not a published registry package.
+
+Live owner access, reactivated services, second-site Vercel installation,
+production volume and deployed latency are still unverified. Keep integration
+off until those operator checks pass; these development checks do not activate it.
