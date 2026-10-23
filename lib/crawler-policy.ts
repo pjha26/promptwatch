@@ -1,6 +1,7 @@
 import { DAILY_PATH_LIMIT } from "./public-paths";
 import { COLLECTOR_HEALTH_KEY, recordCollectorFailure } from "./collector-health";
 import type { IdentityStatus } from "./crawler-identity";
+import { VALID_THROTTLE_RULE, THROTTLE_RULES_KEY } from "./throttle-rules";
 
 export interface CrawlerStore {
   get(key: string): Promise<unknown>;
@@ -36,6 +37,51 @@ redis.call('EXPIRE', meta, ARGV[1])
 return count
 `;
 
+export const OBSERVE_THROTTLE_VISIT = `
+${VALID_THROTTLE_RULE}
+local function record()
+  local KEYS = {KEYS[1], KEYS[2], KEYS[3], KEYS[4], KEYS[5]}
+  local ARGV = {2592000, ARGV[2], ${DAILY_PATH_LIMIT}, ARGV[3], ARGV[4], ARGV[5]}
+  ${COUNT_VISIT}
+end
+local raw = redis.call('HGET', KEYS[6], ARGV[1])
+local over = false
+local observationsOk = true
+if raw then
+  local ok, rule = pcall(cjson.decode, raw)
+  if not ok or not validRule(rule) then return redis.error_reply('Invalid throttle rule') end
+  if rule.mode ~= 'off' then
+    local now = tonumber(redis.call('TIME')[1])
+    local minute = math.floor(now / 60)
+    local kind = redis.call('TYPE', KEYS[7]).ok
+    if kind ~= 'none' and kind ~= 'hash' then return redis.error_reply('Invalid quota window') end
+    local prior = redis.call('HMGET', KEYS[7], 'revision', 'minute', 'count')
+    if kind == 'hash' and (not prior[1] or not tonumber(prior[2]) or not tonumber(prior[3]) or tonumber(prior[3]) < 1) then return redis.error_reply('Invalid quota window') end
+    local count = 1
+    if prior[1] == rule.revision and tonumber(prior[2]) == minute then count = tonumber(prior[3]) + 1 end
+    over = count > rule.limit
+    redis.call('HSET', KEYS[7], 'revision', rule.revision, 'minute', minute, 'count', count)
+    redis.call('EXPIRE', KEYS[7], 61 - (now % 60))
+    observationsOk = pcall(function()
+      local slot = tostring(minute % 60)
+      local previous = redis.call('HGET', KEYS[8], slot)
+      local sample = {minute = minute, count = 0}
+      if previous then
+        local decoded = cjson.decode(previous)
+        if type(decoded) ~= 'table' or type(decoded.minute) ~= 'number' or type(decoded.count) ~= 'number' or decoded.count < 1 then error('Invalid sample') end
+        if decoded.minute == minute then sample.count = decoded.count end
+      end
+      sample.count = sample.count + 1
+      redis.call('HSET', KEYS[8], slot, cjson.encode(sample))
+      redis.call('EXPIRE', KEYS[8], 3600)
+      if over then redis.call('INCR', KEYS[9]); redis.call('EXPIRE', KEYS[9], 2592000) end
+    end)
+  end
+end
+local recorded = pcall(record)
+return {over and 1 or 0, recorded and 1 or 0, observationsOk and 1 or 0}
+`;
+
 export async function applyCrawlerPolicy(
   store: CrawlerStore,
   botId: string,
@@ -43,6 +89,7 @@ export async function applyCrawlerPolicy(
   path: string | null = null,
   observedAt = new Date().toISOString(),
   identity?: Promise<IdentityStatus>,
+  throttlingEnabled = false,
 ) {
   let policy;
   try {
@@ -56,6 +103,32 @@ export async function applyCrawlerPolicy(
   const blocked = policy === "block";
   const identityStatus = identity ? await identity.catch(() => "unavailable" as const) : null;
   try {
+    if (throttlingEnabled && !blocked) {
+      const result = await store.eval(
+        OBSERVE_THROTTLE_VISIT,
+        [
+          `bot:${botId}:${date}`,
+          `pages:${date}`,
+          "paths:started_at",
+          `identity:${date}`,
+          COLLECTOR_HEALTH_KEY,
+          THROTTLE_RULES_KEY,
+          `throttle:window:${botId}`,
+          `throttle:samples:${botId}`,
+          `throttle:would:${botId}:${date}`,
+        ],
+        [botId, path ?? "", date, identityStatus ? `${botId}:${identityStatus}` : "", observedAt],
+      );
+      if (
+        !Array.isArray(result) ||
+        result.length !== 3 ||
+        result.some((value) => value !== 0 && value !== 1)
+      )
+        throw new Error("Throttle observation unconfirmed");
+      if (result[1] === 0 || result[2] === 0)
+        await recordCollectorFailure(store, "counter-write", observedAt);
+      return false;
+    }
     await store.eval(
       COUNT_VISIT,
       [
@@ -74,7 +147,11 @@ export async function applyCrawlerPolicy(
   } catch {
     // An analytics failure must not reverse a policy decision already read.
     console.error("[crawler] Could not record request count.");
-    await recordCollectorFailure(store, "counter-write", observedAt);
+    await recordCollectorFailure(
+      store,
+      throttlingEnabled && !blocked ? "throttle-check" : "counter-write",
+      observedAt,
+    );
   }
   return blocked;
 }

@@ -25,6 +25,9 @@ export default function SettingsPage() {
             <Link href="/dashboard/health" className="mt-3 inline-block underline">
               Check tracking health
             </Link>
+            <Link href="/dashboard/throttling" className="mt-3 block underline">
+              Configure crawler observations
+            </Link>
           </section>
           <section className="border border-[#E0DDD8] p-5">
             <h2 className="mb-3 font-semibold">Optional webhook alerts</h2>

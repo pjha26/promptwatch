@@ -10,6 +10,7 @@ export async function middleware(request: NextRequest) {
     publicPathPrefixes: process.env.PROMPTWATCH_PUBLIC_PATH_PREFIXES ?? "/",
     verifyVercelIp: process.env.PROMPTWATCH_IP_VERIFICATION === "vercel",
     isVercel: process.env.VERCEL === "1",
+    throttlingEnabled: process.env.PROMPTWATCH_THROTTLING_ENABLED === "true",
   });
   if (denied) return denied;
   return await updateSession(request);

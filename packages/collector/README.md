@@ -11,10 +11,10 @@ npm ci
 npm run collector:pack
 ```
 
-Install `artifacts/promptwatch-collector-0.1.0.tgz` in the website you control:
+Install `artifacts/promptwatch-collector-0.2.0.tgz` in the website you control:
 
 ```sh
-npm install /absolute/path/to/promptwatch-collector-0.1.0.tgz
+npm install /absolute/path/to/promptwatch-collector-0.2.0.tgz
 ```
 
 Add this to the site's existing `middleware.ts`, keeping its own session/auth
@@ -31,6 +31,7 @@ export async function middleware(request: NextRequest) {
     publicPathPrefixes: process.env.PROMPTWATCH_PUBLIC_PATH_PREFIXES ?? "/",
     verifyVercelIp: process.env.PROMPTWATCH_IP_VERIFICATION === "vercel",
     isVercel: process.env.VERCEL === "1",
+    throttlingEnabled: process.env.PROMPTWATCH_THROTTLING_ENABLED === "true",
   });
   if (denied) return denied;
   // Continue your existing middleware/session logic here.

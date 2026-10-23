@@ -9,6 +9,7 @@ export interface CollectorOptions {
   enabled?: boolean;
   verifyVercelIp?: boolean;
   isVercel?: boolean;
+  throttlingEnabled?: boolean;
 }
 
 /** Return a policy-denial response, or null so the site's own middleware can continue. */
@@ -39,6 +40,7 @@ export async function collectCrawlerRequest(
       publicAnalyticsPath(pathname, options.publicPathPrefixes ?? "/"),
       at,
       identity,
+      options.throttlingEnabled === true,
     );
     return blocked
       ? Response.json({ error: "Access denied by site policy" }, { status: 403 })

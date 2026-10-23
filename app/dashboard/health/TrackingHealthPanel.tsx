@@ -119,7 +119,9 @@ export function TrackingHealthPanel() {
               Last failure stage:{" "}
               {health.lastFailureKind === "policy-read"
                 ? "reading the crawler policy"
-                : "recording counters"}
+                : health.lastFailureKind === "throttle-check"
+                  ? "checking the optional crawler quota"
+                  : "recording counters"}
               . Outages can prevent failure markers from being saved, so this is not a complete
               outage history.
             </p>

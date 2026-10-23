@@ -11,6 +11,7 @@ import {
   ShieldCheck,
   Bell,
   ListChecks,
+  Gauge,
   Zap,
   Search,
   Users,
@@ -28,6 +29,7 @@ const navLinks = [
   { name: "Tracking Health", href: "/dashboard/health", icon: Activity },
   { name: "Crawler Identity", href: "/dashboard/identity", icon: ShieldCheck },
   { name: "Actions", href: "/dashboard/actions", icon: Zap },
+  { name: "Throttling", href: "/dashboard/throttling", icon: Gauge },
   { name: "Webhook Alerts", href: "/dashboard/alerts", icon: Bell },
   { name: "Settings", href: "/dashboard/settings", icon: Settings },
 ];

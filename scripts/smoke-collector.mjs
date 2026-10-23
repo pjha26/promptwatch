@@ -28,9 +28,11 @@ const redis = createServer(async (request, response) => {
     if (String(command[0]).toUpperCase() === "GET")
       return mode === "read-error"
         ? { error: "Simulated policy outage" }
-        : { result: mode === "allow" ? "allow" : "block" };
+        : { result: mode === "block" || mode === "write-error" ? "block" : "allow" };
     if (mode === "write-error" && String(command[1]).includes("local count = redis.call('INCR'"))
       return { error: "Simulated counter outage" };
+    if (String(command[1]).includes("local observationsOk"))
+      return { result: [mode === "observe" ? 1 : 0, 1, 1] };
     return { result: 1 };
   });
   response.setHeader("Content-Type", "application/json");
@@ -83,6 +85,7 @@ try {
     UPSTASH_REDIS_REST_TOKEN: "isolated-consumer-fixture",
     PROMPTWATCH_COLLECTOR_ENABLED: "true",
     PROMPTWATCH_IP_VERIFICATION: "disabled",
+    PROMPTWATCH_THROTTLING_ENABLED: "true",
   };
   const next = join(fixture, "node_modules/next/dist/bin/next");
   console.log("Building the consumer site's Edge middleware…");
@@ -129,6 +132,10 @@ try {
   assert.equal(commands.length, 2);
   assert.ok(commands[1].includes("/docs"));
   assert.ok(!JSON.stringify(commands).includes("do-not-store"));
+  mode = "observe";
+  response = await request("/docs");
+  assert.equal(response.status, 200, "Observation never denies a consumer request");
+  assert.equal(response.headers.get("x-site-middleware"), "kept");
   mode = "block";
   commands = [];
   response = await request("/docs");

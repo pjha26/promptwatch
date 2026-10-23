@@ -1,7 +1,7 @@
 import type { CrawlerStore } from "./crawler-policy";
 
 export const COLLECTOR_HEALTH_KEY = "collector:health";
-export type CollectorFailure = "policy-read" | "counter-write";
+export type CollectorFailure = "policy-read" | "counter-write" | "throttle-check";
 
 const FAILURE_SCRIPT = `
 local previous = redis.call('HGET', KEYS[1], 'lastFailureAt')
@@ -48,6 +48,7 @@ export function parseCollectorHealth(value: unknown) {
   if (
     lastFailureKind !== null &&
     lastFailureKind !== "policy-read" &&
+    lastFailureKind !== "throttle-check" &&
     lastFailureKind !== "counter-write"
   )
     throw new Error("Invalid failure kind");

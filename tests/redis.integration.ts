@@ -2,7 +2,17 @@ import assert from "node:assert/strict";
 import { execFile } from "node:child_process";
 import { promisify } from "node:util";
 import { test } from "node:test";
-import { applyCrawlerPolicy, type CrawlerStore } from "../lib/crawler-policy";
+import {
+  applyCrawlerPolicy,
+  OBSERVE_THROTTLE_VISIT,
+  type CrawlerStore,
+} from "../lib/crawler-policy";
+import {
+  saveThrottleRule,
+  THROTTLE_RULES_KEY,
+  THROTTLE_HISTORY_KEY,
+  parseThrottleHistory,
+} from "../lib/throttle-rules";
 import { parseCollectorHealth } from "../lib/collector-health";
 import { IDENTITY_STATUSES } from "../lib/crawler-identity";
 import {
@@ -297,5 +307,93 @@ test("real Redis alert checkpoints persist delivery and reject replaced leases",
     assert.equal(await command("GET", key(ALERT_LOCK_KEY)), "replacement");
   } finally {
     await command("DEL", key(ALERT_LOCK_KEY), key(ALERT_STATE_KEY));
+  }
+});
+
+test("real Redis throttle observations are atomic, bounded, revision-aware and subordinate to Block", async () => {
+  const prefix = `test:throttle:${crypto.randomUUID()}:`;
+  const touched = new Set<string>();
+  const key = (name: string) => {
+    const value = prefix + name;
+    touched.add(value);
+    return value;
+  };
+  const command = async (...args: string[]) => {
+    const { stdout } = await execute(
+      "docker",
+      ["exec", container!, "redis-cli", "--json", "-e", ...args],
+      { timeout: 10_000, maxBuffer: 1_000_000, windowsHide: true },
+    );
+    return JSON.parse(stdout.trim());
+  };
+  let seconds = 1_761_177_610;
+  const store: CrawlerStore = {
+    get: async (name) => command("GET", key(name)),
+    // Only the clock is controlled; all rule, counting and history operations run in real Redis.
+    eval: async (script, keys, args) =>
+      command(
+        "EVAL",
+        script === OBSERVE_THROTTLE_VISIT
+          ? script.replace("redis.call('TIME')", `{${seconds}, '0'}`)
+          : script,
+        String(keys.length),
+        ...keys.map(key),
+        ...args.map(String),
+      ),
+  };
+  const collect = () =>
+    applyCrawlerPolicy(
+      store,
+      "gptbot",
+      "2026-10-23",
+      "/docs",
+      "2026-10-23T00:00:00.000Z",
+      undefined,
+      true,
+    );
+  try {
+    assert.equal(
+      (await saveThrottleRule(store, { botId: "gptbot", mode: "observe", limit: 2 })).changed,
+      true,
+    );
+    await Promise.all(
+      Array.from({ length: 5 }, () =>
+        saveThrottleRule(store, { botId: "gptbot", mode: "observe", limit: 2 }),
+      ),
+    );
+    assert.equal(
+      parseThrottleHistory(await command("LRANGE", key(THROTTLE_HISTORY_KEY), "0", "-1")).length,
+      1,
+    );
+    assert.ok(
+      (await Promise.all(Array.from({ length: 10 }, collect))).every((value) => value === false),
+    );
+    assert.equal(await command("GET", key("bot:gptbot:2026-10-23")), "10");
+    assert.equal(await command("GET", key("throttle:would:gptbot:2026-10-23")), "8");
+    assert.equal(await command("HLEN", key("throttle:samples:gptbot")), 1);
+    assert.ok((await command("TTL", key("throttle:window:gptbot"))) > 0);
+    seconds += 60;
+    await collect();
+    assert.equal(await command("HGET", key("throttle:window:gptbot"), "count"), "1");
+    await saveThrottleRule(store, { botId: "gptbot", mode: "observe", limit: 1 });
+    await collect();
+    assert.equal(
+      await command("HGET", key("throttle:window:gptbot"), "count"),
+      "1",
+      "changed rule resets this minute's quota revision",
+    );
+    for (let index = 0; index < 65; index++) {
+      seconds += 60;
+      await collect();
+    }
+    assert.equal(await command("HLEN", key("throttle:samples:gptbot")), 60);
+    await command("SET", key("policy:gptbot"), "block");
+    await command("DEL", key(THROTTLE_RULES_KEY));
+    await command("SET", key(THROTTLE_RULES_KEY), "corrupt optional rules");
+    assert.equal(await collect(), true);
+    assert.equal(await command("GET", key("blocked:gptbot:2026-10-23")), "1");
+    await assert.rejects(saveThrottleRule(store, { botId: "gptbot", mode: "observe", limit: 3 }));
+  } finally {
+    await command("DEL", ...touched);
   }
 });

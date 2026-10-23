@@ -5,6 +5,22 @@ Reviewed on 18 October 2026 against local commit `bc24dcf` and the linked
 
 ## Direction
 
+### Optional minute observations and owner rules, 23 October 2026
+
+Added opt-in shared-collector observation of fixed UTC minute quotas. This first
+milestone never denies requests; confirmed Blocks bypass optional quota storage.
+Owner-only rules are saved with bounded atomic history and read-back confirmation.
+Minute samples use 60 slots per crawler; quota state expires after minute reset.
+Daily hypothetical exceedances retain 30 days and remain separate from allowed
+traffic totals. No raw IPs or query strings are collected for this feature.
+
+Integration stays off by default; no live owner, service, rule or flag was changed.
+Healthy requests retain the existing policy-read/count-script network shape.
+Uncertain writes are not retried; optional-check failures have a distinct health
+marker. The private collector preview is now 0.2.0; rebuild/install the exact archive
+for a separate site. Local unit/build/auth/browser and consumer checks are run
+before push; actual Lua integration is additionally verified in hosted Redis CI.
+
 ### Dashboard consistency and keyboard/mobile access, 22 October 2026
 
 Added shared dashboard page/heading styles and a scoped light palette, preserving

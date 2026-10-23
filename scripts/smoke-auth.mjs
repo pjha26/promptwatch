@@ -61,6 +61,7 @@ try {
       "/api/actions",
       "/api/site-settings",
       "/api/alerts",
+      "/api/throttling",
       "/api/cron/alerts",
       "/api/crawler-identity",
       "/api/cron/identity-feeds",
@@ -109,6 +110,7 @@ try {
     "/api/actions",
     "/api/site-settings",
     "/api/alerts",
+    "/api/throttling",
     "/api/crawler-identity",
   ]) {
     const update = await fetch(base + path, {

@@ -52,6 +52,9 @@ website.
 - Dashboard layout, native mobile navigation/dialogs, keyboard focus, chart data
   alternatives and responsive containment are covered in
   [UI behavior and release checks](docs/DASHBOARD_UI.md).
+- Optional crawler minute observations and owner rule history are available at
+  `/dashboard/throttling`, disabled at the collector by default. See
+  [observation setup and limits](docs/THROTTLING.md).
 - Tracking Health separates Redis connectivity, collector evidence, and recorded
   failures, with an optional isolated storage self-check.
 - Action Centre and Overview derive recommendations from actual crawler counters:
@@ -70,7 +73,7 @@ website.
 - Prompt/competitor screens contain examples; no real citation collection exists.
 - Email notifications, external API keys and bulk deletion are unavailable and
   explicitly described as such in Settings; there are no pretend keys or toggles.
-- Throttling, hosted second-site verification, and continuous uptime
+- Throttle enforcement, hosted second-site verification, and continuous uptime
   monitoring are not implemented. Crawler matches do not prove AI citations.
 
 ## How it works

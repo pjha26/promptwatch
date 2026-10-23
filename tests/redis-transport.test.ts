@@ -9,7 +9,8 @@ import { verifyCrawlerIdentity } from "../lib/crawler-identity";
 test("actual Redis HTTP client respects the shared deadline and does not replay uncertain writes", async (t) => {
   const originalUrl = process.env.UPSTASH_REDIS_REST_URL;
   const originalToken = process.env.UPSTASH_REDIS_REST_TOKEN;
-  let mode: "allow" | "block" | "read-timeout" | "write-timeout" | "write-error" = "allow";
+  let mode: "allow" | "block" | "observe" | "read-timeout" | "write-timeout" | "write-error" =
+    "allow";
   let commands: unknown[][] = [];
   let requests = 0;
   const server = createServer(async (request, response) => {
@@ -33,7 +34,10 @@ test("actual Redis HTTP client respects the shared deadline and does not replay 
             ranges: ["192.0.2.0/24"],
           }),
         });
-      else if (operation === "GET") results.push({ result: mode === "allow" ? "allow" : "block" });
+      else if (operation === "GET")
+        results.push({ result: mode === "allow" || mode === "observe" ? "allow" : "block" });
+      else if (operation === "EVAL" && String(command[1]).includes("local observationsOk"))
+        results.push({ result: [1, 1, 1] });
       else if (mode === "write-error" && command.includes("blocked:gptbot:2026-10-19"))
         results.push({ error: "Simulated counter failure" });
       else results.push({ result: 1 });
@@ -59,6 +63,26 @@ test("actual Redis HTTP client respects the shared deadline and does not replay 
     );
   };
   try {
+    await t.test(
+      "opt-in observation retains two service commands and never denies an over-quota sample",
+      async () => {
+        mode = "observe";
+        commands = [];
+        assert.equal(
+          await applyCrawlerPolicy(
+            createRedis(),
+            "gptbot",
+            "2026-10-23",
+            null,
+            new Date().toISOString(),
+            undefined,
+            true,
+          ),
+          false,
+        );
+        assert.equal(commands.length, 2);
+      },
+    );
     for (const policy of ["allow", "block"] as const) {
       await t.test(`healthy ${policy}: two service commands per detected request`, async () => {
         mode = policy;

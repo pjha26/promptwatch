@@ -8,6 +8,7 @@ export async function middleware(request) {
     enabled: process.env.PROMPTWATCH_COLLECTOR_ENABLED !== "false",
     verifyVercelIp: process.env.PROMPTWATCH_IP_VERIFICATION === "vercel",
     isVercel: process.env.VERCEL === "1",
+    throttlingEnabled: process.env.PROMPTWATCH_THROTTLING_ENABLED === "true",
   });
   if (denied) return denied;
   const response = NextResponse.next();

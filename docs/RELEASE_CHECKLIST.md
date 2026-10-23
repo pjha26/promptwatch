@@ -84,7 +84,7 @@ into historical counts or silently change existing Allow/Block rules.
   installed-consumer checks to pass for that revision.
 - [ ] Run `npm run collector:pack`, retain the generated archive with the release,
   and record its checksum. Install that exact archive on the tracked site.
-  Rebuild/reinstall when collector source changes; version `0.1.0` is a private
+  Rebuild/reinstall when collector source changes; version `0.2.0` is a private
   preview, not a registry-managed release or a promise of compatibility.
 - [ ] Review [retention and recovery](OPERATIONS.md). Export retained reports
   before maintenance, and test restoration using an isolated database.

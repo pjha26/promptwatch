@@ -43,7 +43,7 @@ directory after verifying the cleanup path. Network access is needed for install
 
 GitHub checks run that consumer fixture in addition to the existing real-Redis
 Lua tests and full application checks. The archive is private preview version
-`0.1.0`; rebuild and reinstall it when upgrading the source. Keep the resulting
+`0.2.0`; rebuild and reinstall it when upgrading the source. Keep the resulting
 tarball or a stable private artifact path available to your deployment builder;
 do not commit credentials or rely on a developer-only absolute file path during
 remote deployment. Registry publishing and automatic version distribution are
