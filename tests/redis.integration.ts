@@ -334,7 +334,7 @@ test("real Redis throttle observations are atomic, bounded, revision-aware and s
       command(
         "EVAL",
         script === OBSERVE_THROTTLE_VISIT
-          ? script.replace("redis.call('TIME')", `{${seconds}, '0'}`)
+          ? script.replace("redis.call('TIME')", `({${seconds}, '0'})`)
           : script,
         String(keys.length),
         ...keys.map(key),
