@@ -28,6 +28,44 @@ function history(): TrafficHistory {
   };
 }
 
+test("limited-only traffic reconciles totals, filters, previous weeks and CSV without double counting", () => {
+  const input = history();
+  input.bots.push({
+    id: "limited",
+    name: "LimitedBot",
+    hitsByDay: Array(30).fill(0),
+    blockedByDay: Array(30).fill(0),
+    limitedByDay: Array(30).fill(4),
+  });
+  const parsed = parseTrafficHistory(input);
+  assert.deepEqual(parsed.bots[0].limitedByDay, Array(30).fill(0));
+  const report = buildTrafficReport(parsed, 7);
+  assert.equal(report.limited, 28);
+  assert.equal(report.total, 63);
+  assert.equal(report.activeCrawlers, 3);
+  assert.equal(report.previousTotal, 63);
+  assert.equal(
+    report.daily.reduce((sum, day) => sum + day.total, 0),
+    63,
+  );
+  assert.equal(
+    report.crawlers.reduce((sum, bot) => sum + bot.total, 0),
+    63,
+  );
+  const only = buildTrafficReport(parsed, 7, { outcome: "limited" });
+  assert.equal(only.total, 28);
+  assert.equal(only.allowed + only.blocked, 0);
+  assert.equal(only.previousTotal, 28);
+  assert.match(trafficReportCsv(only, "daily"), /"Rate-limited"/);
+  assert.match(trafficReportCsv(only, "crawlers"), /"LimitedBot",0,0,28,28/);
+  assert.equal(buildTrafficReport(parsed, 7, { outcome: "allowed" }).limited, 0);
+  for (const invalid of [null, [], [-1], Array(30).fill("4"), Array(30).fill(-1)]) {
+    const value = history();
+    Object.assign(value.bots[0], { limitedByDay: invalid });
+    assert.throws(() => parseTrafficHistory(value));
+  }
+});
+
 test("crawler, outcome and custom date filters reconcile totals and CSV scope without mutating history", () => {
   const input = history();
   const before = JSON.stringify(input);
@@ -166,10 +204,10 @@ test("CSV exports reflect the selected window, scope and reconciled totals", () 
   const report = buildTrafficReport(history(), 7);
   const daily = trafficReportCsv(report, "daily");
   assert.equal(daily.trimEnd().split("\r\n").length, 8);
-  assert.ok(daily.includes('"Deployment-wide","2026-10-18",2,3,5\r\n'));
+  assert.ok(daily.includes('"Deployment-wide","2026-10-18",2,3,0,5\r\n'));
   assert.ok(!daily.includes("2026-10-11"));
   const crawlers = trafficReportCsv(report, "crawlers");
-  assert.ok(crawlers.includes('"2026-10-12","2026-10-18","blocked","BlockedBot",0,21,21'));
+  assert.ok(crawlers.includes('"2026-10-12","2026-10-18","blocked","BlockedBot",0,21,0,21'));
 });
 
 test("CSV text quotes multiline fields and neutralizes spreadsheet formulas", () => {

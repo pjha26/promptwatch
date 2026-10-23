@@ -5,6 +5,21 @@ Reviewed on 18 October 2026 against local commit `bc24dcf` and the linked
 
 ## Direction
 
+### Optional enforcement and separate outcome reporting, 23 October 2026
+
+Added Enforce alongside Off/Observe. Atomic quotas return HTTP 429 and bounded
+Retry-After above the explicit owner limit; Block continues to take priority.
+Confirmed quota decisions survive optional analytics failures; uncertain quota
+reads fail open without replay. Allowed, blocked and rate-limited counters remain
+separate across overview, traffic rankings, reports, filters and CSV. Hypothetical
+observation exceedances are never added to traffic totals. Older report payloads
+without the new limited array are treated as zero; malformed arrays are rejected.
+
+Collector preview 0.3.0 requires rebuilding/reinstalling the exact archive on a
+separate tracked site. Defaults remain off. See THROTTLING.md for activation,
+rollback, fixed-minute burst limits and dedicated Redis requirements. Live owner,
+service and production quota verification remain pending operator setup.
+
 ### Optional minute observations and owner rules, 23 October 2026
 
 Added opt-in shared-collector observation of fixed UTC minute quotas. This first

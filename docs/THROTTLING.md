@@ -1,8 +1,9 @@
-# Optional crawler minute observations
+# Optional crawler throttling
 
-Start with **Observe only** at `/dashboard/throttling`. This milestone records
-minute samples and hypothetical quota exceedances; it never denies a request.
-Existing Allow/Block rules remain authoritative. No production limit is guessed.
+Start with **Observe only** at `/dashboard/throttling` to measure minute samples
+and hypothetical quota exceedances. Then explicitly choose **Enforce** for a
+crawler whose normal traffic you have measured. No production limit is guessed.
+Existing Block rules remain authoritative.
 
 ## Setup
 
@@ -17,6 +18,13 @@ Existing Allow/Block rules remain authoritative. No production limit is guessed.
    not real crawler traffic. Measure deployed latency before production activation.
    On a separate dashboard the displayed integration flag belongs to that dashboard;
    verify the tracked site's own environment and installed archive separately.
+4. Test one crawler with Enforce and a small test quota. Requests within quota
+   proceed; later requests receive HTTP 429 with `Retry-After` (1–60 seconds)
+   and `Cache-Control: private, no-store`. Confirm recovery in the next minute,
+   Block precedence and the three separate report outcomes before production.
+5. To roll back, save Off for that crawler or disable the server integration flag
+   and redeploy. Off takes effect on the next rule read; in-flight decisions may
+   still finish. Saving any changed rule starts a fresh quota revision.
 
 Quotas apply to all matching requests for that crawler on the tracked site,
 regardless of path or client IP. No visitor IP is retained. User-Agent matching
@@ -43,6 +51,11 @@ a sliding-window or smoothing algorithm.
 - `throttle:would:{botId}:{UTC date}`: hypothetical above-quota request count
   with 30-day retention. These requests still proceed in observation mode and
   remain included in ordinary allowed counts; do not add would-limit to totals.
+- `limited:{botId}:{UTC date}` and `limited-pages:{UTC date}`: actual HTTP 429
+  counts, retained 30 days with the same 200-public-path daily cap as other
+  outcomes. These requests are counted only as limited, never as allowed or
+  blocked. Reports, CSV, overview, crawler rankings and public-page rankings
+  include this third outcome. The traffic chart still plots allowed requests.
 
 Samples include active-rule requests that passed the Allow/Block check, not
 blocked traffic. Current-minute samples are partial; the API filters stale slots.
@@ -57,6 +70,9 @@ fails open; a confirmed Block stays blocked even if analytics fail. Optional
 quota failures preserve availability and record a best-effort `throttle-check`
 health marker. An uncertain write is not replayed; samples/counts may be incomplete.
 Analytics failures within the script are reported separately from quota checking.
+A confirmed quota denial survives optional sample/path/health failures. A lost
+or malformed quota reply fails open and is not replayed. Redis must use a
+non-evicting, adequately sized database: losing quota keys can reset limits.
 
 ## Owner workflow and tests
 
@@ -67,10 +83,10 @@ Enabling integration is an operator deployment action, not a browser toggle.
 
 Tests cover schema validation, observation bounds, Block precedence, unavailable
 quota storage and non-replay. Real Redis CI tests exercise Lua concurrency,
-minute resets, revision changes, no-op history, TTLs and 60-slot bounds. The
-installed-package fixture checks observation leaves the tracked site's middleware
-in control. Local browser fixtures use simulated owner APIs, not live services.
+minute resets, revision changes, no-op history, TTLs, concurrent enforcement and
+60-slot bounds. The installed-package fixture checks observation leaves the
+tracked site's middleware in control and enforcement returns HTTP 429 headers.
+Local browser fixtures use simulated owner APIs, not live services.
 
-Enforcement and distinct rate-limited reporting are the next milestone. Keep
-integration off until real owner/service access and the tracked installation are
+Keep integration off until real owner/service access and the tracked installation are
 verified. Nothing in development activates a production rule or deployment flag.

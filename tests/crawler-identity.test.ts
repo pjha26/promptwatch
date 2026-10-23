@@ -220,26 +220,28 @@ test("identity observations add only a status counter to the existing count scri
   for (const path of [null, "/docs"]) {
     let written = false;
     assert.equal(
-      await applyCrawlerPolicy(
-        {
-          get: async () => "block",
-          eval: async (_, keys, args) => {
-            written = true;
-            assert.ok(keys.includes("blocked:gptbot:2026-10-21"));
-            assert.equal(keys.at(-2), "identity:2026-10-21");
-            assert.equal(keys.at(-1), "collector:health");
-            assert.equal(args.at(-2), "gptbot:unavailable");
-            assert.equal(args.at(-1), new Date(now).toISOString());
-            assert.ok(!JSON.stringify([keys, args]).includes("192.0.2"));
-            return 1;
+      (
+        await applyCrawlerPolicy(
+          {
+            get: async () => "block",
+            eval: async (_, keys, args) => {
+              written = true;
+              assert.ok(keys.includes("blocked:gptbot:2026-10-21"));
+              assert.equal(keys.at(-2), "identity:2026-10-21");
+              assert.equal(keys.at(-1), "collector:health");
+              assert.equal(args.at(-2), "gptbot:unavailable");
+              assert.equal(args.at(-1), new Date(now).toISOString());
+              assert.ok(!JSON.stringify([keys, args]).includes("192.0.2"));
+              return 1;
+            },
           },
-        },
-        "gptbot",
-        "2026-10-21",
-        path,
-        new Date(now).toISOString(),
-        Promise.reject(new Error("verification failed")),
-      ),
+          "gptbot",
+          "2026-10-21",
+          path,
+          new Date(now).toISOString(),
+          Promise.reject(new Error("verification failed")),
+        )
+      ).outcome === "blocked",
       true,
     );
     assert.equal(written, true);

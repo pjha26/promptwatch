@@ -20,7 +20,7 @@ export function ReportsClient() {
   const [history, setHistory] = useState<TrafficHistory | null>(null);
   const [period, setPeriod] = useState<ReportPeriod>(7);
   const [crawlerId, setCrawlerId] = useState("");
-  const [outcome, setOutcome] = useState<"all" | "allowed" | "blocked">("all");
+  const [outcome, setOutcome] = useState<"all" | "allowed" | "blocked" | "limited">("all");
   const [startDate, setStartDate] = useState("");
   const [endDate, setEndDate] = useState("");
   const [attempt, setAttempt] = useState(0);
@@ -196,9 +196,10 @@ export function ReportsClient() {
               onChange={(event) => setOutcome(event.target.value as typeof outcome)}
               className="mt-1 block border border-black bg-white px-3 py-2"
             >
-              <option value="all">Allowed and blocked</option>
+              <option value="all">All outcomes</option>
               <option value="allowed">Allowed only</option>
               <option value="blocked">Blocked only</option>
+              <option value="limited">Rate-limited only</option>
             </select>
           </label>
           {(
@@ -283,7 +284,11 @@ export function ReportsClient() {
             )}
             <dl className="mb-6 grid gap-4 sm:grid-cols-2 xl:grid-cols-4">
               {[
-                { label: "Observed requests", value: report.total, detail: "Allowed plus blocked" },
+                {
+                  label: "Observed requests",
+                  value: report.total,
+                  detail: "Allowed, blocked and rate-limited",
+                },
                 {
                   label: "Allowed by bot policy",
                   value: report.allowed,
@@ -295,9 +300,14 @@ export function ReportsClient() {
                   detail: `${percentageFormat.format(report.blockRate)}% of observed requests`,
                 },
                 {
+                  label: "Rate-limited requests",
+                  value: report.limited,
+                  detail: "Denied with HTTP 429 by quota",
+                },
+                {
                   label: "Active crawlers",
                   value: report.activeCrawlers,
-                  detail: "Includes blocked-only activity",
+                  detail: "Includes denied-only activity",
                 },
               ].map((metric) => (
                 <div key={metric.label} className="border border-[#E0DDD8] p-5">
@@ -359,6 +369,9 @@ export function ReportsClient() {
                         Blocked
                       </th>
                       <th scope="col" className="p-4 text-right">
+                        Rate-limited
+                      </th>
+                      <th scope="col" className="p-4 text-right">
                         Observed
                       </th>
                     </tr>
@@ -369,7 +382,7 @@ export function ReportsClient() {
                         <th scope="row" className="p-4 font-medium">
                           {bot.name}
                         </th>
-                        {[bot.allowed, bot.blocked, bot.total].map((value, index) => (
+                        {[bot.allowed, bot.blocked, bot.limited, bot.total].map((value, index) => (
                           <td key={index} className="p-4 text-right font-mono">
                             {numberFormat.format(value)}
                           </td>
@@ -406,6 +419,9 @@ export function ReportsClient() {
                         Blocked
                       </th>
                       <th scope="col" className="p-4 text-right">
+                        Rate-limited
+                      </th>
+                      <th scope="col" className="p-4 text-right">
                         Observed
                       </th>
                     </tr>
@@ -416,7 +432,7 @@ export function ReportsClient() {
                         <th scope="row" className="p-4 font-mono font-normal">
                           {day.date}
                         </th>
-                        {[day.allowed, day.blocked, day.total].map((value, index) => (
+                        {[day.allowed, day.blocked, day.limited, day.total].map((value, index) => (
                           <td key={index} className="p-4 text-right font-mono">
                             {numberFormat.format(value)}
                           </td>

@@ -1,6 +1,6 @@
 {
   "name": "@promptwatch/collector",
-  "version": "0.2.0",
+  "version": "0.3.0",
   "private": true,
   "description": "Single-site Promptwatch request collector for Next.js 15 middleware",
   "main": "./dist/packages/collector/index.js",

@@ -16,7 +16,8 @@ test("allowed and blocked hits retain existing key names and 30-day retention", 
       },
     };
     assert.equal(
-      await applyCrawlerPolicy(store, "gptbot", "2026-10-18", null, observedAt),
+      (await applyCrawlerPolicy(store, "gptbot", "2026-10-18", null, observedAt)).outcome ===
+        "blocked",
       policy === "block",
     );
     assert.deepEqual(writes, [
@@ -35,7 +36,10 @@ test("a known block still blocks when its analytics write fails", async () => {
       throw new Error("offline");
     },
   };
-  assert.equal(await applyCrawlerPolicy(store, "gptbot", "2026-10-18"), true);
+  assert.equal(
+    (await applyCrawlerPolicy(store, "gptbot", "2026-10-18")).outcome === "blocked",
+    true,
+  );
 });
 
 test("unavailable or corrupted policy reads are distinguished from confirmed allow rules", async () => {

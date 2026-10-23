@@ -63,18 +63,18 @@ with an existing website's production history.
 
 ## 4. Decide whether throttling is needed
 
-Throttling is deliberately **not implemented** before real usage and deployed
-latency are measured. Record which crawler needs limits, its normal/burst volume,
-and whether a limit should be shared by all of that crawler's User-Agent matches.
-User-Agent-based limits are spoofable and are not security-grade identity limits.
+Optional throttling is implemented but stays off until normal/burst volume and
+deployed latency are measured. User-Agent limits are spoofable and shared across
+all matches for one crawler on the tracked site. See [setup and rollback](THROTTLING.md).
 
-If evidence justifies the feature, implement one optional atomic per-crawler
-window: confirmed Block continues to take precedence; limited requests receive
-429 plus `Retry-After`; limited counts remain separate from blocks and allowed
-traffic. Preserve the documented availability behavior during storage failures.
-Keep it off by default and test concurrent requests, boundary times, outages and
-the installed collector package before enabling it. Do not retrofit rate limits
-into historical counts or silently change existing Allow/Block rules.
+- [ ] Start with Observe and choose each limit using real minute samples.
+- [ ] Verify the dedicated Redis database has sufficient capacity and no eviction.
+- [ ] In isolation, test concurrent requests, the next-minute reset, rule revision
+  resets, Block precedence, storage failures and the installed collector package.
+- [ ] Confirm Enforce returns HTTP 429 plus Retry-After, with separate limited
+  counts in reports/CSV. Allowed charts continue to exclude denials.
+- [ ] Verify Off rollback before enabling any production rule. Keep production
+  integration disabled until owner, service and installation checks pass.
 
 ## 5. Prepare and recover a release
 
@@ -84,7 +84,7 @@ into historical counts or silently change existing Allow/Block rules.
   installed-consumer checks to pass for that revision.
 - [ ] Run `npm run collector:pack`, retain the generated archive with the release,
   and record its checksum. Install that exact archive on the tracked site.
-  Rebuild/reinstall when collector source changes; version `0.2.0` is a private
+  Rebuild/reinstall when collector source changes; version `0.3.0` is a private
   preview, not a registry-managed release or a promise of compatibility.
 - [ ] Review [retention and recovery](OPERATIONS.md). Export retained reports
   before maintenance, and test restoration using an isolated database.

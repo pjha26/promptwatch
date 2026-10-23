@@ -32,7 +32,7 @@ const redis = createServer(async (request, response) => {
     if (mode === "write-error" && String(command[1]).includes("local count = redis.call('INCR'"))
       return { error: "Simulated counter outage" };
     if (String(command[1]).includes("local observationsOk"))
-      return { result: [mode === "observe" ? 1 : 0, 1, 1] };
+      return { result: [mode === "limited" ? 2 : 0, mode === "limited" ? 47 : 0, 1, 1] };
     return { result: 1 };
   });
   response.setHeader("Content-Type", "application/json");
@@ -136,6 +136,15 @@ try {
   response = await request("/docs");
   assert.equal(response.status, 200, "Observation never denies a consumer request");
   assert.equal(response.headers.get("x-site-middleware"), "kept");
+  mode = "limited";
+  commands = [];
+  response = await request("/docs");
+  assert.equal(response.status, 429);
+  assert.equal(response.headers.get("retry-after"), "47");
+  assert.equal(response.headers.get("cache-control"), "private, no-store");
+  assert.equal(response.headers.get("x-site-middleware"), null);
+  assert.equal((await response.json()).retryAfter, 47);
+  assert.equal(commands.length, 2);
   mode = "block";
   commands = [];
   response = await request("/docs");
@@ -154,7 +163,7 @@ try {
   assert.equal(response.status, 200);
   assert.equal(response.headers.get("x-site-middleware"), "kept");
   console.log(
-    "PASS: packed collector installs and builds in a separate Next.js site; own middleware preserved, private queries omitted, Allow/Block and outage behavior retained, administrative paths excluded.",
+    "PASS: packed collector installs and builds in a separate Next.js site; own middleware preserved, private queries omitted, observation/HTTP 429/Allow/Block and outage behavior retained, administrative paths excluded.",
   );
 } finally {
   if (processServer && processServer.exitCode === null) {

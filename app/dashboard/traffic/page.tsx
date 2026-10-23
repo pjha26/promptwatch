@@ -9,8 +9,16 @@ import { TopCrawlers } from "./components/TopCrawlers";
 import { TopPages } from "./components/TopPages";
 
 export default function TrafficDashboard() {
-  const { loading, error, chartData, botTotals, botBlockedTotals, totalVisits, retry } =
-    useTrafficData();
+  const {
+    loading,
+    error,
+    chartData,
+    botTotals,
+    botBlockedTotals,
+    botLimitedTotals,
+    totalVisits,
+    retry,
+  } = useTrafficData();
   const pages = usePageData();
   const [hiddenBots, setHiddenBots] = useState<Set<string>>(new Set());
 
@@ -27,7 +35,7 @@ export default function TrafficDashboard() {
   }, []);
 
   const botCount = Object.keys(botTotals).filter(
-    (b) => botTotals[b] > 0 || botBlockedTotals[b] > 0,
+    (b) => botTotals[b] > 0 || botBlockedTotals[b] > 0 || botLimitedTotals[b] > 0,
   ).length;
   const pageCount = pages.data ? Object.keys(pages.data.pageTotals).length : null;
   const blockedTotal = Object.values(botBlockedTotals).reduce((sum, count) => sum + count, 0);
@@ -81,6 +89,7 @@ export default function TrafficDashboard() {
         <SummaryHeader
           total={totalVisits}
           blocked={blockedTotal}
+          limited={Object.values(botLimitedTotals).reduce((sum, count) => sum + count, 0)}
           botCount={botCount}
           pageCount={pageCount}
         />
@@ -99,10 +108,15 @@ export default function TrafficDashboard() {
 
         {/* Bottom panels */}
         <div className="mb-6 flex flex-col gap-4 md:flex-row">
-          <TopCrawlers botTotals={botTotals} botBlockedTotals={botBlockedTotals} />
+          <TopCrawlers
+            botTotals={botTotals}
+            botBlockedTotals={botBlockedTotals}
+            botLimitedTotals={botLimitedTotals}
+          />
           <TopPages
             pageTotals={pages.data?.pageTotals ?? {}}
             blockedPageTotals={pages.data?.blockedPageTotals ?? {}}
+            limitedPageTotals={pages.data?.limitedPageTotals ?? {}}
             startedAt={pages.data?.startedAt ?? null}
             loading={pages.loading}
             error={pages.error}

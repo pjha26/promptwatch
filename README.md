@@ -36,14 +36,14 @@ website.
   each actual rule update. Selecting an unchanged rule creates no history entry.
 - A confirmed Block returns 403 even if its analytics write fails. Policy read
   outages fail open to keep the site available.
-- Traffic charts show 30 days of allowed requests, with separate blocked totals
-  and blocked-only crawlers included in summaries.
-- Top Pages shows allowed/blocked requests on configured public paths, with
+- Traffic charts show 30 days of allowed requests, with separate blocked and
+  rate-limited totals; denied-only crawlers are included in summaries.
+- Top Pages shows allowed/blocked/rate-limited requests on configured public paths, with
   bounded storage and a collection start date. Query strings are not stored.
 - Reports provide 7/30-day totals and daily/crawler CSV exports.
 - Report crawler, outcome and UTC date filters apply consistently to totals,
   tables and CSV exports without collecting additional visitor data.
-- Overview focuses on recorded allowed/blocked requests, active crawlers and
+- Overview focuses on recorded allowed/blocked/rate-limited requests, active crawlers and
   review actions. Citation previews are labelled as demo data and grouped
   separately in navigation.
 - Deployment Setup reads existing owner-only APIs to distinguish saved site
@@ -52,9 +52,10 @@ website.
 - Dashboard layout, native mobile navigation/dialogs, keyboard focus, chart data
   alternatives and responsive containment are covered in
   [UI behavior and release checks](docs/DASHBOARD_UI.md).
-- Optional crawler minute observations and owner rule history are available at
+- Optional crawler observations, enforcement (HTTP 429) and owner rule history are available at
   `/dashboard/throttling`, disabled at the collector by default. See
-  [observation setup and limits](docs/THROTTLING.md).
+  [throttling setup, rollback and limits](docs/THROTTLING.md). Rate-limited requests
+  have separate dashboard, report and CSV counts.
 - Tracking Health separates Redis connectivity, collector evidence, and recorded
   failures, with an optional isolated storage self-check.
 - Action Centre and Overview derive recommendations from actual crawler counters:
@@ -82,7 +83,7 @@ Every request to the site passes through Edge Middleware before reaching a page.
 The middleware reads the request's `User-Agent` header, checks it against a list of
 known AI crawler signatures (`lib/botSignatures.ts`), and if it matches, reads a
 policy in Upstash Redis keyed by bot. A Block rule returns 403; otherwise the
-request continues. A Redis script records allowed or blocked counters by UTC
+request continues. A Redis script records allowed, blocked or rate-limited counters by UTC
 date, plus eligible public path counts. The owner dashboard reads those counters
 through authenticated APIs.
 
@@ -199,7 +200,7 @@ measurements, the two-second budget and remaining deployment verification.
 - Complete live owner/service verification once the owner's UUID is available
 - Verify the collector package on a real tracked-site deployment and measure latency
 - Activate optional identity observations and webhook delivery only after setup checks
-- Add optional throttling after real usage confirms the required limits
+- Activate optional throttling only after observation establishes suitable limits
 
 The detailed sequence and completed milestones are in
 [IMPLEMENTATION_PLAN.md](docs/IMPLEMENTATION_PLAN.md).

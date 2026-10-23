@@ -4,7 +4,7 @@ export const THROTTLE_RULES_KEY = "throttle:rules";
 export const THROTTLE_HISTORY_KEY = "throttle:history";
 export const THROTTLE_HISTORY_LIMIT = 200;
 export const THROTTLE_BOTS = botSignatures.filter((bot) => !bot.robotsOnly);
-export type ThrottleMode = "off" | "observe";
+export type ThrottleMode = "off" | "observe" | "enforce";
 export interface ThrottleRule {
   mode: ThrottleMode;
   limit: number;
@@ -28,7 +28,7 @@ export function parseThrottleInput(value: unknown) {
     typeof row.botId !== "string" ||
     !THROTTLE_BOTS.some((bot) => bot.id === row.botId) ||
     typeof row.mode !== "string" ||
-    !["off", "observe"].includes(row.mode) ||
+    !["off", "observe", "enforce"].includes(row.mode) ||
     !Number.isInteger(row.limit) ||
     (row.mode === "off"
       ? row.limit !== 0
@@ -89,7 +89,7 @@ export function parseThrottleHistory(value: unknown): ThrottleChange[] {
 
 export const VALID_THROTTLE_RULE = `
 local function validRule(rule)
-  return type(rule) == 'table' and (rule.mode == 'off' or rule.mode == 'observe')
+  return type(rule) == 'table' and (rule.mode == 'off' or rule.mode == 'observe' or rule.mode == 'enforce')
     and type(rule.limit) == 'number' and rule.limit == math.floor(rule.limit)
     and ((rule.mode == 'off' and rule.limit == 0) or (rule.mode ~= 'off' and rule.limit >= 1 and rule.limit <= 100000))
     and type(rule.revision) == 'string' and #rule.revision == 36 and type(rule.changedAt) == 'string'

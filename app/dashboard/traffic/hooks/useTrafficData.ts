@@ -42,12 +42,13 @@ export function useTrafficData() {
     return () => controller.abort();
   }, [attempt]);
 
-  const { chartData, botTotals, botBlockedTotals, totalVisits } = useMemo(() => {
+  const { chartData, botTotals, botBlockedTotals, botLimitedTotals, totalVisits } = useMemo(() => {
     if (!historyData) {
       return {
         chartData: [] as DailyTraffic[],
         botTotals: {} as Record<string, number>,
         botBlockedTotals: {} as Record<string, number>,
+        botLimitedTotals: {} as Record<string, number>,
         totalVisits: 0,
       };
     }
@@ -55,6 +56,7 @@ export function useTrafficData() {
     const { days, bots } = historyData;
     const botTotals = {} as Record<string, number>;
     const botBlockedTotals = {} as Record<string, number>;
+    const botLimitedTotals = {} as Record<string, number>;
     let totalVisits = 0;
 
     // The API returns pre-aggregated day × bot data, so we just reshape it
@@ -71,12 +73,14 @@ export function useTrafficData() {
         // Accumulate bot totals
         botTotals[bot.name] = (botTotals[bot.name] || 0) + hits;
         botBlockedTotals[bot.name] = (botBlockedTotals[bot.name] || 0) + blocked;
+        botLimitedTotals[bot.name] =
+          (botLimitedTotals[bot.name] || 0) + (bot.limitedByDay?.[dayIndex] ?? 0);
         totalVisits += hits;
       }
       return row;
     });
 
-    return { chartData, botTotals, botBlockedTotals, totalVisits };
+    return { chartData, botTotals, botBlockedTotals, botLimitedTotals, totalVisits };
   }, [historyData]);
 
   return {
@@ -86,6 +90,7 @@ export function useTrafficData() {
     chartData,
     botTotals,
     botBlockedTotals,
+    botLimitedTotals,
     totalVisits,
     retry,
   };

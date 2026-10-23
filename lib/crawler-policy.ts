@@ -37,10 +37,12 @@ redis.call('EXPIRE', meta, ARGV[1])
 return count
 `;
 
-export const OBSERVE_THROTTLE_VISIT = `
+export const THROTTLE_VISIT = `
 ${VALID_THROTTLE_RULE}
+local limited = false
+local retryAfter = 0
 local function record()
-  local KEYS = {KEYS[1], KEYS[2], KEYS[3], KEYS[4], KEYS[5]}
+  local KEYS = {limited and KEYS[10] or KEYS[1], limited and KEYS[11] or KEYS[2], KEYS[3], KEYS[4], KEYS[5]}
   local ARGV = {2592000, ARGV[2], ${DAILY_PATH_LIMIT}, ARGV[3], ARGV[4], ARGV[5]}
   ${COUNT_VISIT}
 end
@@ -56,10 +58,14 @@ if raw then
     local kind = redis.call('TYPE', KEYS[7]).ok
     if kind ~= 'none' and kind ~= 'hash' then return redis.error_reply('Invalid quota window') end
     local prior = redis.call('HMGET', KEYS[7], 'revision', 'minute', 'count')
-    if kind == 'hash' and (not prior[1] or not tonumber(prior[2]) or not tonumber(prior[3]) or tonumber(prior[3]) < 1) then return redis.error_reply('Invalid quota window') end
+    local priorMinute = tonumber(prior[2])
+    local priorCount = tonumber(prior[3])
+    if kind == 'hash' and (not prior[1] or not priorMinute or priorMinute < 0 or priorMinute ~= math.floor(priorMinute) or not priorCount or priorCount < 1 or priorCount > 9007199254740990 or priorCount ~= math.floor(priorCount)) then return redis.error_reply('Invalid quota window') end
     local count = 1
     if prior[1] == rule.revision and tonumber(prior[2]) == minute then count = tonumber(prior[3]) + 1 end
     over = count > rule.limit
+    limited = over and rule.mode == 'enforce'
+    if limited then retryAfter = 60 - (now % 60) end
     redis.call('HSET', KEYS[7], 'revision', rule.revision, 'minute', minute, 'count', count)
     redis.call('EXPIRE', KEYS[7], 61 - (now % 60))
     observationsOk = pcall(function()
@@ -74,13 +80,18 @@ if raw then
       sample.count = sample.count + 1
       redis.call('HSET', KEYS[8], slot, cjson.encode(sample))
       redis.call('EXPIRE', KEYS[8], 3600)
-      if over then redis.call('INCR', KEYS[9]); redis.call('EXPIRE', KEYS[9], 2592000) end
+      if over and rule.mode == 'observe' then redis.call('INCR', KEYS[9]); redis.call('EXPIRE', KEYS[9], 2592000) end
     end)
   end
 end
 local recorded = pcall(record)
-return {over and 1 or 0, recorded and 1 or 0, observationsOk and 1 or 0}
+return {limited and 2 or 0, retryAfter, recorded and 1 or 0, observationsOk and 1 or 0}
 `;
+
+export interface CrawlerDecision {
+  outcome: "allowed" | "blocked" | "limited";
+  retryAfter: number | null;
+}
 
 export async function applyCrawlerPolicy(
   store: CrawlerStore,
@@ -90,7 +101,7 @@ export async function applyCrawlerPolicy(
   observedAt = new Date().toISOString(),
   identity?: Promise<IdentityStatus>,
   throttlingEnabled = false,
-) {
+): Promise<CrawlerDecision> {
   let policy;
   try {
     policy = await store.get(`policy:${botId}`);
@@ -105,7 +116,7 @@ export async function applyCrawlerPolicy(
   try {
     if (throttlingEnabled && !blocked) {
       const result = await store.eval(
-        OBSERVE_THROTTLE_VISIT,
+        THROTTLE_VISIT,
         [
           `bot:${botId}:${date}`,
           `pages:${date}`,
@@ -116,18 +127,26 @@ export async function applyCrawlerPolicy(
           `throttle:window:${botId}`,
           `throttle:samples:${botId}`,
           `throttle:would:${botId}:${date}`,
+          `limited:${botId}:${date}`,
+          `limited-pages:${date}`,
         ],
         [botId, path ?? "", date, identityStatus ? `${botId}:${identityStatus}` : "", observedAt],
       );
       if (
         !Array.isArray(result) ||
-        result.length !== 3 ||
-        result.some((value) => value !== 0 && value !== 1)
+        result.length !== 4 ||
+        ![0, 2].includes(result[0]) ||
+        !Number.isInteger(result[1]) ||
+        (result[0] === 2 ? result[1] < 1 || result[1] > 60 : result[1] !== 0) ||
+        result.slice(2).some((value) => value !== 0 && value !== 1)
       )
-        throw new Error("Throttle observation unconfirmed");
-      if (result[1] === 0 || result[2] === 0)
+        throw new Error("Throttle decision unconfirmed");
+      if (result[2] === 0 || result[3] === 0)
         await recordCollectorFailure(store, "counter-write", observedAt);
-      return false;
+      return {
+        outcome: result[0] === 2 ? "limited" : "allowed",
+        retryAfter: result[0] === 2 ? result[1] : null,
+      };
     }
     await store.eval(
       COUNT_VISIT,
@@ -153,5 +172,5 @@ export async function applyCrawlerPolicy(
       observedAt,
     );
   }
-  return blocked;
+  return { outcome: blocked ? "blocked" : "allowed", retryAfter: null };
 }

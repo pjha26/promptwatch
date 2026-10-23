@@ -7,16 +7,20 @@ const FALLBACK_COLORS = ["#8b5cf6", "#f59e0b", "#ef4444", "#14b8a6", "#6366f1", 
 interface TopCrawlersProps {
   botTotals: Record<string, number>;
   botBlockedTotals?: Record<string, number>;
+  botLimitedTotals?: Record<string, number>;
 }
 
-export function TopCrawlers({ botTotals, botBlockedTotals }: TopCrawlersProps) {
+export function TopCrawlers({ botTotals, botBlockedTotals, botLimitedTotals }: TopCrawlersProps) {
   const topBots = useMemo(() => {
     return Object.entries(botTotals)
-      .map(([bot, count]) => [bot, count + (botBlockedTotals?.[bot] ?? 0)] as const)
+      .map(
+        ([bot, count]) =>
+          [bot, count + (botBlockedTotals?.[bot] ?? 0) + (botLimitedTotals?.[bot] ?? 0)] as const,
+      )
       .filter(([, count]) => count > 0)
       .sort(([, a], [, b]) => b - a)
       .slice(0, 8);
-  }, [botTotals, botBlockedTotals]);
+  }, [botTotals, botBlockedTotals, botLimitedTotals]);
 
   const maxCount = topBots.length > 0 ? topBots[0][1] : 1;
 
@@ -74,6 +78,11 @@ export function TopCrawlers({ botTotals, botBlockedTotals }: TopCrawlersProps) {
                 </span>
               </div>
               <div className="z-10 ml-auto flex max-w-full flex-wrap items-center gap-3 pr-1">
+                {(botLimitedTotals?.[bot] ?? 0) > 0 && (
+                  <span className="text-xs text-gray-500">
+                    Rate-limited: {botLimitedTotals![bot].toLocaleString()}
+                  </span>
+                )}
                 {blockedCount > 0 && (
                   <span className="font-mono text-[10px] uppercase tracking-wider text-gray-400">
                     Blocked: {blockedCount.toLocaleString()}

@@ -65,6 +65,9 @@ test("a counter write failure records its stage without cancelling a confirmed b
       assert.deepEqual(args, [later, "counter-write", 2_592_000]);
     },
   };
-  assert.equal(await applyCrawlerPolicy(store, "gptbot", "2026-10-19", null, later), true);
+  assert.equal(
+    (await applyCrawlerPolicy(store, "gptbot", "2026-10-19", null, later)).outcome === "blocked",
+    true,
+  );
   assert.equal(calls, 2);
 });

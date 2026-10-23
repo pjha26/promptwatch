@@ -74,9 +74,14 @@ export function OverviewClient() {
             detail: "Last 30 days; denied by bot policy",
           },
           {
+            label: "Rate-limited crawler requests",
+            value: traffic?.limited,
+            detail: "Last 30 days; denied with HTTP 429 by quota",
+          },
+          {
             label: "Active crawlers",
             value: traffic?.activeCrawlers,
-            detail: "Last 30 days; includes blocked-only activity",
+            detail: "Last 30 days; includes denied-only activity",
           },
         ].map((metric) => (
           <Link

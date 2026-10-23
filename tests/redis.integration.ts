@@ -2,11 +2,7 @@ import assert from "node:assert/strict";
 import { execFile } from "node:child_process";
 import { promisify } from "node:util";
 import { test } from "node:test";
-import {
-  applyCrawlerPolicy,
-  OBSERVE_THROTTLE_VISIT,
-  type CrawlerStore,
-} from "../lib/crawler-policy";
+import { applyCrawlerPolicy, THROTTLE_VISIT, type CrawlerStore } from "../lib/crawler-policy";
 import {
   saveThrottleRule,
   THROTTLE_RULES_KEY,
@@ -130,7 +126,10 @@ test("real Redis scripts preserve collector behavior and consistent bounded poli
     assert.equal(await command("TTL", key(POLICY_HISTORY_KEY)), -1);
 
     const at = "2026-10-19T12:00:00.000Z";
-    assert.equal(await applyCrawlerPolicy(store, "gptbot", "2026-10-19", "/docs", at), true);
+    assert.equal(
+      (await applyCrawlerPolicy(store, "gptbot", "2026-10-19", "/docs", at)).outcome === "blocked",
+      true,
+    );
     assert.equal(await command("GET", key("blocked:gptbot:2026-10-19")), "1");
     assert.equal(await command("HGET", key("blocked-pages:2026-10-19"), "/docs"), "1");
     const metadata = {
@@ -142,7 +141,10 @@ test("real Redis scripts preserve collector behavior and consistent bounded poli
     assert.ok(ttl > 2_591_900 && ttl <= 2_592_000);
 
     await savePolicyWithHistory(store, { botId: "gptbot", policy: "allow" });
-    assert.equal(await applyCrawlerPolicy(store, "gptbot", "2026-10-19", null, at), false);
+    assert.equal(
+      (await applyCrawlerPolicy(store, "gptbot", "2026-10-19", null, at)).outcome === "blocked",
+      false,
+    );
     assert.equal(await command("GET", key("bot:gptbot:2026-10-19")), "1");
 
     await command(
@@ -167,14 +169,16 @@ test("real Redis scripts preserve collector behavior and consistent bounded poli
     assert.ok((await command("TTL", key("identity:2026-10-21"))) > 2_591_900);
     await command("SET", key("identity:2026-10-21"), "wrong type");
     assert.equal(
-      await applyCrawlerPolicy(
-        store,
-        "claudebot",
-        "2026-10-21",
-        null,
-        at,
-        Promise.resolve("unsupported"),
-      ),
+      (
+        await applyCrawlerPolicy(
+          store,
+          "claudebot",
+          "2026-10-21",
+          null,
+          at,
+          Promise.resolve("unsupported"),
+        )
+      ).outcome === "blocked",
       false,
     );
     assert.equal(await command("GET", key("bot:claudebot:2026-10-21")), "1");
@@ -333,7 +337,7 @@ test("real Redis throttle observations are atomic, bounded, revision-aware and s
     eval: async (script, keys, args) =>
       command(
         "EVAL",
-        script === OBSERVE_THROTTLE_VISIT
+        script === THROTTLE_VISIT
           ? script.replace("redis.call('TIME')", `({${seconds}, '0'})`)
           : script,
         String(keys.length),
@@ -341,16 +345,18 @@ test("real Redis throttle observations are atomic, bounded, revision-aware and s
         ...args.map(String),
       ),
   };
-  const collect = () =>
-    applyCrawlerPolicy(
-      store,
-      "gptbot",
-      "2026-10-23",
-      "/docs",
-      "2026-10-23T00:00:00.000Z",
-      undefined,
-      true,
-    );
+  const collect = async () =>
+    (
+      await applyCrawlerPolicy(
+        store,
+        "gptbot",
+        "2026-10-23",
+        "/docs",
+        "2026-10-23T00:00:00.000Z",
+        undefined,
+        true,
+      )
+    ).outcome === "blocked";
   try {
     assert.equal(
       (await saveThrottleRule(store, { botId: "gptbot", mode: "observe", limit: 2 })).changed,
@@ -387,6 +393,60 @@ test("real Redis throttle observations are atomic, bounded, revision-aware and s
       await collect();
     }
     assert.equal(await command("HLEN", key("throttle:samples:gptbot")), 60);
+    const decide = () =>
+      applyCrawlerPolicy(
+        store,
+        "gptbot",
+        "2026-10-23",
+        "/docs",
+        "2026-10-23T00:00:00.000Z",
+        undefined,
+        true,
+      );
+    await saveThrottleRule(store, { botId: "gptbot", mode: "enforce", limit: 3 });
+    assert.equal(
+      (await applyCrawlerPolicy(store, "gptbot", "2026-10-23")).outcome,
+      "allowed",
+      "disabled integration ignores saved quota rules",
+    );
+    const decisions = await Promise.all(Array.from({ length: 12 }, decide));
+    assert.equal(decisions.filter((value) => value.outcome === "allowed").length, 3);
+    assert.equal(decisions.filter((value) => value.outcome === "limited").length, 9);
+    assert.ok(
+      decisions
+        .filter((value) => value.outcome === "limited")
+        .every((value) => value.retryAfter === 60 - (seconds % 60)),
+    );
+    assert.equal(await command("GET", key("limited:gptbot:2026-10-23")), "9");
+    assert.equal(await command("HGET", key("limited-pages:2026-10-23"), "/docs"), "9");
+    assert.equal(
+      await command("GET", key("throttle:would:gptbot:2026-10-23")),
+      "8",
+      "enforcement is not hypothetical traffic",
+    );
+    seconds += 60;
+    assert.equal((await decide()).outcome, "allowed", "minute boundary resets quota");
+    await saveThrottleRule(store, { botId: "gptbot", mode: "enforce", limit: 1 });
+    assert.equal((await decide()).outcome, "allowed", "rule revision resets quota");
+    await command("DEL", key("limited-pages:2026-10-23"));
+    await command("SET", key("limited-pages:2026-10-23"), "broken optional paths");
+    assert.equal(
+      (await decide()).outcome,
+      "limited",
+      "confirmed quota survives analytics corruption",
+    );
+    await saveThrottleRule(store, { botId: "gptbot", mode: "off", limit: 0 });
+    assert.equal((await decide()).outcome, "allowed", "off rolls enforcement back immediately");
+    await saveThrottleRule(store, { botId: "gptbot", mode: "enforce", limit: 1 });
+    await command("HSET", key("throttle:window:gptbot"), "count", "1.5");
+    assert.equal((await decide()).outcome, "allowed", "corrupt fractional quota fails open");
+    await command("DEL", key("throttle:window:gptbot"));
+    await command("SET", key("throttle:window:gptbot"), "broken quota");
+    assert.equal(
+      (await decide()).outcome,
+      "allowed",
+      "unconfirmed quota fails open without replay",
+    );
     await command("SET", key("policy:gptbot"), "block");
     await command("DEL", key(THROTTLE_RULES_KEY));
     await command("SET", key(THROTTLE_RULES_KEY), "corrupt optional rules");

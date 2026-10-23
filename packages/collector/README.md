@@ -11,10 +11,10 @@ npm ci
 npm run collector:pack
 ```
 
-Install `artifacts/promptwatch-collector-0.2.0.tgz` in the website you control:
+Install `artifacts/promptwatch-collector-0.3.0.tgz` in the website you control:
 
 ```sh
-npm install /absolute/path/to/promptwatch-collector-0.2.0.tgz
+npm install /absolute/path/to/promptwatch-collector-0.3.0.tgz
 ```
 
 Add this to the site's existing `middleware.ts`, keeping its own session/auth

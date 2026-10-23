@@ -37,7 +37,7 @@ test("actual Redis HTTP client respects the shared deadline and does not replay 
       else if (operation === "GET")
         results.push({ result: mode === "allow" || mode === "observe" ? "allow" : "block" });
       else if (operation === "EVAL" && String(command[1]).includes("local observationsOk"))
-        results.push({ result: [1, 1, 1] });
+        results.push({ result: [0, 0, 1, 1] });
       else if (mode === "write-error" && command.includes("blocked:gptbot:2026-10-19"))
         results.push({ error: "Simulated counter failure" });
       else results.push({ result: 1 });
@@ -51,7 +51,8 @@ test("actual Redis HTTP client respects the shared deadline and does not replay 
   assert.ok(address && typeof address !== "string");
   process.env.UPSTASH_REDIS_REST_URL = `http://127.0.0.1:${address.port}`;
   process.env.UPSTASH_REDIS_REST_TOKEN = "isolated-transport-fixture";
-  const collect = () => applyCrawlerPolicy(createRedis(), "gptbot", "2026-10-19");
+  const collect = async () =>
+    (await applyCrawlerPolicy(createRedis(), "gptbot", "2026-10-19")).outcome === "blocked";
   const assertDeadline = (elapsed: number) => {
     assert.ok(
       elapsed >= REDIS_REQUEST_BUDGET_MS * 0.85,
@@ -69,15 +70,17 @@ test("actual Redis HTTP client respects the shared deadline and does not replay 
         mode = "observe";
         commands = [];
         assert.equal(
-          await applyCrawlerPolicy(
-            createRedis(),
-            "gptbot",
-            "2026-10-23",
-            null,
-            new Date().toISOString(),
-            undefined,
-            true,
-          ),
+          (
+            await applyCrawlerPolicy(
+              createRedis(),
+              "gptbot",
+              "2026-10-23",
+              null,
+              new Date().toISOString(),
+              undefined,
+              true,
+            )
+          ).outcome === "blocked",
           false,
         );
         assert.equal(commands.length, 2);
@@ -119,14 +122,16 @@ test("actual Redis HTTP client respects the shared deadline and does not replay 
           true,
         );
         assert.equal(
-          await applyCrawlerPolicy(
-            store,
-            "gptbot",
-            "2026-10-21",
-            null,
-            new Date().toISOString(),
-            identity,
-          ),
+          (
+            await applyCrawlerPolicy(
+              store,
+              "gptbot",
+              "2026-10-21",
+              null,
+              new Date().toISOString(),
+              identity,
+            )
+          ).outcome === "blocked",
           true,
         );
         assert.equal(requests, 2, "auto-pipelined reads then one counting script");

@@ -22,6 +22,17 @@ function spike() {
   return history;
 }
 
+test("quota denials remain observed traffic without becoming repeated policy blocks", () => {
+  const history = fixture();
+  history.bots[0].limitedByDay = Array(30).fill(0);
+  history.bots[0].limitedByDay[15] = 10;
+  history.bots[0].limitedByDay[22] = 20;
+  const snapshot = deriveCrawlerActions(history, asOf);
+  assert.equal(snapshot.observedRequests, 20);
+  assert.equal(snapshot.actions[0].type, "traffic-spike");
+  assert.ok(!snapshot.actions.some((action) => action.type === "repeated-blocks"));
+});
+
 test("traffic rules compare full UTC windows and exclude today's partial data", () => {
   const history = spike();
   history.bots[0].hitsByDay[29] = 50_000;

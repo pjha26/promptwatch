@@ -33,7 +33,7 @@ export async function collectCrawlerRequest(
     const identity = options.verifyVercelIp
       ? verifyCrawlerIdentity(store, bot.id, request.headers, options.isVercel === true)
       : undefined;
-    const blocked = await applyCrawlerPolicy(
+    const decision = await applyCrawlerPolicy(
       store,
       bot.id,
       at.slice(0, 10),
@@ -42,7 +42,18 @@ export async function collectCrawlerRequest(
       identity,
       options.throttlingEnabled === true,
     );
-    return blocked
+    if (decision.outcome === "limited")
+      return Response.json(
+        { error: "Crawler request limit exceeded", retryAfter: decision.retryAfter },
+        {
+          status: 429,
+          headers: {
+            "Retry-After": String(decision.retryAfter),
+            "Cache-Control": "private, no-store",
+          },
+        },
+      );
+    return decision.outcome === "blocked"
       ? Response.json({ error: "Access denied by site policy" }, { status: 403 })
       : null;
   } catch {

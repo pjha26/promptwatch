@@ -8,14 +8,17 @@ database for a different website; keep the earlier installation's history separa
 
 | Data | Retention and limits |
 | --- | --- |
-| `bot:{id}:{UTC date}`, `blocked:{id}:{UTC date}` | Daily counters expire after 30 days |
-| `pages:{UTC date}`, `blocked-pages:{UTC date}` | 30 days; at most 200 paths per day/outcome |
+| `bot:{id}:{UTC date}`, `blocked:{id}:{UTC date}`, `limited:{id}:{UTC date}` | Separate allowed/blocked/HTTP 429 counters expire after 30 days |
+| `pages:{UTC date}`, `blocked-pages:{UTC date}`, `limited-pages:{UTC date}` | 30 days; at most 200 paths per day/outcome |
 | `identity:{UTC date}` | 30-day aggregate observations; no raw IPs |
 | `identity:feed:{botId}` | Official ranges cached for 24 hours |
 | `collector:health` | 30 days without new health/collector activity |
 | `identity:refresh:last` | Last confirmed feed refresh, 30 days |
 | `actions:decisions:{date}` | 60 days from a write to that date bucket |
 | `policy:{botId}`, `policy:history` | Policies persist; history keeps latest 200 actual changes |
+| `throttle:rules`, `throttle:history` | Rules persist; latest 200 actual owner changes |
+| `throttle:window:{botId}`, `throttle:samples:{botId}` | Quota expires just after minute reset; 60 sample slots, expires after one hour idle |
+| `throttle:would:{botId}:{UTC date}` | 30-day hypothetical observation exceedances; already included in allowed counts |
 | `settings:site`, `paths:started_at` | Persistent deployment metadata |
 | `alerts:state` | State key expires after 30 days without a worker write; individual events retained at most 7 days; at most 100 entries |
 

@@ -8,11 +8,12 @@ export async function readPageHistory() {
   const pipeline = redis.pipeline();
   for (const date of days) pipeline.hgetall(`pages:${date}`);
   for (const date of days) pipeline.hgetall(`blocked-pages:${date}`);
+  for (const date of days) pipeline.hgetall(`limited-pages:${date}`);
   pipeline.get("paths:started_at");
   const values = await pipeline.exec();
-  if (values.length !== days.length * 2 + 1) throw new Error("Incomplete page history");
+  if (values.length !== days.length * 3 + 1) throw new Error("Incomplete page history");
   const prefixes = process.env.PROMPTWATCH_PUBLIC_PATH_PREFIXES ?? "/";
-  const startedAt = values[days.length * 2];
+  const startedAt = values[days.length * 3];
   if (
     startedAt !== null &&
     (typeof startedAt !== "string" || !/^\d{4}-\d{2}-\d{2}$/.test(startedAt))
@@ -21,6 +22,10 @@ export async function readPageHistory() {
   return {
     pageTotals: aggregatePublicPages(values.slice(0, days.length), prefixes),
     blockedPageTotals: aggregatePublicPages(values.slice(days.length, days.length * 2), prefixes),
+    limitedPageTotals: aggregatePublicPages(
+      values.slice(days.length * 2, days.length * 3),
+      prefixes,
+    ),
     startedAt,
     limitPerDay: DAILY_PATH_LIMIT,
   };

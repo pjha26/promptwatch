@@ -87,7 +87,7 @@ export default function ThrottlingPage() {
       setDraft(draftFor(snapshot, draft.botId));
       setMessage(
         confirmation.changed
-          ? "Rule saved with history and reloaded from storage. Observation settings do not restrict requests."
+          ? "Rule saved with history and reloaded from storage. Enforcement applies only where collector integration is enabled."
           : "Rule already matched. No history entry was added.",
       );
     } catch (cause) {
@@ -184,6 +184,7 @@ export default function ThrottlingPage() {
           >
             <option value="off">Off</option>
             <option value="observe">Observe only</option>
+            <option value="enforce">Enforce (HTTP 429)</option>
           </select>
         </label>
         <label className="text-sm">
@@ -205,9 +206,11 @@ export default function ThrottlingPage() {
           />
         </label>
         <p className="text-sm text-[#6B6560] sm:col-span-3">
-          Observe only never denies requests. A changed rule starts a fresh quota revision within
-          the current fixed UTC minute. Minute boundaries can permit bursts on both sides of a
-          reset; this is not a smoothing or security limit.
+          Observe only never denies requests. Enforce returns HTTP 429 above the limit until the
+          next UTC minute; confirmed Block rules take priority. Redis failures allow traffic and may
+          leave reporting gaps. A changed rule starts a fresh quota revision within the current
+          fixed UTC minute. Minute boundaries can permit bursts on both sides of a reset; this is
+          not a smoothing or security limit.
         </p>
         <button
           disabled={busy || !data}

@@ -5,6 +5,7 @@ import { useEffect, useState } from "react";
 interface PageHistory {
   pageTotals: Record<string, number>;
   blockedPageTotals: Record<string, number>;
+  limitedPageTotals: Record<string, number>;
   startedAt: string | null;
 }
 
@@ -29,7 +30,8 @@ export function usePageData() {
         if (!response.ok) throw new Error("Page request failed");
         const json = await response.json();
         // Counts are already filtered to the server's allowlist; validate shape here.
-        for (const counts of [json.pageTotals, json.blockedPageTotals]) {
+        if (json.limitedPageTotals === undefined) json.limitedPageTotals = {};
+        for (const counts of [json.pageTotals, json.blockedPageTotals, json.limitedPageTotals]) {
           if (
             !counts ||
             typeof counts !== "object" ||

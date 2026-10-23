@@ -37,7 +37,9 @@ export function deriveCrawlerActions(
   for (const bot of history.bots) {
     const signature = botSignatures.find((candidate) => candidate.id === bot.id);
     if (!signature || signature.robotsOnly) continue;
-    const counts = bot.hitsByDay.map((allowed, index) => allowed + bot.blockedByDay[index]);
+    const counts = bot.hitsByDay.map(
+      (allowed, index) => allowed + bot.blockedByDay[index] + (bot.limitedByDay?.[index] ?? 0),
+    );
     const current = counts.slice(start, end).reduce((sum, count) => sum + count, 0);
     const previous =
       start >= 7 ? counts.slice(start - 7, start).reduce((sum, count) => sum + count, 0) : null;
